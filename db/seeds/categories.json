@@ -1,0 +1,244 @@
+{
+    "categories": [
+      {
+        "name": "Vivienda",
+        "description": "Gastos relacionados con el hogar y la propiedad. Incluye costos fijos y variables de mantenimiento de la vivienda.",
+        "subcategories": [
+          {
+            "name": "Alquiler/Hipoteca",
+            "description": "Pagos mensuales por el lugar de residencia, ya sea alquiler o cuota hipotecaria."
+          },
+          {
+            "name": "Servicios (agua, luz, gas)",
+            "description": "Gastos en servicios básicos del hogar, incluyendo agua, electricidad y gas."
+          },
+          {
+            "name": "Internet y teléfono",
+            "description": "Costos de conectividad, incluyendo servicio de internet y telefonía fija o móvil."
+          },
+          {
+            "name": "Mantenimiento del hogar",
+            "description": "Gastos en reparaciones, mejoras y mantenimiento general de la vivienda."
+          },
+          {
+            "name": "Impuestos sobre la propiedad",
+            "description": "Pagos de impuestos relacionados con la propiedad inmobiliaria."
+          }
+        ]
+      },
+      {
+        "name": "Alimentación",
+        "description": "Todos los gastos relacionados con la compra de alimentos y bebidas, tanto en casa como fuera.",
+        "subcategories": [
+          {
+            "name": "Supermercado",
+            "description": "Compras de alimentos y artículos de primera necesidad en supermercados o tiendas."
+          },
+          {
+            "name": "Restaurantes",
+            "description": "Gastos en comidas en restaurantes, incluyendo propinas y servicios adicionales."
+          },
+          {
+            "name": "Comida rápida",
+            "description": "Gastos en establecimientos de comida rápida o para llevar."
+          },
+          {
+            "name": "Café y snacks",
+            "description": "Pequeños gastos en cafeterías, máquinas expendedoras o snacks entre comidas."
+          }
+        ]
+      },
+      {
+        "name": "Transporte",
+        "description": "Gastos relacionados con la movilidad y el transporte, incluyendo vehículos propios y transporte público.",
+        "subcategories": [
+          {
+            "name": "Combustible",
+            "description": "Gastos en gasolina, diesel u otros combustibles para vehículos."
+          },
+          {
+            "name": "Transporte público",
+            "description": "Costos de uso de autobuses, trenes, metro u otros medios de transporte público."
+          },
+          {
+            "name": "Mantenimiento del vehículo",
+            "description": "Gastos en reparaciones, revisiones y mantenimiento general de vehículos propios."
+          },
+          {
+            "name": "Seguro del automóvil",
+            "description": "Pagos de pólizas de seguro para vehículos."
+          },
+          {
+            "name": "Estacionamiento",
+            "description": "Costos de aparcamiento, ya sean regulares o esporádicos."
+          }
+        ]
+      },
+      {
+        "name": "Salud",
+        "description": "Gastos relacionados con el cuidado de la salud física y mental.",
+        "subcategories": [
+          {
+            "name": "Seguro médico",
+            "description": "Pagos de primas de seguro de salud, ya sea privado o copagos de seguro público."
+          },
+          {
+            "name": "Medicamentos",
+            "description": "Gastos en medicinas recetadas y de venta libre."
+          },
+          {
+            "name": "Consultas médicas",
+            "description": "Pagos por visitas a médicos generales o especialistas."
+          },
+          {
+            "name": "Gastos dentales",
+            "description": "Costos de tratamientos dentales y cuidado bucal."
+          },
+          {
+            "name": "Gimnasio/Actividades físicas",
+            "description": "Gastos en membresías de gimnasio, clases de fitness o equipamiento deportivo."
+          }
+        ]
+      },
+      {
+        "name": "Educación",
+        "description": "Inversiones en formación académica y desarrollo personal.",
+        "subcategories": [
+          {
+            "name": "Matrícula escolar/universitaria",
+            "description": "Pagos de matrículas y tasas académicas para educación formal."
+          },
+          {
+            "name": "Libros y materiales",
+            "description": "Gastos en libros de texto, material escolar y recursos educativos."
+          },
+          {
+            "name": "Cursos y talleres",
+            "description": "Costos de formación adicional, cursos en línea o presenciales, y talleres."
+          }
+        ]
+      },
+      {
+        "name": "Entretenimiento",
+        "description": "Gastos destinados al ocio, diversión y tiempo libre.",
+        "subcategories": [
+          {
+            "name": "Streaming (Netflix, Spotify, etc.)",
+            "description": "Suscripciones a servicios de streaming de video, música o podcasts."
+          },
+          {
+            "name": "Cine y eventos",
+            "description": "Gastos en entradas para cine, conciertos, teatro u otros eventos culturales."
+          },
+          {
+            "name": "Hobbies",
+            "description": "Costos relacionados con pasatiempos personales y actividades recreativas."
+          },
+          {
+            "name": "Viajes y vacaciones",
+            "description": "Gastos en viajes, alojamiento y actividades durante vacaciones o escapadas."
+          }
+        ]
+      },
+      {
+        "name": "Compras personales",
+        "description": "Gastos en artículos para uso personal no esenciales.",
+        "subcategories": [
+          {
+            "name": "Ropa y calzado",
+            "description": "Compras de prendas de vestir, zapatos y accesorios de moda."
+          },
+          {
+            "name": "Artículos de cuidado personal",
+            "description": "Gastos en productos de higiene, cosmética y cuidado personal."
+          },
+          {
+            "name": "Electrónicos y gadgets",
+            "description": "Compras de dispositivos electrónicos, accesorios tecnológicos y gadgets."
+          }
+        ]
+      },
+      {
+        "name": "Deudas y ahorros",
+        "description": "Pagos de deudas y asignaciones para ahorro e inversión.",
+        "subcategories": [
+          {
+            "name": "Pago de tarjetas de crédito",
+            "description": "Pagos mensuales de saldos de tarjetas de crédito."
+          },
+          {
+            "name": "Préstamos personales",
+            "description": "Cuotas de préstamos personales, estudiantiles u otros tipos de créditos."
+          },
+          {
+            "name": "Ahorros e inversiones",
+            "description": "Fondos destinados a cuentas de ahorro, inversiones o fondos de emergencia."
+          }
+        ]
+      },
+      {
+        "name": "Mascotas",
+        "description": "Gastos relacionados con el cuidado y mantenimiento de animales domésticos.",
+        "subcategories": [
+          {
+            "name": "Alimentos",
+            "description": "Compras de alimentos y snacks para mascotas."
+          },
+          {
+            "name": "Cuidados veterinarios",
+            "description": "Gastos en consultas veterinarias, vacunas y tratamientos médicos para mascotas."
+          },
+          {
+            "name": "Accesorios y juguetes",
+            "description": "Compras de juguetes, camas, correas y otros accesorios para mascotas."
+          }
+        ]
+      },
+      {
+        "name": "Regalos y donaciones",
+        "description": "Gastos en obsequios para otros y contribuciones caritativas.",
+        "subcategories": [
+          {
+            "name": "Regalos para familiares y amigos",
+            "description": "Compras de regalos para cumpleaños, festividades u otras ocasiones especiales."
+          },
+          {
+            "name": "Donaciones a organizaciones benéficas",
+            "description": "Contribuciones monetarias a organizaciones sin fines de lucro o causas benéficas."
+          }
+        ]
+      },
+      {
+        "name": "Servicios profesionales",
+        "description": "Gastos en servicios especializados para necesidades personales o profesionales.",
+        "subcategories": [
+          {
+            "name": "Servicios legales",
+            "description": "Pagos por asesoría legal, trámites notariales u otros servicios jurídicos."
+          },
+          {
+            "name": "Contabilidad",
+            "description": "Gastos en servicios de contabilidad, asesoría fiscal o gestión financiera."
+          },
+          {
+            "name": "Suscripciones profesionales",
+            "description": "Cuotas de membresía a organizaciones profesionales o suscripciones a publicaciones especializadas."
+          }
+        ]
+      },
+      {
+        "name": "Misceláneos",
+        "description": "Gastos variados que no encajan en otras categorías específicas.",
+        "subcategories": [
+          {
+            "name": "Gastos imprevistos",
+            "description": "Costos inesperados o emergencias no planificadas."
+          },
+          {
+            "name": "Otros gastos no categorizados",
+            "description": "Gastos que no encajan en ninguna otra categoría específica."
+          }
+        ]
+      }
+    ]
+  }

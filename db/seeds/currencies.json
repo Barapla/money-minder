@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Dólar estadounidense",
+        "code": "USD",
+        "symbol": "$"
+    },
+    {
+        "name": "Euro",
+        "code": "EUR",
+        "symbol": "€"
+    },
+    {
+        "name": "Peso mexicano",
+        "code": "MXN",
+        "symbol": "$"
+    }
+]

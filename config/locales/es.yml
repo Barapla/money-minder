@@ -1,0 +1,17 @@
+es:
+  app_name: "MoneyMinder"
+  continue: "Continuar"
+  activerecord:
+    attributes:
+      user:
+        name: "Nombre"
+        email: "Correo Electrónico"
+        password: "Contraseña"
+        role: "Rol"
+    models:
+      user: "Usuario"
+    errors:
+      messages:
+        blank: "no puede estar vacío"
+        required: "es requerido"
+  

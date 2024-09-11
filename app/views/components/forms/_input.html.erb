@@ -1,0 +1,6 @@
+<%  name = component.name
+    form = component.form 
+    type = component.type 
+    options = component.options || {} %>
+
+<%= form.send("#{type}_field", name, class: "form-control", **options) %>

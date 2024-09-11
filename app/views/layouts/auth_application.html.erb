@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MoneyMinder</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "application", media: "all", "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
+  </head>
+
+  <body class="flex">
+    <div class="flex flex-col justify-between w-2/5 px-16 pt-12 pb-4 min-h-screen">
+      <div class="flex space-x-2">
+        <%= render_svg "icons/business" %>
+        <h1 class="font-bold text-bunker-950">MoneyMinder</h1>
+      </div>
+      <div class="flex flex-col justify-center">
+        <%= yield %>
+      </div>
+    </div>
+    <div class="w-3/5 bg-bunker-950 min-h-screen">
+
+    </div>
+  </body>
+</html>

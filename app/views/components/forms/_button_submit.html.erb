@@ -1,0 +1,7 @@
+<%  text = component.text
+    form = component.form 
+    options = component.options || {}
+    class_name = options[:class] || "btn btn-primary"
+    %>
+
+<%= form.submit text, class: class_name %>

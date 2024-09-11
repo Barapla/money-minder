@@ -1,0 +1,123 @@
+es:
+  devise:
+    confirmations:
+      confirmed: "Tu cuenta ya ha sido confirmada. Has sido identificado."
+      send_instructions: "Recibirás un correo electrónico en unos minutos con instrucciones sobre cómo reestablecer tu contraseña."
+      send_paranoid_instructions: "Si tu correo electrónico existe en nuestra base de datos, recibirás un correo electrónico en unos minutos con instrucciones sobre cómo reiniciar tu contraseña."
+    failure:
+      already_authenticated: "Ya estás identificado."
+      inactive: "Tu cuenta aún no ha sido activada."
+      invalid: "Correo o contraseña inválidos."
+      invalid_token: "Cadena de autenticación inválida."
+      locked: "Tu cuenta está bloqueada."
+      not_found_in_database: "Correo o contraseña inválidos."
+      timeout: "Tu sesión ha expirado, por favor identifícate de nuevo para continuar."
+      unauthenticated: "Necesitas iniciar sesión o registrarte para continuar."
+      unconfirmed: "Debes confirmar tu cuenta para continuar."
+    mailer:
+      confirmation_instructions:
+        action: Confirmar mi cuenta
+        greeting: "¡Bienvenido"
+        instruction: 'Puedes confirmar el correo electrónico de tu cuenta a través del siguiente enlace:'
+        subject: Instrucciones de confirmación
+      email_changed:
+        greeting: ¡Hola %{recipient}!
+        message: Te contactamos para notificarte que tu correo electrónico ha sido cambiado a %{email}.
+        subject: Correo Electrónico Cambiado
+      password_change:
+        greeting: ¡Hola %{recipient}!
+        message: Te contactamos para notificarte que tu contraseña ha sido cambiada.
+        subject: Contraseña Cambiada
+      reset_password_instructions:
+        action: Cambiar mi contraseña
+        greeting: ¡Hola %{recipient}!
+        instruction: Alguien ha solicitado un enlace para cambiar tu contraseña. Puedes hacerlo a través del enlace de abajo.
+        instruction_2: Si no solicitaste esto, por favor ignora este correo electrónico.
+        instruction_3: Tu contraseña no cambiará hasta que accedas al enlace de arriba y crees una nueva.
+        subject: Instrucciones para restablecer la contraseña
+      unlock_instructions:
+        action: Desbloquear mi cuenta
+        greeting: ¡Hola %{recipient}!
+        instruction: 'Haz clic en el enlace de abajo para desbloquear tu cuenta:'
+        message: Tu cuenta ha sido bloqueada debido a un número excesivo de intentos de inicio de sesión fallidos.
+        subject: Instrucciones de desbloqueo
+    omniauth_callbacks:
+      failure: "No se pudo autorizar %{kind} debido a \"%{reason}\"."
+      success: "Identificado correctamente %{kind}."
+    passwords:
+      no_token: "No puedes acceder a esta página sino es por medio de un enlace para restablecer la contraseña enviado a tu correo. Si accediste desde el enlace para restablecer la contraseña, asegúrate de que la URL esté completa."
+      send_instructions: "Recibirás un correo electrónico con instrucciones sobre cómo restablecer tu contraseña en unos minutos."
+      send_paranoid_instructions: "Si tu correo electrónico existe en nuestra base de datos, recibirás un enlace para restablecer la contraseña en unos minutos."
+      updated: "Tu contraseña se cambió correctamente. Has sido identificado."
+      updated_not_active: "Tu contraseña se cambió correctamente."
+    registrations:
+      destroyed: "¡Adiós! Tu cuenta ha sido cancelada exitosamente. Esperamos verte pronto."
+      edit:
+        specialty: "Especialidad"
+        specialties: "Especialidades"
+        upload_profile: "Subir foto de perfil"
+        are_you_sure: "¿Estás seguro?"
+        cancel_my_account: "Eliminar mi cuenta"
+        cancel_my_account_description: "Esto borrará permanentemente todos los datos asociados a tu cuenta. Esta acción no se puede deshacer."
+        cancel_my_account_confirm_description_html: "Esto <strong>borrará permanentemente</strong> todos los datos asociados a tu cuenta. Esta acción no se puede deshacer. </br></br> Para continuar, por favor ingresa tu correo electrónico y presiona el botón de confirmación."
+        currently_waiting_confirmation_for_email: "Actualmente esperando confirmación para: %{email}"
+        leave_blank_if_you_don_t_want_to_change_it: "déjalo en blanco si no quieres cambiarlo"
+        title: "Editar Perfil"
+        unhappy: "¿Insatisfecho con tu cuenta?"
+        update: "Actualizar"
+        we_need_your_current_password_to_confirm_your_changes: "Necesitamos tu contraseña actual para confirmar tus cambios."
+        saving: "Guardando..."
+      account_form:
+        i_am: "%{account_type}"
+        your_profession?: "¿Cuál es tu perfil?"
+        about_you: "Cuéntanos sobre ti"
+        have_one_account: "¿Ya tienes una cuenta?"
+        login: "Inicia sesión"
+      form:
+        name: "Nombre Comercial"
+        sign_up: "Crear Cuenta"
+        terms: "Términos y condiciones"
+        privacy: "Política de privacidad"
+        login_html: "%{link}"
+        terms_html: "Acepto los %{terms} &amp; %{privacy}"
+        submitting: "Enviando..."
+      new:
+        title: "Regístrate para continuar en"
+        name: "Nombre de la asociación"
+        sign_up: "Crear Cuenta"
+        professional?: "¿Eres un profesional de la salud?"
+        professional_sign_up: "Crear Cuenta Profesional"
+        terms: "Términos y condiciones"
+        privacy: "Política de privacidad"
+        login_html: "%{link}"
+        terms_html: "Acepto los %{terms} &amp; %{privacy}"
+        submitting: "Enviando..."
+      destroyed: "¡Adiós! Tu cuenta ha sido cancelada exitosamente. Esperamos verte pronto."
+      signed_up: "¡Bienvenido! Has sido identificado."
+      signed_up_but_inactive: "Te has registrado correctamente. Pero no has podido iniciar sesión porque no has activado tu cuenta."
+      signed_up_but_locked: "Te has registrado correctamente. Pero no has podido iniciar sesión porque tu cuenta está bloqueada."
+      signed_up_but_unconfirmed: "Se te ha enviado un mensaje con un enlace de confirmación. Por favor visita el enlace para activar tu cuenta."
+      update_needs_confirmation: "Actualizaste tu cuenta correctamente, pero necesitamos verificar tu nueva dirección de correo electrónico. Por favor revisa tu correo electrónico y visita el enlace para finalizar la confirmación."
+      updated: "Has actualizado tu cuenta correctamente."
+    sessions:
+      already_signed_out: "Has cerrado la sesión correctamente."
+      new:
+        link: "Regístrate"
+        sign_up_html: "%{link}"
+        sign_in: "Iniciar sesión"
+      signed_in: "Has iniciado sesión correctamente."
+      signed_out: "Has cerrado la sesión correctamente."
+    unlocks:
+      send_instructions: "Recibirás un correo electrónico en unos minutos con instrucciones sobre cómo desbloquear tu cuenta."
+      send_paranoid_instructions: "Si tu cuenta existe, recibirás un correo electrónico en unos minutos con instrucciones sobre cómo desbloquear tu cuenta."
+      unlocked: "Tu cuenta ha sido desbloqueada. Por favor inicia sesión para continuar."
+  errors:
+    messages:
+      already_confirmed: "Ya ha sido confirmado, por favor intenta iniciar sesión."
+      confirmation_period_expired: "Necesita ser confirmado en %{period}, por favor solicítalo nuevamente."
+      expired: "Ha expirado, por favor solicítalo nuevamente."
+      not_found: "No se encontró."
+      not_locked: "No estaba bloqueado."
+      not_saved:
+        - "1 error impidió que este %{resource} fuera guardado:"
+        - "%{count} errores impidieron que este %{resource} fuera guardado:"
