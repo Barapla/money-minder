@@ -102,6 +102,7 @@ es:
     sessions:
       already_signed_out: "Has cerrado la sesión correctamente."
       new:
+        title: "Inicia sesión para continuar en"
         link: "Regístrate"
         sign_up_html: "%{link}"
         sign_in: "Iniciar sesión"
@@ -111,6 +112,12 @@ es:
       send_instructions: "Recibirás un correo electrónico en unos minutos con instrucciones sobre cómo desbloquear tu cuenta."
       send_paranoid_instructions: "Si tu cuenta existe, recibirás un correo electrónico en unos minutos con instrucciones sobre cómo desbloquear tu cuenta."
       unlocked: "Tu cuenta ha sido desbloqueada. Por favor inicia sesión para continuar."
+    shared:
+      links:
+        log_in: "Iniciar sesión"
+        sign_up: "Registrarse"
+        forgot_password: "¿Olvidaste tu contraseña?"
+        confirmation_instructions: "¿No recibiste el correo de confirmación?"
   errors:
     messages:
       already_confirmed: "Ya ha sido confirmado, por favor intenta iniciar sesión."

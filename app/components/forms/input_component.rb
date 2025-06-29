@@ -2,14 +2,13 @@
 
 module Forms
   # InputFieldComponent
-  class InputComponent < ApplicationComponent
-    attr_reader :name, :form, :type, :options
+  class InputComponent < Forms::ApplicationComponent
+    attr_reader :name, :type
 
     def initialize(name:, form:, type: 'text', options: {})
       @name = name
-      @form = form
       @type = type
-      @options = options
+      super(form:, options:)
     end
   end
 end

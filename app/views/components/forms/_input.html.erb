@@ -2,5 +2,7 @@
     form = component.form 
     type = component.type 
     options = component.options || {} %>
-
-<%= form.send("#{type}_field", name, class: "form-control", **options) %>
+<div class="form-group">
+    <%= render Forms::LabelComponent.new(form:, name:) %>
+    <%= form.send("#{type}_field", name, class: "form-control", **options) %>
+</div>

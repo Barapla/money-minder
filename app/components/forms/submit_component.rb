@@ -2,13 +2,12 @@
 
 module Forms
   # ButtonSubmitComponent
-  class ButtonSubmitComponent < ApplicationComponent
-    attr_reader :text, :form, :options
+  class SubmitComponent < Forms::ApplicationComponent
+    attr_reader :text
 
     def initialize(text:, form:, options: {})
       @text = text
-      @form = form
-      @options = options
+      super(form:, options:)
     end
   end
 end

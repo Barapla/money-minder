@@ -2,13 +2,12 @@
 
 module Forms
   # InputFieldComponent
-  class LabelComponent < ApplicationComponent
-    attr_reader :name, :form, :options
+  class LabelComponent < Forms::ApplicationComponent
+    attr_reader :name
 
     def initialize(name:, form:, options: {})
       @name = name
-      @form = form
-      @options = options
+      super(form:, options:)
     end
   end
 end

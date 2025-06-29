@@ -85,3 +85,4 @@ end
 gem 'date'
 gem 'inline_svg'
 gem 'foreman'
+gem 'colorize'

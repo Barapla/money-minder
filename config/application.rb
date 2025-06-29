@@ -12,6 +12,9 @@ module MoneyMinder
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.0
 
+    # config/application.rb
+    config.autoload_paths << Rails.root.join('lib')
+
     # Where the I18n library should search for translation files
     # Search nested folders in config/locales for better organization
     config.i18n.load_path += Dir[Rails.root.join('config', 'locales', '**', '*.{rb,yml}')]

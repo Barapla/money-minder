@@ -2,6 +2,8 @@
 
 # User model
 class User < ApplicationRecord
+  include Seedable
+
   # Include default devise modules. Others available are:
   # :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
@@ -18,6 +20,10 @@ class User < ApplicationRecord
   before_validation :split_name, if: -> { name.present? }
 
   after_initialize :set_default_role
+
+  def self.seed_unique_keys
+    [:email]
+  end
 
   private
 

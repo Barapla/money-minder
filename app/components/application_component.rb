@@ -3,7 +3,12 @@
 # Base component class
 class ApplicationComponent
   # Content is the value of the block given to the component
+  attr_reader :options
   attr_accessor :content
+
+  def initialize(options: {})
+    @options = options
+  end
 
   def self.renders_one(name)
     attr_accessor name
