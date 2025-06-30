@@ -4,21 +4,22 @@
             <div class="flex justify-between items-center h-16">
                 <!-- Logo/Brand -->
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 flex items-center">
-                        <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-purple-400 rounded-lg flex items-center justify-center mr-3">
+                    <%= render Buttons::LinkComponent.new(content: 
+                        '<div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-purple-400 rounded-lg flex items-center justify-center mr-3">
                             <span class="text-white font-bold text-lg">💰</span>
                         </div>
-                        <h1 class="text-xl font-bold text-white">FinancePlanner</h1>
-                    </div>
+                        <h1 class="text-xl font-bold text-white">MoneyMinder</h1>', 
+                        href: root_path, options: { class: "flex-shrink-0 flex items-center" }) 
+                    %>
                 </div>
 
                 <!-- Navigation Links -->
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="#dashboard" class="bg-purple-500/20 text-purple-300 px-3 py-2 rounded-md text-sm font-medium border border-purple-500/30">Dashboard</a>
-                        <a href="#presupuesto" class="text-bunker-300 hover:text-white hover:bg-bunker-800 px-3 py-2 rounded-md text-sm font-medium transition-colors">Presupuesto</a>
-                        <a href="#inversiones" class="text-bunker-300 hover:text-white hover:bg-bunker-800 px-3 py-2 rounded-md text-sm font-medium transition-colors">Inversiones</a>
-                        <a href="#reportes" class="text-bunker-300 hover:text-white hover:bg-bunker-800 px-3 py-2 rounded-md text-sm font-medium transition-colors">Reportes</a>
+                        <%= navbar_link_to("Dashboard", root_path) %>
+                        <%= navbar_link_to("Presupuestos", budgets_path) %>
+                        <%= navbar_link_to("Inversiones", "#investments") %>
+                        <%= navbar_link_to("Reportes", "#reports") %>
                     </div>
                 </div>
 
@@ -30,11 +31,24 @@
                         </svg>
                     </button>
                     <div class="relative">
-                        <button class="bg-bunker-800 p-2 rounded-lg text-bunker-300 hover:text-white hover:bg-bunker-700 transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                        </button>
+                        <%# render Buttons::LinkComponent.new(content: '
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                            ', href: destroy_user_session_path, 
+                            options: { 
+                                turbo_method: :delete, 
+                                class: "bg-bunker-800 p-2 rounded-lg text-bunker-300 hover:text-white hover:bg-bunker-700 transition-colors" 
+                            }) 
+                        %>
+                        <% if user_signed_in? %>
+                            <%= button_to destroy_user_session_path, class: "bg-bunker-800 p-2 rounded-lg text-bunker-300 hover:text-white hover:bg-bunker-700 transition-colors", method: :delete do %>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                            <% end %>
+                        <% end %>
+
                     </div>
                 </div>
 

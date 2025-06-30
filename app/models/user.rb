@@ -5,9 +5,9 @@ class User < ApplicationRecord
   include Seedable
 
   # Include default devise modules. Others available are:
-  # :lockable, :timeoutable, :trackable and :omniauthable
+  # :lockable, :timeoutable, :confirmable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable, :confirmable
+         :recoverable, :rememberable, :validatable
 
   belongs_to :role
   belongs_to :currency, optional: true

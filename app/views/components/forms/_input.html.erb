@@ -1,8 +1,43 @@
 <%  name = component.name
     form = component.form 
     type = component.type 
-    options = component.options || {} %>
+    options = component.options || {}
+    placeholder = component.placeholder
+    icon = component.icon
+    prefix = component.prefix
+    suffix = component.suffix
+    help_text = component.help_text
+    required = component.required %>
+
 <div class="form-group">
-    <%= render Forms::LabelComponent.new(form:, name:) %>
-    <%= form.send("#{type}_field", name, class: "form-control", **options) %>
+    <%= render Forms::LabelComponent.new(form:, name:, required:) %>
+    
+    <div class="<%= component.send(:wrapper_classes) %>">
+        <% if icon %>
+            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-bunker-400">
+                <%= icon.html_safe %>
+            </div>
+        <% end %>
+        
+        <% if prefix %>
+            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-bunker-400 font-medium">
+                <%= prefix %>
+            </span>
+        <% end %>
+        
+        <%= form.send("#{type}_field", name, 
+            class: component.send(:input_classes),
+            placeholder: placeholder,
+            **options) %>
+        
+        <% if suffix %>
+            <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-bunker-400 font-medium">
+                <%= suffix %>
+            </span>
+        <% end %>
+    </div>
+    
+    <% if help_text %>
+        <p class="text-xs text-bunker-400 mt-1"><%= help_text %></p>
+    <% end %>
 </div>

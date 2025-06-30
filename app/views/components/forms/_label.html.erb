@@ -1,5 +1,4 @@
-<%  name = component.name
-    form = component.form 
-    options = component.options || {} %>
-
-<%= form.label name, class: "form-label", **options %>
+<!-- Vista del LabelComponent -->
+<%= component.form.label component.name, class: component.send(:label_classes) do %>
+  <%= component.text %><%= component.send(:required_indicator) %>
+<% end %>

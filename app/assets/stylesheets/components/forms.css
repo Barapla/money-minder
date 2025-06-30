@@ -3,10 +3,55 @@
 }
 
 .form-label {
-    @apply block text-sm font-medium text-bunker-950;
+    @apply block text-sm font-medium text-bunker-200 mb-2;
 }
 
 .form-control {
-    @apply mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm;
-}
+    @apply w-full py-3 bg-bunker-800/60 border border-bunker-700/50 rounded-xl text-white
+           placeholder-bunker-400 transition-all duration-200;
 
+    &:hover,
+    &:focus {
+        @apply outline-none ring-2 ring-purple-500 border-purple-500;
+    }
+
+    &[type="select"],
+    &.select,
+    select& {
+        @apply appearance-none cursor-pointer pl-4 pr-10;
+        
+        option {
+            @apply bg-bunker-800 text-white;
+            
+            &:checked {
+                @apply bg-purple-500;
+            }
+        }
+    }
+
+    &.has-icon-left {
+        @apply pl-10;
+    }
+    
+    &.has-icon-right {
+        @apply pr-10;
+    }
+    
+    &.has-prefix {
+        @apply pl-8;
+    }
+    
+    &.has-suffix {
+        @apply pr-8;
+    }
+
+    &.has-icon-left.has-prefix {
+        @apply pl-12;
+    }
+
+    &.has-icon-left[type="select"],
+    &.has-icon-left.select,
+    select&.has-icon-left {
+        @apply pl-10 pr-10;
+    }
+}

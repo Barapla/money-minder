@@ -1,0 +1,29 @@
+<div class="min-h-screen p-4 sm:p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-bunker-900/80 to-purple-900/80 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-4xl font-bold text-white mb-2">
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">💰 Presupuestos</span>
+                    </h1>
+                    <p class="text-bunker-300">Gestiona todos tus presupuestos</p>
+                </div>
+
+                <%= render Buttons::LinkComponent.new(content: '
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Nuevo Presupuesto
+                    ', href: new_budget_path, 
+                    options: { 
+                        class: "btn-new" 
+                        }) 
+                    %>
+            </div>
+        </div>
+
+        <%= render Table::MainComponent.new(title: "Lista de Presupuestos", headers: headers_table_index, values: nil) %>
+        
+    </div>
+</div>

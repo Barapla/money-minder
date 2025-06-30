@@ -2,6 +2,7 @@
 
 # Application controller
 class ApplicationController < ActionController::Base
+  include NavbarHelper
   before_action :configure_permitted_parameters, if: :devise_controller?
 
   protected

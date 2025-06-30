@@ -8,4 +8,6 @@ class Category < ApplicationRecord
   has_many :recurring_transactions, dependent: :destroy
 
   validates :name, presence: true, uniqueness: true
+
+  scope :parents, -> { where(parent_category_id: nil) }
 end

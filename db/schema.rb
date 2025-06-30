@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_08_19_030938) do
+ActiveRecord::Schema[7.0].define(version: 2025_06_30_063214) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -42,6 +42,34 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_19_030938) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "budgets", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.decimal "current_amount"
+    t.decimal "limit_amount"
+    t.bigint "budget_type_id", null: false
+    t.bigint "color_id", null: false
+    t.bigint "icon_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["budget_type_id"], name: "index_budgets_on_budget_type_id"
+    t.index ["color_id"], name: "index_budgets_on_color_id"
+    t.index ["icon_id"], name: "index_budgets_on_icon_id"
+    t.index ["uuid"], name: "index_budgets_on_uuid", unique: true
+  end
+
+  create_table "catalogs", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.string "value"
+    t.string "code"
+    t.bigint "group_catalog_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["group_catalog_id"], name: "index_catalogs_on_group_catalog_id"
+    t.index ["uuid"], name: "index_catalogs_on_uuid", unique: true
+  end
+
   create_table "categories", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
@@ -64,6 +92,16 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_19_030938) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["uuid"], name: "index_currencies_on_uuid", unique: true
+  end
+
+  create_table "group_catalogs", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.string "name"
+    t.string "code"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["uuid"], name: "index_group_catalogs_on_uuid", unique: true
   end
 
   create_table "recurring_transactions", force: :cascade do |t|
@@ -107,6 +145,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_19_030938) do
     t.date "transaction_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "budget_id"
+    t.index ["budget_id"], name: "index_transactions_on_budget_id"
     t.index ["category_id"], name: "index_transactions_on_category_id"
     t.index ["currency_id"], name: "index_transactions_on_currency_id"
     t.index ["user_id"], name: "index_transactions_on_user_id"
@@ -141,10 +181,15 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_19_030938) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "budgets", "catalogs", column: "budget_type_id", name: "fk_budgets_budget_type"
+  add_foreign_key "budgets", "catalogs", column: "color_id", name: "fk_budgets_color"
+  add_foreign_key "budgets", "catalogs", column: "icon_id", name: "fk_budgets_icon"
+  add_foreign_key "catalogs", "group_catalogs", name: "fk_catalogs_group_catalog"
   add_foreign_key "categories", "categories", column: "parent_category_id"
   add_foreign_key "recurring_transactions", "categories"
   add_foreign_key "recurring_transactions", "currencies"
   add_foreign_key "recurring_transactions", "users"
+  add_foreign_key "transactions", "budgets", name: "fk_transactions_budget"
   add_foreign_key "transactions", "categories"
   add_foreign_key "transactions", "currencies"
   add_foreign_key "transactions", "users"

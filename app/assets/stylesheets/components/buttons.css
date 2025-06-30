@@ -62,4 +62,39 @@
       @apply underline;
     }
   }
+  .navbar-link{
+    @apply text-bunker-300 px-3 py-2 rounded-md text-sm font-medium transition-colors;
+    
+    &:hover,
+    &:focus {
+      @apply bg-bunker-800 text-white;
+    }
+
+    &.active {
+      @apply bg-purple-500/20 text-purple-300 border border-purple-500/30;
+      
+      &:hover,
+      &:focus {
+        @apply bg-purple-500/30 text-purple-200;
+      }
+    }
+  }
+  .btn-new{
+    @apply bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2;
+
+
+    &:hover,
+    &:focus {
+      @apply hover:from-purple-600 hover:to-purple-700 -translate-y-0.5 shadow-lg shadow-purple-500/30 
+    }
+  }
+
+  .btn-icon {
+    @apply text-bunker-300 transition-colors;
+
+    &:hover,
+    &:focus {
+      @apply text-white;
+    }
+  }
 }

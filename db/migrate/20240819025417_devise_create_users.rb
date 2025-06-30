@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# CreateUsers Migration
 class DeviseCreateUsers < ActiveRecord::Migration[7.0]
   def change
     create_table :users do |t|
@@ -37,8 +38,8 @@ class DeviseCreateUsers < ActiveRecord::Migration[7.0]
       # t.datetime :locked_at
 
       # relationships
-      t.references :role, null: false, foreign_key: true
-      t.references :currency, null: true, foreign_key: true
+      t.references :role, null: false, foreign_key: { to_table: :roles, name: 'fk_users_role' }
+      t.references :currency, null: false, foreign_key: { to_table: :roles, name: 'fk_users_currency' }
 
       t.timestamps null: false
     end

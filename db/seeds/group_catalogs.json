@@ -1,0 +1,57 @@
+{
+  "model": "GroupCatalog",
+  "records": [
+    {
+      "name": "Iconos de Presupuesto",
+      "code": "budget_icons",
+      "catalogs": [
+        {
+          "value": "💵",
+          "code": "cash"
+        },
+        {
+          "value": "💳",
+          "code": "credit_card"
+        }
+      ]
+    },
+    {
+      "name": "Colores de Presupuesto",
+      "code": "budget_colors",
+      "catalogs": [
+        {
+          "value": "orange-500",
+          "code": "orange"
+        },
+        {
+          "value": "yellow-500",
+          "code": "yellow"
+        },
+        {
+          "value": "green-500",
+          "code": "green"
+        },
+        {
+          "value": "blue-500",
+          "code": "blue"
+        },
+        {
+          "value": "purple-500",
+          "code": "purple"
+        },
+        {
+          "value": "pink-500",
+          "code": "pink"
+        },
+        {
+          "value": "red-500",
+          "code": "red"
+        },
+        {
+          "value": "emerald-500",
+          "code": "emerald"
+        }
+      ]
+    }
+  ]
+}

@@ -31,14 +31,12 @@ module Seeds
 
         # Encontramos o inicializamos el registro principal
         record = find_or_initialize_record(model_class, attributes)
-
-        # Procesamos las asociaciones
-        process_associations(record, associations)
-
-        # Guardamos el registro
         record.save!
 
         log_progress("#{model_class} creado/actualizado: #{record.try(:name) || record.try(:id)}")
+
+        # Procesamos las asociaciones
+        process_associations(record, associations)
         record
       end
 
@@ -84,6 +82,8 @@ module Seeds
 
       def process_collection_association(record, reflection, association_data)
         associated_records = association_data.map do |data|
+          foreign_key = reflection.klass.foreign_key_for(record.class)
+          data[foreign_key] = record.id
           create_record(reflection.klass, data)
         end
 

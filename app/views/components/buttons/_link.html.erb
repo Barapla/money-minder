@@ -1,8 +1,10 @@
 <%  
-    text = component.text
+    content = component.content
     href = component.href 
     options = component.options || {}
     class_name = options[:class] || "link"
 %>
 
-<%= link_to text, href, class: class_name %>
+<%= link_to href, class: class_name do %>
+    <%= content.html_safe %>
+<% end %>

@@ -8,7 +8,7 @@ class CreateCategories < ActiveRecord::Migration[7.0]
       t.boolean :active, default: true
       t.string :name
       t.text :description
-      t.references :parent_category, foreign_key: { to_table: :categories }, null: true
+      t.references :parent_category, null: true, foreign_key: { to_table: :categories, name: 'fk_categories_parent' }
 
       t.timestamps
     end
