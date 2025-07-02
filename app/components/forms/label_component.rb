@@ -7,12 +7,19 @@ module Forms
 
     def initialize(form:, name:, text: nil, required: false, options: {})
       @name = name
-      @text = text || name.to_s.humanize
+      @text = text
       @required = required
       super(form:, options:)
     end
 
     private
+
+    def label_text
+      return text if text.present?
+
+      # Usar las traducciones de ActiveRecord
+      form.object.class.human_attribute_name(name)
+    end
 
     def label_classes
       'form-label'

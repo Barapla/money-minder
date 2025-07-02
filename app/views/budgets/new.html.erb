@@ -30,44 +30,56 @@
             </div>
 
             <!-- Form -->
-            <%= form_with(model: @budget, html: { class: "px-8 py-6" }) do |form| %>
+            <%= form_with(model: @budget, html: { class: "px-8 py-6", data: { controller: "budgets--preview"} }) do |form| %>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Left Column -->
                     <div class="space-y-6">
                         <!-- Budget Type -->
                         <%= render Forms::SelectComponent.new(
                             name: :budget_type_id,
-                            form: form,
+                            form:,
                             options_collection: budget_type_options,
                             options: { 
-                                prompt: "Selecciona un tipo",
                                 help_text: "Categoría principal del presupuesto",
-                                required: true
+                                required: true,
+                                data: {
+                                    "budgets--preview-target": "budgetType",
+                                    action: "change->budgets--preview#updatePreview"
+                                }
                             }
                         ) %>
 
                         <%= render Forms::InputComponent.new(
                             name: :current_amount,
-                            form: form,
+                            form:,
                             type: :number,
                             options: { 
                                 step: 0.01,
                                 placeholder: "0.00",
                                 prefix: "$",
-                                help_text: "Cantidad ya gastada en este período"
+                                help_text: "Cantidad ya gastada en este período",
+                                required: true,
+                                data: {
+                                    "budgets--preview-target": "current",
+                                    action: "input->budgets--preview#updatePreview"
+                                }
                             }
                         ) %>
 
                         <%= render Forms::InputComponent.new(
                             name: :limit_amount,
-                            form: form,
+                            form:,
                             type: :number,
                             options: { 
                                 step: 0.01,
                                 placeholder: "0.00",
                                 prefix: "$",
                                 help_text: "Cantidad máxima que planeas gastar",
-                                required: true
+                                required: true,
+                                data: {
+                                    "budgets--preview-target": "limit",
+                                    action: "input->budgets--preview#updatePreview"
+                                }
                             }
                         ) %>
                     </div>
@@ -75,32 +87,39 @@
                     <!-- Right Column -->
                     <div class="space-y-6">
                         <!-- Icon Selection -->
-                        <div class="form-group">
-                            <label class="block text-sm font-medium text-bunker-200 mb-2">
-                                Icono
-                            </label>
-                            <div class="grid grid-cols-6 gap-3">
-                                <% Catalog.by_group('budget_icons').each do |catalog| %>
-                                    <button type="button" class="w-12 h-12 bg-bunker-800/60 hover:bg-purple-500/20 border border-bunker-700/50 hover:border-purple-500/50 rounded-xl flex items-center justify-center text-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                        <%= catalog.value %>
-                                    </button>
-                                <% end %>
-                            </div>
-                            <p class="text-xs text-bunker-400 mt-2">Selecciona un icono para identificar tu presupuesto</p>
-                        </div>
+                        <%= render Forms::RadioComponent.new(
+                            name: :icon_id,
+                            form:,
+                            collection: Catalog.by_group('budget_icons'),
+                            options: { 
+                                default_object_label: 'value',
+                                help_text: "Selecciona un icono para identificar tu presupuesto",
+                                collection_options: {
+                                    data: {
+                                        "budgets--preview-target": "icons",
+                                        action: "click->budgets--preview#selectIcon"
+                                    }
+                                }
+                            }
+                        ) %>
 
                         <!-- Color Selection -->
-                        <div class="form-group">
-                            <label class="block text-sm font-medium text-bunker-200 mb-2">
-                                Color
-                            </label>
-                            <div class="grid grid-cols-8 gap-3">
-                                <% Catalog.by_group('budget_colors').each do |catalog| %>
-                                    <button type="button" class="w-10 h-10 bg-<%= catalog.value %> rounded-full border-2 border-transparent hover:border-white focus:outline-none focus:border-white transition-all duration-200"></button>
-                                <% end %>
-                            </div>
-                            <p class="text-xs text-bunker-400 mt-2">Elige un color para personalizar tu presupuesto</p>
-                        </div>
+                        <%= render Forms::RadioComponent.new(
+                            name: :color_id,
+                            form:,
+                            collection: Catalog.by_group('budget_colors'),
+                            options: { 
+                                is_colors: true,
+                                default_object_label: 'value',
+                                help_text: "Elige un color para personalizar tu presupuesto",
+                                collection_options: {
+                                    data: {
+                                        "budgets--preview-target": "colors",
+                                        action: "click->budgets--preview#selectColor"
+                                    }
+                                }
+                            }
+                        ) %>
 
                         <!-- Preview Card -->
                         <div class="form-group">
@@ -109,25 +128,25 @@
                             </label>
                             <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-4">
                                 <div class="flex items-center gap-3 mb-3">
-                                    <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                                        <span class="text-lg">🏠</span>
+                                    <div data-budgets--preview-target="preview" class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                                        <span class="text-lg">💵</span>
                                     </div>
                                     <div>
-                                        <div class="text-sm font-medium text-white">Gastos Fijos</div>
+                                        <div data-budgets--preview-target="previewBudgetType" class="text-sm font-medium text-white">Gastos Fijos</div>
                                         <div class="text-xs text-bunker-400">Nuevo Presupuesto</div>
                                     </div>
                                 </div>
                                 <div class="space-y-2 text-xs">
                                     <div class="flex justify-between">
                                         <span class="text-bunker-300">Gastado</span>
-                                        <span class="text-orange-400">$0.00</span>
+                                        <span data-budgets--preview-target="previewCurrent" class="text-orange-400">$0.00</span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span class="text-bunker-300">Límite</span>
-                                        <span class="text-white">$0.00</span>
+                                        <span data-budgets--preview-target="previewLimit" class="text-white">$0.00</span>
                                     </div>
                                     <div class="bg-bunker-700 rounded-full h-2">
-                                        <div class="bg-purple-400 h-2 rounded-full" style="width: 0%"></div>
+                                        <div data-budgets--preview-target="previewProgressBar" class="bg-purple-400 h-2 rounded-full" style="width: 0%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -165,53 +184,3 @@
         </div>
     </div>
 </div>
-
-<!-- JavaScript para interactividad -->
-<script>
-    // Selección de iconos
-    document.querySelectorAll('[type="button"]').forEach(button => {
-        if (button.textContent.match(/[\u{1F300}-\u{1F6FF}]/u)) {
-            button.addEventListener('click', function() {
-                // Remover selección anterior
-                document.querySelectorAll('[type="button"]').forEach(btn => {
-                    if (btn.textContent.match(/[\u{1F300}-\u{1F6FF}]/u)) {
-                        btn.classList.remove('bg-purple-500/20', 'border-purple-500/50');
-                        btn.classList.add('bg-bunker-800/60', 'border-bunker-700/50');
-                    }
-                });
-                
-                // Agregar selección actual
-                this.classList.remove('bg-bunker-800/60', 'border-bunker-700/50');
-                this.classList.add('bg-purple-500/20', 'border-purple-500/50');
-                
-                // Actualizar preview
-                const previewIcon = document.querySelector('.bg-purple-500\\/20 span');
-                if (previewIcon) {
-                    previewIcon.textContent = this.textContent;
-                }
-            });
-        }
-    });
-
-    // Actualización de preview en tiempo real
-    const limitInput = document.querySelector('input[type="number"]:last-of-type');
-    const currentInput = document.querySelector('input[type="number"]:first-of-type');
-    
-    function updatePreview() {
-        const current = parseFloat(currentInput.value) || 0;
-        const limit = parseFloat(limitInput.value) || 0;
-        const percentage = limit > 0 ? (current / limit) * 100 : 0;
-        
-        // Actualizar valores en preview
-        const previewCurrent = document.querySelector('.text-orange-400');
-        const previewLimit = document.querySelector('.text-white');
-        const progressBar = document.querySelector('.bg-purple-400');
-        
-        if (previewCurrent) previewCurrent.textContent = `$${current.toFixed(2)}`;
-        if (previewLimit) previewLimit.textContent = `$${limit.toFixed(2)}`;
-        if (progressBar) progressBar.style.width = `${Math.min(percentage, 100)}%`;
-    }
-
-    limitInput?.addEventListener('input', updatePreview);
-    currentInput?.addEventListener('input', updatePreview);
-</script>

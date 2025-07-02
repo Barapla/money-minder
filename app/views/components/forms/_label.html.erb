@@ -1,4 +1,4 @@
 <!-- Vista del LabelComponent -->
 <%= component.form.label component.name, class: component.send(:label_classes) do %>
-  <%= component.text %><%= component.send(:required_indicator) %>
+  <%= component.send(:label_text) %><%= component.send(:required_indicator) %>
 <% end %>

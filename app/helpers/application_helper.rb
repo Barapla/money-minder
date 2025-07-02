@@ -2,6 +2,7 @@
 
 # module ApplicationHelper
 module ApplicationHelper
+  include ColorHelper
   def render_svg(name, options = {})
     options[:title] ||= name.underscore.humanize
     options[:aria] = true

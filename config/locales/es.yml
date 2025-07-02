@@ -8,6 +8,12 @@ es:
         email: "Correo Electrónico"
         password: "Contraseña"
         role: "Rol"
+      budget:
+        budget_type_id: "Tipo de Presupuesto"
+        current_amount: "Presupuesto Actual"
+        limit_amount: "Presupuesto Límite"
+        icon_id: "Icono"
+        color_id: "Color"
     models:
       user: "Usuario"
     errors:

@@ -11,5 +11,6 @@ class BudgetsController < ApplicationController
   end
 
   def create
+    raise NotImplementedError, 'This action is not implemented yet.'
   end
 end

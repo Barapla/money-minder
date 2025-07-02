@@ -1,0 +1,47 @@
+<% 
+    name = component.name
+    form = component.form 
+    collection = component.collection
+    options = component.options || {}
+    is_colors = options.delete(:is_colors) || false
+    default_object_value = component.default_object_value
+    default_object_label = component.default_object_label
+    help_text = component.help_text
+    required = component.required
+%>
+
+<div class="form-group">
+    <%= render Forms::LabelComponent.new(form:, name:, required:) %>
+    <div class="grid grid-cols-6 gap-3">
+        <% collection.each do |object| %>
+        <%= button_tag(
+            (is_colors ? "" : object[default_object_label]),
+            type: "button",
+            value: object[default_object_value],
+            class: component.button_classes(object, is_colors),
+            data: {
+                **component.data_collection_options(object, is_colors)
+            }
+        ) %>
+        <% end %>
+    </div>
+
+    <%= form.hidden_field name, value: collection.first[default_object_value] %>
+
+    <% if help_text %>
+        <p class="text-xs text-bunker-400 mt-2"><%= help_text %></p>
+    <% end %>
+</div>
+
+<script>
+    document.querySelectorAll('.form-group button').forEach(button => {
+        button.addEventListener('click', function() {
+            const value = this.value; // Get the value of the clicked button
+            const input = document.querySelector('input[name="<%= form.field_name(name) %>"]');
+            input.value = value; // Set the value of the hidden input
+            // Optionally, you can add a visual feedback for the selected icon
+            document.querySelectorAll('.form-group button').forEach(btn => btn.classList.remove('selected'));
+            this.classList.add('selected');
+        });
+    });
+</script>

@@ -4,5 +4,8 @@
 
 import { application } from "./application"
 
+import Budgets__PreviewController from "./budgets/preview_controller"
+application.register("budgets--preview", Budgets__PreviewController)
+
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
