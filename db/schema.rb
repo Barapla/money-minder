@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_06_30_063214) do
+ActiveRecord::Schema[7.0].define(version: 2025_07_03_001915) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -52,6 +52,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_06_30_063214) do
     t.bigint "icon_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "name", default: "", null: false
     t.index ["budget_type_id"], name: "index_budgets_on_budget_type_id"
     t.index ["color_id"], name: "index_budgets_on_color_id"
     t.index ["icon_id"], name: "index_budgets_on_icon_id"
@@ -168,7 +169,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_06_30_063214) do
     t.datetime "confirmation_sent_at"
     t.string "unconfirmed_email"
     t.bigint "role_id", null: false
-    t.bigint "currency_id"
+    t.bigint "currency_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
@@ -185,14 +186,14 @@ ActiveRecord::Schema[7.0].define(version: 2025_06_30_063214) do
   add_foreign_key "budgets", "catalogs", column: "color_id", name: "fk_budgets_color"
   add_foreign_key "budgets", "catalogs", column: "icon_id", name: "fk_budgets_icon"
   add_foreign_key "catalogs", "group_catalogs", name: "fk_catalogs_group_catalog"
-  add_foreign_key "categories", "categories", column: "parent_category_id"
-  add_foreign_key "recurring_transactions", "categories"
-  add_foreign_key "recurring_transactions", "currencies"
-  add_foreign_key "recurring_transactions", "users"
+  add_foreign_key "categories", "categories", column: "parent_category_id", name: "fk_categories_parent"
+  add_foreign_key "recurring_transactions", "categories", name: "fk_recurring_transactions_category"
+  add_foreign_key "recurring_transactions", "currencies", name: "fk_recurring_transactions_currency"
+  add_foreign_key "recurring_transactions", "users", name: "fk_recurring_transactions_user"
   add_foreign_key "transactions", "budgets", name: "fk_transactions_budget"
-  add_foreign_key "transactions", "categories"
-  add_foreign_key "transactions", "currencies"
-  add_foreign_key "transactions", "users"
-  add_foreign_key "users", "currencies"
-  add_foreign_key "users", "roles"
+  add_foreign_key "transactions", "categories", name: "fk_transactions_category"
+  add_foreign_key "transactions", "currencies", name: "fk_transactions_currency"
+  add_foreign_key "transactions", "users", name: "fk_transactions_user"
+  add_foreign_key "users", "roles", column: "currency_id", name: "fk_users_currency"
+  add_foreign_key "users", "roles", name: "fk_users_role"
 end

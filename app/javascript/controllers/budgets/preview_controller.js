@@ -3,8 +3,9 @@ import { Controller } from "@hotwired/stimulus"
 // Connects to data-controller="budgets--preview"
 export default class extends Controller {
 
-  static targets = ["icons", "colors", "preview", "current", "limit", "budgetType",
-                      "previewCurrent", "previewLimit", "previewProgressBar", "previewBudgetType" ]
+  static targets = [ "name", "budgetType", "current", "limit", "icons", "colors",
+                     "preview", "previewName", "previewCurrent", "previewLimit", 
+                     "previewProgressBar", "previewBudgetType" ]
 
   connect() {
     console.log("Budgets Preview Controller connected");
@@ -54,6 +55,7 @@ export default class extends Controller {
     const limit = parseFloat(this.limitTarget.value) || 0;
     const percentage = limit > 0 ? (current / limit) * 100 : 0;
     
+    this.previewNameTarget.textContent = this.nameTarget.value || "Nuevo Presupuesto";
     this.previewBudgetTypeTarget.textContent = this.budgetTypeTarget.selectedOptions[0].textContent;
     this.previewCurrentTarget.textContent = `$${current.toFixed(2)}`;
     this.previewLimitTarget.textContent = `$${limit.toFixed(2)}`;

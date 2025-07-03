@@ -9,8 +9,9 @@ es:
         password: "Contraseña"
         role: "Rol"
       budget:
+        name: "Nombre del Presupuesto"
         budget_type_id: "Tipo de Presupuesto"
-        current_amount: "Presupuesto Actual"
+        current_amount: "Presupuesto Gastado"
         limit_amount: "Presupuesto Límite"
         icon_id: "Icono"
         color_id: "Color"

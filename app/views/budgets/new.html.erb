@@ -30,15 +30,35 @@
             </div>
 
             <!-- Form -->
-            <%= form_with(model: @budget, html: { class: "px-8 py-6", data: { controller: "budgets--preview"} }) do |form| %>
+            <%= form_with(model: @budget, local: true, html: { class: "px-8 py-6", 
+                data: { controller: "budgets--preview form-validator", 
+                    form_validator_validate_on_blur_value: true,
+                    form_validator_validate_on_input_value: false} }) do |form| %>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Left Column -->
                     <div class="space-y-6">
+                        
+                        <%= render Forms::InputComponent.new(
+                            name: :name,
+                            form:,
+                            type: :text,
+                            options: { 
+                                placeholder: "Nuevo Presupuesto",
+                                help_text: "Nombre descriptivo del presupuesto",
+                                required: true,
+                                data: {
+                                    "budgets--preview-target": "name",
+                                    action: "input->budgets--preview#updatePreview",
+                                    required_message: "Por favor, ingresa un nombre para el presupuesto",
+                                }
+                            }
+                        ) %>
+                        
                         <!-- Budget Type -->
                         <%= render Forms::SelectComponent.new(
                             name: :budget_type_id,
                             form:,
-                            options_collection: budget_type_options,
+                            options_collection: Catalog.get_by_group_pluck('budget_types'),
                             options: { 
                                 help_text: "Categoría principal del presupuesto",
                                 required: true,
@@ -61,7 +81,8 @@
                                 required: true,
                                 data: {
                                     "budgets--preview-target": "current",
-                                    action: "input->budgets--preview#updatePreview"
+                                    action: "input->budgets--preview#updatePreview",
+                                    required_message: "Por favor, ingresa la cantidad ya gastada"
                                 }
                             }
                         ) %>
@@ -78,7 +99,8 @@
                                 required: true,
                                 data: {
                                     "budgets--preview-target": "limit",
-                                    action: "input->budgets--preview#updatePreview"
+                                    action: "input->budgets--preview#updatePreview",
+                                    required_message: "Por favor, ingresa el límite del presupuesto"
                                 }
                             }
                         ) %>
@@ -132,8 +154,8 @@
                                         <span class="text-lg">💵</span>
                                     </div>
                                     <div>
-                                        <div data-budgets--preview-target="previewBudgetType" class="text-sm font-medium text-white">Gastos Fijos</div>
-                                        <div class="text-xs text-bunker-400">Nuevo Presupuesto</div>
+                                        <div data-budgets--preview-target="previewBudgetType" class="text-sm font-medium text-white">Efectivo</div>
+                                        <div data-budgets--preview-target="previewName" class="text-xs text-bunker-400">Nuevo Presupuesto</div>
                                     </div>
                                 </div>
                                 <div class="space-y-2 text-xs">
@@ -156,13 +178,16 @@
 
                 <!-- Form Actions -->
                 <div class="flex items-center justify-between pt-8 mt-8 border-t border-bunker-800/50">
-                    <a href="#" class="px-6 py-3 text-bunker-300 hover:text-white border border-bunker-700/50 hover:border-bunker-600/50 rounded-xl font-medium transition-all duration-200 flex items-center gap-2">
+                    <%= render Buttons::LinkComponent.new(content: '
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                         Cancelar
-                    </a>
-                    
+                        ', href: budgets_path, 
+                        options: { 
+                            class: "btn-cancel" 
+                        })
+                    %>
                     <div class="flex gap-3">
                         <button type="button" class="px-6 py-3 text-white border border-purple-500/50 hover:bg-purple-500/10 rounded-xl font-medium transition-all duration-200 flex items-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

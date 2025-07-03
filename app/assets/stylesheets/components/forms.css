@@ -7,7 +7,7 @@
 }
 
 .form-control {
-    @apply w-full py-3 bg-bunker-800/60 border border-bunker-700/50 rounded-xl text-white
+    @apply w-full py-3 px-4 bg-bunker-800/60 border border-bunker-700/50 rounded-xl text-white
            placeholder-bunker-400 transition-all duration-200;
 
     &:hover,
@@ -18,7 +18,7 @@
     &[type="select"],
     &.select,
     select& {
-        @apply appearance-none cursor-pointer pl-4 pr-10;
+        @apply appearance-none cursor-pointer pr-10;
         
         option {
             @apply bg-bunker-800 text-white;
@@ -73,4 +73,79 @@
         @apply outline-none ring-2 ring-white/30;
         filter: brightness(0.8) saturate(1.2);
     }
+}
+
+/* Estados de error para form-control */
+.form-control-error {
+    @apply border-red-500/70 text-red-100 placeholder-red-300/70;
+    
+    &:hover,
+    &:focus {
+        @apply outline-none ring-2 ring-red-500 border-red-500;
+    }
+}
+
+/* Grupo de campo con error */
+.form-group.has-error {
+    .form-label {
+        @apply text-red-300;
+    }
+}
+
+/* Contenedor de mensajes de error */
+.error-message {
+    @apply mt-2 transition-all duration-200 ease-in-out;
+}
+
+.error-message:not(.hidden) {
+    @apply animate-fade-in;
+}
+
+.error-message p {
+    @apply text-xs text-red-300 flex items-center bg-red-900/20 border border-red-500/30 rounded-lg px-3 py-2;
+}
+
+.error-message svg {
+    @apply w-3 h-3 mr-2 flex-shrink-0 text-red-400;
+}
+
+/* Help text */
+.help-text {
+    @apply text-xs text-bunker-400 mt-1;
+}
+
+/* Animación personalizada */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.2s ease-out;
+}
+
+/* Estados mejorados para mejor UX */
+.form-control:not(.form-control-error):hover {
+    @apply border-bunker-600/70;
+}
+
+.form-control:not(.form-control-error):focus {
+    @apply shadow-lg shadow-purple-500/10;
+}
+
+.form-control-error:focus {
+    @apply shadow-lg shadow-red-500/20;
+}
+
+/* Iconos y elementos auxiliares en estado de error */
+.form-group.has-error [data-field-icon],
+.form-group.has-error [data-field-prefix],
+.form-group.has-error [data-field-suffix] {
+    @apply text-red-400;
 }

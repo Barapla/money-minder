@@ -7,5 +7,8 @@ import { application } from "./application"
 import Budgets__PreviewController from "./budgets/preview_controller"
 application.register("budgets--preview", Budgets__PreviewController)
 
+import FormValidatorController from "./form_validator_controller"
+application.register("form-validator", FormValidatorController)
+
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)

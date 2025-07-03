@@ -30,5 +30,9 @@ module Forms
     def wrapper_classes
       icon || prefix || suffix ? 'relative' : ''
     end
+
+    def error_classes
+      'form-control-error border-red-500 focus:border-red-500 focus:ring-red-500'
+    end
   end
 end

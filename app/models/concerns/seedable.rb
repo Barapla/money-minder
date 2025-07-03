@@ -8,7 +8,7 @@ module Seedable
   class_methods do
     def seed_unique_keys
       # Sobreescribe esto en el modelo si necesitas keys específicas
-      [:name]
+      %i[name code]
     end
   end
 end

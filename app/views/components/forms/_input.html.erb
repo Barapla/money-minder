@@ -7,37 +7,61 @@
     prefix = component.prefix
     suffix = component.suffix
     help_text = component.help_text
-    required = component.required %>
+    required = component.required 
+    
+    # Generar ID único para el campo
+    field_id = "#{form.object_name}_#{name}"
+%>
 
 <div class="form-group">
     <%= render Forms::LabelComponent.new(form:, name:, required:) %>
     
     <div class="<%= component.send(:wrapper_classes) %>">
         <% if icon %>
-            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-bunker-400">
+            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-bunker-400 pointer-events-none z-10" 
+                 data-field-icon>
                 <%= icon.html_safe %>
             </div>
         <% end %>
         
         <% if prefix %>
-            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-bunker-400 font-medium">
+            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-bunker-400 font-medium pointer-events-none z-10" 
+                  data-field-prefix>
                 <%= prefix %>
             </span>
         <% end %>
         
         <%= form.send("#{type}_field", name, 
             class: component.send(:input_classes),
-            placeholder: placeholder,
-            **options) %>
+            placeholder:,
+            id: field_id,
+            required:,
+            data: { 
+              form_validator_target: "field",
+              **options.fetch(:data, {})
+            },
+            **options.except(:data)) %>
         
         <% if suffix %>
-            <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-bunker-400 font-medium">
+            <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-bunker-400 font-medium pointer-events-none z-10" 
+                  data-field-suffix>
                 <%= suffix %>
             </span>
         <% end %>
     </div>
     
+    <!-- Contenedor para mensajes de error -->
+    <div class="error-message hidden" data-error-container>
+        <p>
+            <svg fill="currentColor" viewBox="0 0 20 20" class="w-3 h-3 mr-2 flex-shrink-0">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            <span data-error-text></span>
+        </p>
+    </div>
+    
+    <!-- Help text -->
     <% if help_text %>
-        <p class="text-xs text-bunker-400 mt-1"><%= help_text %></p>
+        <p class="help-text" data-help-text><%= help_text %></p>
     <% end %>
 </div>

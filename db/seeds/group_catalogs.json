@@ -52,6 +52,20 @@
           "code": "emerald"
         }
       ]
+    },
+    {
+      "name": "Tipos de Presupuesto",
+      "code": "budget_types",
+      "catalogs": [
+        {
+          "value": "Tarjeta de crédito",
+          "code": "credit_card"
+        },
+        {
+          "value": "Efectivo",
+          "code": "cash"
+        }
+      ]
     }
   ]
 }

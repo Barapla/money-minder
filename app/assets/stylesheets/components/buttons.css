@@ -1,9 +1,11 @@
 @layer components {
+  /* Base button - fundamentos compartidos */
   .btn {
-    @apply inline-flex text-sm font-semibold text-center px-4 py-0 rounded-md no-underline items-center justify-between shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2;
-
+    @apply inline-flex items-center justify-center gap-2 px-4 py-0 text-sm font-semibold text-center 
+           rounded-md no-underline shadow-sm transition-all duration-200 ease-out
+           focus:outline-none focus:ring-2 focus:ring-offset-2;
+    
     height: 40px;
-    transition: ease 0.3s background, ease 0.3s transform, ease 0.2s color;
 
     &:hover,
     &:focus {
@@ -11,62 +13,102 @@
     }
 
     &:disabled {
-      @apply opacity-75 cursor-not-allowed;
+      @apply opacity-50 cursor-not-allowed pointer-events-none;
     }
   }
 
+  /* Modificadores de tamaño y layout */
   .btn-full {
-    @apply text-base justify-center w-full;
+    @apply w-full text-base;
   }
 
+  /* Estilos de color - Primary */
   .btn-primary {
     @apply bg-blue-600 text-white focus:ring-blue-500;
 
-    &:hover,
-    &:focus {
-      @apply bg-blue-500 text-white;
+    &:hover:not(:disabled),
+    &:focus:not(:disabled) {
+      @apply bg-blue-500;
     }
 
     &.btn-outline {
       @apply bg-transparent border border-blue-500 text-blue-500 shadow-none;
 
-      &:hover,
-      &:focus {
-        @apply bg-blue-500 text-white;
+      &:hover:not(:disabled),
+      &:focus:not(:disabled) {
+        @apply bg-blue-500 text-white border-blue-500;
       }
     }
   }
 
+  /* Estilos de color - Bunker */
   .btn-bunker {
     @apply bg-bunker-950 text-white focus:ring-bunker-800;
 
-    &:hover,
-    &:focus {
-      @apply bg-bunker-800 text-white;
+    &:hover:not(:disabled),
+    &:focus:not(:disabled) {
+      @apply bg-bunker-800;
     }
 
     &.btn-outline {
       @apply bg-transparent border border-bunker-800 text-bunker-800 shadow-none;
 
-      &:hover,
-      &:focus {
-        @apply bg-bunker-800 text-white;
+      &:hover:not(:disabled),
+      &:focus:not(:disabled) {
+        @apply bg-bunker-800 text-white border-bunker-800;
       }
     }
   }
+
+  /* Botones especiales con estilos únicos */
+  .btn-new {
+    @apply bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 
+           rounded-xl font-semibold transition-all duration-200 flex items-center gap-2
+           focus:ring-purple-500;
+
+    &:hover:not(:disabled),
+    &:focus:not(:disabled) {
+      @apply from-purple-600 to-purple-700 -translate-y-0.5 shadow-lg shadow-purple-500/30;
+    }
+  }
+
+  .btn-cancel {
+    @apply px-6 py-3 text-bunker-300 border border-bunker-700/50 rounded-xl 
+           font-medium transition-all duration-200 flex items-center gap-2
+           focus:ring-bunker-600;
+
+    &:hover:not(:disabled),
+    &:focus:not(:disabled) {
+      @apply text-white bg-bunker-700/50 border-bunker-600/50;
+    }
+  }
+
+  .btn-icon {
+    @apply text-bunker-300 transition-colors duration-200 p-2 rounded-md
+           focus:ring-bunker-600;
+
+    &:hover:not(:disabled),
+    &:focus:not(:disabled) {
+      @apply text-white bg-bunker-800/50;
+    }
+  }
+
+  /* Links y navegación */
   .link {
-    @apply text-blue-600 hover:text-blue-500 focus:ring-blue-500 mt-2;
+    @apply text-blue-600 transition-colors duration-200 focus:ring-blue-500;
 
     &:hover,
     &:focus {
-      @apply underline;
+      @apply text-blue-500 underline;
     }
   }
-  .navbar-link{
-    @apply text-bunker-300 px-3 py-2 rounded-md text-sm font-medium transition-colors;
+
+  .navbar-link {
+    @apply text-bunker-300 px-3 py-2 rounded-md text-sm font-medium 
+           transition-all duration-200 focus:ring-purple-500;
     
-    &:hover,
-    &:focus {
+    &:hover:not(.active),
+    &:focus:not(.active) {
       @apply bg-bunker-800 text-white;
     }
 
@@ -75,26 +117,8 @@
       
       &:hover,
       &:focus {
-        @apply bg-purple-500/30 text-purple-200;
+        @apply bg-purple-500/30 text-purple-200 border-purple-500/40;
       }
-    }
-  }
-  .btn-new{
-    @apply bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2;
-
-
-    &:hover,
-    &:focus {
-      @apply hover:from-purple-600 hover:to-purple-700 -translate-y-0.5 shadow-lg shadow-purple-500/30 
-    }
-  }
-
-  .btn-icon {
-    @apply text-bunker-300 transition-colors;
-
-    &:hover,
-    &:focus {
-      @apply text-white;
     }
   }
 }

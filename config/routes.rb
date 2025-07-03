@@ -10,7 +10,7 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
 
-  resources :budgets, only: %i[index new create]
+  resources :budgets
 
   root 'home#index'
 end
