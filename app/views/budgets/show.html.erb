@@ -86,7 +86,7 @@
                 </div>
                 <span class="text-xs text-bunker-400 font-medium">DÍAS RESTANTES</span>
             </div>
-            <div class="text-3xl font-bold text-blue-400 mb-1">18</div>
+            <div class="text-3xl font-bold text-blue-400 mb-1"><%= (@budget.payday.to_date - Time.now.to_date).to_i %></div>
             <div class="text-sm text-bunker-300">este mes</div>
         </div>
     </div>
@@ -115,15 +115,15 @@
                 <div class="mb-6">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-sm text-bunker-300">Progreso actual</span>
-                        <span class="text-lg font-semibold text-white">72.9%</span>
+                        <span class="text-lg font-semibold text-white"><%= @budget.budget_percentage %>%</span>
                     </div>
                     <div class="bg-bunker-800/60 rounded-full h-4 mb-4">
-                        <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-4 rounded-full transition-all duration-500" style="width: 72.9%"></div>
+                        <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-4 rounded-full transition-all duration-500" style="width: <%= @budget.budget_percentage %>%"></div>
                     </div>
                     <div class="flex justify-between text-sm text-bunker-400">
                         <span>$0</span>
-                        <span>$6,000</span>
-                        <span>$12,000</span>
+                        <span><%= number_to_currency(@budget.limit_amount/2) %></span>
+                        <span><%= @budget_presenter.limit_amount %></span>
                     </div>
                 </div>
 
@@ -257,7 +257,7 @@
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
                         <span class="text-bunker-300">Tipo:</span>
-                        <span class="text-white font-medium">Gastos Fijos</span>
+                        <span class="text-white font-medium"><%= @budget_presenter.budget_type %></span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-bunker-300">Periodo:</span>
@@ -265,12 +265,12 @@
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-bunker-300">Creado:</span>
-                        <span class="text-white font-medium">1 Dic 2024</span>
+                        <span class="text-white font-medium"><%= @budget_presenter.created_at %></span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-bunker-300">Estado:</span>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400">
-                            Activo
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= color_bg_class(@budget.budget_color, 40) %> <%= color_text_class(@budget.budget_color, 400) %>">
+                            <%= @budget_presenter.status %>
                         </span>
                     </div>
                 </div>

@@ -17,6 +17,12 @@ export default class extends Controller {
         document.removeEventListener('click', this.closeOnOutsideClick.bind(this));
     }
 
+    // Función helper para crear fechas sin problemas de zona horaria
+    createLocalDate(dateString) {
+        const [year, month, day] = dateString.split('-').map(Number);
+        return new Date(year, month - 1, day);
+    }
+
     toggle(event) {
         event.stopPropagation();
         this.calendarTarget.classList.toggle('hidden');
@@ -44,7 +50,9 @@ export default class extends Controller {
 
     selectDate(event) {
         const dateStr = event.target.dataset.date;
-        this.selectedDate = new Date(dateStr);
+        this.selectedDate = this.createLocalDate(dateStr); // Usar la función helper
+
+        console.log(`Selected date: ${this.selectedDate}`);
         
         // Update displays
         this.inputTarget.value = this.formatDisplayDate(this.selectedDate);
@@ -59,11 +67,12 @@ export default class extends Controller {
 
     today() {
         const today = new Date();
-        this.currentDate = new Date(today);
-        this.selectedDate = today;
+        // Crear fecha sin hora para evitar problemas de zona horaria
+        this.currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        this.selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         
-        this.inputTarget.value = this.formatDisplayDate(today);
-        this.hiddenTarget.value = this.formatInputDate(today);
+        this.inputTarget.value = this.formatDisplayDate(this.selectedDate);
+        this.hiddenTarget.value = this.formatInputDate(this.selectedDate);
         
         this.updateCalendar();
         this.calendarTarget.classList.add('hidden');

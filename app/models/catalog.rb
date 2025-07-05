@@ -4,9 +4,20 @@
 class Catalog < ApplicationRecord
   belongs_to :group_catalog
 
-  has_many :budgets, dependent: :nullify, foreign_key: 'budget_type_id'
-  has_many :budgets, dependent: :nullify, foreign_key: 'color_id'
-  has_many :budgets, dependent: :nullify, foreign_key: 'icon_id'
+  has_many :budgets_as_type,
+           class_name: 'Budget',
+           dependent: :nullify,
+           foreign_key: 'budget_type_id'
+
+  has_many :budgets_as_color,
+           class_name: 'Budget',
+           dependent: :nullify,
+           foreign_key: 'color_id'
+
+  has_many :budgets_as_icon,
+           class_name: 'Budget',
+           dependent: :nullify,
+           foreign_key: 'icon_id'
 
   scope :by_group, lambda { |group_name, excepts = []|
     joins(:group_catalog)

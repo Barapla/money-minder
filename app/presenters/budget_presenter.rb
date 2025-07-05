@@ -34,7 +34,15 @@ class BudgetPresenter < ApplicationPresenter
     number_to_currency(available_amount, unit: '$')
   end
 
+  def status
+    @resource.budget_status
+  end
+
   def budget_percentage
     "#{@resource.budget_percentage}%"
+  end
+
+  def created_at
+    @resource.created_at.strftime('%d %b %Y')
   end
 end

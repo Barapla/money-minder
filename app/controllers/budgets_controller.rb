@@ -32,6 +32,12 @@ class BudgetsController < ApplicationController
   end
 
   def update
+    if @budget.update(budget_params)
+      redirect_to budgets_path, notice: 'Presupuesto actualizado exitosamente.'
+    else
+      flash.now[:alert] = 'Error al actualizar el presupuesto. Por favor, revisa los datos ingresados.'
+      render :edit
+    end
   end
 
   def destroy
