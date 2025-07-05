@@ -2,11 +2,16 @@
 
 # BudgetsController handles the display of budgets.
 class BudgetsController < ApplicationController
+  before_action :set_budget, only: %i[show edit update destroy]
+
+  # GET /budgets
+  # GET /budgets.json
   def index
     @budgets = Budget.all
   end
 
   def show
+    @budget_presenter = BudgetPresenter.new(@budget)
   end
 
   def new
@@ -35,6 +40,13 @@ class BudgetsController < ApplicationController
   private
 
   def budget_params
-    params.require(:budget).permit(:name, :budget_type_id, :current_amount, :limit_amount, :icon_id, :color_id)
+    params.require(:budget).permit(:name, :budget_type_id, :current_amount, :limit_amount, :debt_amount,
+                                   :payday, :cutting_day, :icon_id, :color_id, :user_id)
+  end
+
+  def set_budget
+    @budget = Budget.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    redirect_to budgets_path, alert: 'Presupuesto no encontrado.'
   end
 end

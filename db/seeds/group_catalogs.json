@@ -12,6 +12,10 @@
         {
           "value": "💳",
           "code": "credit_card"
+        },
+        {
+          "value": "💷",
+          "code": "debit_card"
         }
       ]
     },
@@ -64,6 +68,10 @@
         {
           "value": "Efectivo",
           "code": "cash"
+        },
+        {
+          "value": "Tarjeta de débito",
+          "code": "debit_card"
         }
       ]
     }

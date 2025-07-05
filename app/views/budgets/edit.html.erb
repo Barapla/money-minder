@@ -1,0 +1,141 @@
+<div class="max-w-md mx-auto">
+    <!-- Date Picker Component -->
+    <div class="form-group" data-controller="date-picker">
+        <label class="block text-sm font-medium text-bunker-200 mb-2">
+            Fecha de transacción
+        </label>
+        
+        <!-- Input Field -->
+        <div class="relative">
+            <input type="text" 
+                    data-date-picker-target="input"
+                    data-action="click->date-picker#toggle focus->date-picker#toggle"
+                    class="form-control pr-10 cursor-pointer"
+                    placeholder="Selecciona una fecha"
+                    readonly>
+            
+            <button type="button" 
+                    data-action="click->date-picker#toggle"
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-bunker-400 hover:text-purple-400 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+            </button>
+            
+            <!-- Hidden input for form submission -->
+            <input type="hidden" 
+                    name="transaction_date" 
+                    data-date-picker-target="hidden">
+        </div>
+        
+        <!-- Calendar Dropdown -->
+        <div data-date-picker-target="calendar" 
+                class="absolute z-50 mt-2 bg-bunker-900/95 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 shadow-xl hidden">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-4">
+                <button type="button" 
+                        data-action="click->date-picker#previousMonth"
+                        class="p-2 hover:bg-bunker-800/50 rounded-lg transition-colors">
+                    <svg class="w-4 h-4 text-bunker-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                
+                <div class="text-white font-semibold" data-date-picker-target="monthYear">
+                    Diciembre 2024
+                </div>
+                
+                <button type="button" 
+                        data-action="click->date-picker#nextMonth"
+                        class="p-2 hover:bg-bunker-800/50 rounded-lg transition-colors">
+                    <svg class="w-4 h-4 text-bunker-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Days of week -->
+            <div class="grid grid-cols-7 gap-1 mb-2">
+                <div class="text-xs text-bunker-400 text-center py-2 font-medium">Dom</div>
+                <div class="text-xs text-bunker-400 text-center py-2 font-medium">Lun</div>
+                <div class="text-xs text-bunker-400 text-center py-2 font-medium">Mar</div>
+                <div class="text-xs text-bunker-400 text-center py-2 font-medium">Mié</div>
+                <div class="text-xs text-bunker-400 text-center py-2 font-medium">Jue</div>
+                <div class="text-xs text-bunker-400 text-center py-2 font-medium">Vie</div>
+                <div class="text-xs text-bunker-400 text-center py-2 font-medium">Sáb</div>
+            </div>
+            
+            <!-- Calendar Grid -->
+            <div class="grid grid-cols-7 gap-1" data-date-picker-target="daysGrid">
+                <!-- Los días se generan dinámicamente -->
+                <!-- Ejemplo de días -->
+                <button type="button" class="text-bunker-500 text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors">29</button>
+                <button type="button" class="text-bunker-500 text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors">30</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-01">1</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-02">2</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-03">3</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-04">4</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-05">5</button>
+                
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-06">6</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-07">7</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-08">8</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-09">9</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-10">10</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-11">11</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-12">12</button>
+                
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-13">13</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-14">14</button>
+                <button type="button" class="bg-purple-500 text-white text-sm p-2 rounded-lg font-semibold">15</button> <!-- Día actual -->
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-16">16</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-17">17</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-18">18</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-19">19</button>
+                
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-20">20</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-21">21</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-22">22</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-23">23</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-24">24</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-25">25</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-26">26</button>
+                
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-27">27</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-28">28</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-29">29</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-30">30</button>
+                <button type="button" class="text-white text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors" data-action="click->date-picker#selectDate" data-date="2024-12-31">31</button>
+                <button type="button" class="text-bunker-500 text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors">1</button>
+                <button type="button" class="text-bunker-500 text-sm p-2 hover:bg-bunker-800/50 rounded-lg transition-colors">2</button>
+            </div>
+            
+            <!-- Footer -->
+            <div class="flex justify-between items-center mt-4 pt-4 border-t border-bunker-800/50">
+                <button type="button" 
+                        data-action="click->date-picker#today"
+                        class="text-sm text-purple-400 hover:text-purple-300 font-medium">
+                    Hoy
+                </button>
+                <button type="button" 
+                        data-action="click->date-picker#clear"
+                        class="text-sm text-bunker-400 hover:text-white">
+                    Limpiar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        @apply w-full py-3 px-4 bg-bunker-800/60 border border-bunker-700/50 rounded-xl text-white
+                placeholder-bunker-400 transition-all duration-200;
+    }
+
+    .form-control:hover,
+    .form-control:focus {
+        @apply outline-none ring-2 ring-purple-500 border-purple-500;
+    }
+</style>

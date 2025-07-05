@@ -44,12 +44,12 @@ module ProgressColorIndicator
     def progress_percentage(current, limit)
       return 0 if limit.nil? || limit.zero?
 
-      (current.to_f / limit * 100).round(0)
+      (current.to_f / limit * 100).round(2)
     end
 
     # Método para obtener el status
     def progress_status(current, limit)
-      return :safe if limit.nil? || limit.zero?
+      return MESSAGES[:safe] if limit.nil? || limit.zero?
 
       percentage = current.to_f / limit
       status = determine_progress_status(percentage)

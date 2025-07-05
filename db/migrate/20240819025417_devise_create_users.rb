@@ -39,7 +39,7 @@ class DeviseCreateUsers < ActiveRecord::Migration[7.0]
 
       # relationships
       t.references :role, null: false, foreign_key: { to_table: :roles, name: 'fk_users_role' }
-      t.references :currency, null: false, foreign_key: { to_table: :roles, name: 'fk_users_currency' }
+      t.references :currency, null: true, foreign_key: { to_table: :roles, name: 'fk_users_currency' }
 
       t.timestamps null: false
     end

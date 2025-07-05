@@ -12,6 +12,7 @@ class User < ApplicationRecord
   belongs_to :role
   belongs_to :currency, optional: true
 
+  has_many :budgets, dependent: :destroy
   has_many :transactions, dependent: :destroy
   has_many :recurring_transactions, dependent: :destroy
 
@@ -20,15 +21,33 @@ class User < ApplicationRecord
   before_validation :split_name, if: -> { name.present? }
 
   after_initialize :set_default_role
+  after_create :create_personal_budget
 
   def self.seed_unique_keys
     [:email]
+  end
+
+  def personal_budget
+    budgets.find_by(personal: true)
   end
 
   private
 
   def set_default_role
     self.role ||= Role.find_by(name: 'user')
+  end
+
+  def create_personal_budget
+    return if personal_budget.present?
+
+    Budget.create!(
+      name: "Efectivo de #{first_name}",
+      budget_type: Catalog.by_group('budget_types').find_by(code: 'cash'),
+      icon: Catalog.by_group('budget_icons').find_by(code: 'cash'),
+      color: Catalog.by_group('budget_colors').find_by(code: 'purple'),
+      personal: true,
+      user: self
+    )
   end
 
   def split_name

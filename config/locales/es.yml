@@ -9,12 +9,14 @@ es:
         password: "Contraseña"
         role: "Rol"
       budget:
-        name: "Nombre del Presupuesto"
-        budget_type_id: "Tipo de Presupuesto"
-        current_amount: "Presupuesto Gastado"
-        limit_amount: "Presupuesto Límite"
+        name: "Nombre del presupuesto"
+        budget_type_id: "Tipo de presupuesto"
+        current_amount: "Presupuesto gastado"
+        limit_amount: "Presupuesto límite"
         icon_id: "Icono"
         color_id: "Color"
+        payday: "Siguiente día de pago"
+        cutting_day: "Siguiente día de corte"
     models:
       user: "Usuario"
     errors:

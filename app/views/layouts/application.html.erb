@@ -12,6 +12,8 @@
 
   <body class="h-full bg-gradient-to-br from-bunker-950 via-bunker-900 to-purple-900">
     <%= render "shared/navbar" %>
-    <%= yield %>
+    <div class="min-h-screen p-4 sm:p-6 lg:p-8">
+      <%= yield %>
+    </div>
   </body>
 </html>

@@ -58,7 +58,7 @@ module Seeds
       def find_or_initialize_record(model_class, attributes)
         # Determinamos qué atributos usar para buscar registros existentes
         unique_keys = model_class.try(:seed_unique_keys) || %i[name code key email id]
-        search_attributes = attributes.slice(*unique_keys.map(&:to_s))
+        search_attributes = attributes.stringify_keys.slice(*unique_keys.map(&:to_s))
 
         puts "Buscando o inicializando #{model_class} con atributos: #{search_attributes.inspect}"
         puts "Atributos completos: #{attributes.inspect}"

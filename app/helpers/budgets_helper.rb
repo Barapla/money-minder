@@ -24,16 +24,23 @@ module BudgetsHelper
         { value: budget_presenter.limit_amount },
         { value: budget_presenter.available_amount,
           div_color: budget.budget_color },
-        { type: 'progress_bar', value: budget.budget_percentage,
+        { type: 'progress_bar', value: budget_presenter.budget_percentage,
           div_color: budget.budget_color },
         { type: 'status', value: budget.budget_status, color: budget.budget_color },
         {
           type: 'actions',
           actions: [
-            { name: 'Ver', icon: 'eye', path: budget_path(budget) },
-            { name: 'Editar', icon: 'edit', path: edit_budget_path(budget) },
-            { name: 'Eliminar', icon: 'trash', path: budget_path(budget), method: :delete,
-              data: { confirm: '¿Estás seguro de que deseas eliminar este presupuesto?' } }
+            { name: 'Ver', icon: 'eye', path: budget_path(budget),
+              options: { class: 'hover:text-white' } },
+            { name: 'Editar', icon: 'edit', path: edit_budget_path(budget),
+              options: { class: 'hover:text-purple-400' } },
+            {
+              name: 'Eliminar', icon: 'trash', path: budget_path(budget),
+              options: {
+                class: 'hover:text-red-400', method: :delete,
+                data: { confirm: '¿Estás seguro de que deseas eliminar este presupuesto?' }
+              }
+            }
           ]
         }
       ]

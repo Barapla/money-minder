@@ -20,7 +20,7 @@ module Forms
     private
 
     def input_classes
-      classes = ['form-control']
+      classes = ['form-control'] if type
       classes << 'has-icon-left' if icon
       classes << 'has-prefix' if prefix
       classes << 'has-suffix' if suffix

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_07_03_001915) do
+ActiveRecord::Schema[7.0].define(version: 2025_07_04_073107) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -45,17 +45,23 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_03_001915) do
   create_table "budgets", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
-    t.decimal "current_amount"
-    t.decimal "limit_amount"
+    t.decimal "current_amount", precision: 10, scale: 2, default: "0.0"
+    t.decimal "limit_amount", precision: 10, scale: 2, default: "0.0"
     t.bigint "budget_type_id", null: false
     t.bigint "color_id", null: false
     t.bigint "icon_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "name", default: "", null: false
+    t.decimal "debt_amount", precision: 10, scale: 2, default: "0.0"
+    t.date "payday"
+    t.date "cutting_day"
+    t.boolean "personal", default: false
+    t.bigint "user_id", null: false
     t.index ["budget_type_id"], name: "index_budgets_on_budget_type_id"
     t.index ["color_id"], name: "index_budgets_on_color_id"
     t.index ["icon_id"], name: "index_budgets_on_icon_id"
+    t.index ["user_id"], name: "index_budgets_on_user_id"
     t.index ["uuid"], name: "index_budgets_on_uuid", unique: true
   end
 
@@ -169,7 +175,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_03_001915) do
     t.datetime "confirmation_sent_at"
     t.string "unconfirmed_email"
     t.bigint "role_id", null: false
-    t.bigint "currency_id", null: false
+    t.bigint "currency_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
@@ -185,6 +191,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_03_001915) do
   add_foreign_key "budgets", "catalogs", column: "budget_type_id", name: "fk_budgets_budget_type"
   add_foreign_key "budgets", "catalogs", column: "color_id", name: "fk_budgets_color"
   add_foreign_key "budgets", "catalogs", column: "icon_id", name: "fk_budgets_icon"
+  add_foreign_key "budgets", "users", name: "fk_budgets_user"
   add_foreign_key "catalogs", "group_catalogs", name: "fk_catalogs_group_catalog"
   add_foreign_key "categories", "categories", column: "parent_category_id", name: "fk_categories_parent"
   add_foreign_key "recurring_transactions", "categories", name: "fk_recurring_transactions_category"
