@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_07_06_080731) do
+ActiveRecord::Schema[7.0].define(version: 2025_07_07_064627) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -151,6 +151,37 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_06_080731) do
     t.index ["uuid"], name: "index_roles_on_uuid", unique: true
   end
 
+  create_table "savings_funds", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.decimal "goal_amount"
+    t.date "target_date"
+    t.decimal "monthly_contribution"
+    t.decimal "interest_rate"
+    t.bigint "compound_frequency_id", null: false
+    t.decimal "minimum_balance"
+    t.decimal "max_balance"
+    t.string "account_number"
+    t.bigint "account_type_id", null: false
+    t.boolean "auto_transfer"
+    t.integer "transfer_day"
+    t.date "next_contribution_date"
+    t.decimal "early_withdrawal_penalty"
+    t.integer "withdrawal_limit"
+    t.boolean "has_withdrawal_restrictions"
+    t.date "maturity_date"
+    t.date "last_interest_payment"
+    t.decimal "low_balance_alert"
+    t.boolean "goal_milestone_alerts"
+    t.bigint "budget_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_type_id"], name: "index_savings_funds_on_account_type_id"
+    t.index ["budget_id"], name: "index_savings_funds_on_budget_id"
+    t.index ["compound_frequency_id"], name: "index_savings_funds_on_compound_frequency_id"
+    t.index ["uuid"], name: "index_savings_funds_on_uuid", unique: true
+  end
+
   create_table "transactions", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
@@ -164,9 +195,13 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_06_080731) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "budget_id"
+    t.bigint "related_budget_id"
+    t.bigint "related_transaction_id"
     t.index ["budget_id"], name: "index_transactions_on_budget_id"
     t.index ["category_id"], name: "index_transactions_on_category_id"
     t.index ["currency_id"], name: "index_transactions_on_currency_id"
+    t.index ["related_budget_id"], name: "index_transactions_on_related_budget_id"
+    t.index ["related_transaction_id"], name: "index_transactions_on_related_transaction_id"
     t.index ["user_id"], name: "index_transactions_on_user_id"
     t.index ["uuid"], name: "index_transactions_on_uuid", unique: true
   end
@@ -209,9 +244,14 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_06_080731) do
   add_foreign_key "recurring_transactions", "categories", name: "fk_recurring_transactions_category"
   add_foreign_key "recurring_transactions", "currencies", name: "fk_recurring_transactions_currency"
   add_foreign_key "recurring_transactions", "users", name: "fk_recurring_transactions_user"
+  add_foreign_key "savings_funds", "budgets", name: "fk_savings_funds_budget"
+  add_foreign_key "savings_funds", "catalogs", column: "account_type_id", name: "fk_savings_funds_account_type"
+  add_foreign_key "savings_funds", "catalogs", column: "compound_frequency_id", name: "fk_savings_funds_compound_frequency"
+  add_foreign_key "transactions", "budgets", column: "related_budget_id", name: "fk_transactions_related_budget"
   add_foreign_key "transactions", "budgets", name: "fk_transactions_budget"
   add_foreign_key "transactions", "categories", name: "fk_transactions_category"
   add_foreign_key "transactions", "currencies", name: "fk_transactions_currency"
+  add_foreign_key "transactions", "transactions", column: "related_transaction_id", name: "fk_transactions_related_transaction"
   add_foreign_key "transactions", "users", name: "fk_transactions_user"
   add_foreign_key "users", "roles", column: "currency_id", name: "fk_users_currency"
   add_foreign_key "users", "roles", name: "fk_users_role"

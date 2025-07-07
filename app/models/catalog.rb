@@ -26,6 +26,11 @@ class Catalog < ApplicationRecord
       .where.not(code: excepts) # Exclude specific codes if provided
   }
 
+  scope :by_group_and_code, lambda { |group_name, code|
+    joins(:group_catalog)
+      .find_by(group_catalogs: { code: group_name }, code:)
+  }
+
   def self.get_by_group_pluck(group, excepts = [])
     by_group(group, excepts).pluck(:value, :id) # Solo carga los campos necesarios
   end

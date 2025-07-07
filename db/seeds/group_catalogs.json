@@ -16,6 +16,10 @@
         {
           "value": "💷",
           "code": "debit_card"
+        },
+        {
+          "value": "🏦",
+          "code": "savings_fund"
         }
       ]
     },
@@ -72,6 +76,58 @@
         {
           "value": "Tarjeta de débito",
           "code": "debit_card"
+        },
+        {
+          "value": "Fondo de ahorro",
+          "code": "savings_fund"
+        }
+      ]
+    },
+    {
+      "name": "Frecuencias de Capitalización",
+      "code": "compound_frequencies",
+      "catalogs": [
+        {
+          "value": "Diaria",
+          "code": "daily"
+        },
+        {
+          "value": "Mensual",
+          "code": "monthly"
+        },
+        {
+          "value": "Quincenal",
+          "code": "biweekly"
+        },
+        {
+          "value": "Semanal",
+          "code": "weekly"
+        },
+        {
+          "value": "Anual",
+          "code": "yearly"
+        }
+      ]
+    },
+    {
+      "name": "Tipos de Cuenta",
+      "code": "account_types",
+      "catalogs": [
+        {
+          "value": "Ahorros",
+          "code": "savings"
+        },
+        {
+          "value": "Inversión",
+          "code": "investment"
+        },
+        {
+          "value": "Certificado de Depósito (CD)",
+          "code": "cd"
+        },
+        {
+          "value": "Mercado Monetario",
+          "code": "money_market"
         }
       ]
     }

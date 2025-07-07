@@ -8,7 +8,8 @@ class BudgetsController < ApplicationController
   # GET /budgets
   # GET /budgets.json
   def index
-    @budgets = Budget.all
+    # @budgets = Budget.where(budget_type: Catalog.by_group_and_code('budget_types', 'credit_card'))
+    @budgets = Budget.where(user: current_user)
   end
 
   def show
@@ -42,29 +43,7 @@ class BudgetsController < ApplicationController
 
   def change_budget_type
     budget_type = Catalog.find(params[:budget][:budget_type_id])
-    stream = if budget_type.code == 'credit_card'
-               [
-                 turbo_stream.update(
-                   'budget_type_frame',
-                   partial: "budgets/forms/#{budget_type.code}/form", locals: { budget: Budget.new }
-                 ),
-                 turbo_stream.update(
-                   'preview_frame',
-                   partial: "budgets/forms/#{budget_type.code}/preview", locals: { budget: Budget.new }
-                 )
-               ]
-             else
-               [
-                 turbo_stream.update(
-                   'budget_type_frame',
-                   ''
-                 ),
-                 turbo_stream.update(
-                   'preview_frame',
-                   ''
-                 )
-               ]
-             end
+    stream = get_turbo_stream_for_budget_type(budget_type)
     respond_to do |format|
       format.turbo_stream do
         render turbo_stream: stream
@@ -81,13 +60,30 @@ class BudgetsController < ApplicationController
   private
 
   def budget_params
-    params.require(:budget).permit(:name, :budget_type_id, :current_amount, :limit_amount, :debt_amount,
-                                   :payday, :cutting_day, :icon_id, :color_id, :user_id)
+    params.require(:budget).permit(
+      :name, :budget_type_id, :current_amount, :icon_id, :color_id, :user_id,
+      credit_card_attributes: %i[limit_amount debt_amount payday cutting_day],
+      savings_fund_attributes: %i[goal_amount target_date monthly_contribution interest_rate compound_frequency_id
+                                  account_type_id minimum_balance max_balance]
+    )
   end
 
   def set_budget
     @budget = Budget.find(params[:id])
   rescue ActiveRecord::RecordNotFound
     redirect_to budgets_path, alert: 'Presupuesto no encontrado.'
+  end
+
+  def get_turbo_stream_for_budget_type(budget_type)
+    [
+      turbo_stream.update(
+        'budget_type_frame',
+        partial: "budgets/forms/#{budget_type.code}/form", locals: { budget: Budget.new(budget_type:) }
+      ),
+      turbo_stream.update(
+        'preview_frame',
+        partial: "budgets/forms/#{budget_type.code}/preview", locals: { budget: Budget.new(budget_type:) }
+      )
+    ]
   end
 end

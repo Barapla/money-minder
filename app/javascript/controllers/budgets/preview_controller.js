@@ -3,9 +3,12 @@ import { Controller } from "@hotwired/stimulus"
 // Connects to data-controller="budgets--preview"
 export default class extends Controller {
 
-  static targets = [ "name", "budgetType", "current", "limit", "icons", "colors",
-                     "preview", "previewName", "previewCurrent", "previewLimit", 
-                     "previewProgressBar", "previewBudgetType" ]
+  static targets = [ "name", "budgetType", "current", "debt", "limit", "icons", "colors",
+                      "goal", "interestRate", "monthlyContribution",
+                     "preview", "previewName", "previewBudgetType", "previewCurrent", 
+                     "previewDebt", "previewLimit", "previewProgress", "previewProgressBar", 
+                     "previewDebitStatus", "previewGoal", "previewInterestRate",
+                      "previewMonthlyContribution" ]
 
   connect() {
     console.log("Budgets Preview Controller connected");
@@ -51,16 +54,53 @@ export default class extends Controller {
   }
 
   updatePreview(event) {
-    const current = parseFloat(this.currentTarget.value) || 0;
-    const limit = parseFloat(this.limitTarget.value) || 0;
-    const percentage = limit > 0 ? (current / limit) * 100 : 0;
-    
     this.previewNameTarget.textContent = this.nameTarget.value || "Nuevo Presupuesto";
     this.previewBudgetTypeTarget.textContent = this.budgetTypeTarget.selectedOptions[0].textContent;
-    this.previewCurrentTarget.textContent = `$${current.toFixed(2)}`;
+  }
+
+  updateCreditPreview(event) {
+    const debt = parseFloat(this.debtTarget.value) || 0;
+    const limit = parseFloat(this.limitTarget.value) || 0;
+    const percentage = limit > 0 ? (debt / limit) * 100 : 0;
+    
+    this.previewDebtTarget.textContent = `$${debt.toFixed(2)}`;
     this.previewLimitTarget.textContent = `$${limit.toFixed(2)}`;
     this.previewProgressBarTarget.style.width = `${Math.min(percentage, 100)}%`;
   }
 
+  updateDebitPreview(event) {
+    const current = parseFloat(this.currentTarget.value) || 0;
+    const previewStatusSpan = this.previewDebitStatusTarget.querySelector('span');
+
+    this.previewCurrentTarget.textContent = `$${current.toFixed(2)}`;
+    if( current > 0) {
+      previewStatusSpan.textContent = "✓ Con fondos";
+      previewStatusSpan.classList.remove('bg-red-500/20', 'text-red-400');
+      previewStatusSpan.classList.add('bg-emerald-500/20', 'text-emerald-400');
+    } else {
+      previewStatusSpan.textContent = "⚠ Sin fondos";
+      previewStatusSpan.classList.remove('bg-emerald-500/20', 'text-emerald-400');
+      previewStatusSpan.classList.add('bg-red-500/20', 'text-red-400');
+    }
+  }
+
+  updateSavingsPreview(event) {
+    const goal = parseFloat(this.goalTarget.value) || 0;
+    const interestRate = parseFloat(this.interestRateTarget.value) || 0;
+    const monthlyContribution = parseFloat(this.monthlyContributionTarget.value) || 0;
+
+    // Calcular progreso
+    const current = parseFloat(this.currentTarget.value) || 0;
+    const progressPercentage = goal > 0 ? (current / goal) * 100 : 0;
+
+    // Actualizar preview
+    this.previewCurrentTarget.textContent = `$${current.toFixed(2)}`;
+    this.previewGoalTarget.textContent = `$${goal.toFixed(2)}`;
+    this.previewInterestRateTarget.textContent = `${interestRate.toFixed(2)}%`;
+    this.previewMonthlyContributionTarget.textContent = `$${monthlyContribution.toFixed(2)}`;
+    
+    this.previewProgressTarget.textContent = `${progressPercentage.toFixed(1)}%`;
+    this.previewProgressBarTarget.style.width = `${Math.min(progressPercentage, 100)}%`;
+  }
 
 }

@@ -10,6 +10,7 @@ es:
         role: "Rol"
       budget:
         name: "Nombre del presupuesto"
+        current_amount: "Presupuesto actual"
         budget_type_id: "Tipo de presupuesto"
         icon_id: "Icono"
         color_id: "Color"
@@ -18,6 +19,14 @@ es:
         limit_amount: "Presupuesto límite"
         payday: "Siguiente día de pago"
         cutting_day: "Siguiente día de corte"
+      savings_fund:
+        goal_amount: "Meta de ahorro"
+        target_date: "Fecha objetivo"
+        monthly_contribution: "Aporte mensual"
+        interest_rate: "Tasa de interés"
+        compound_frequency_id: "Frecuencia de capitalización"
+        minimum_balance: "Saldo mínimo"
+        max_balance: "Saldo máximo"      
     models:
       user: "Usuario"
       budget: "Presupuesto"

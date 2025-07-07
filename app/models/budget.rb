@@ -14,38 +14,54 @@ class Budget < ApplicationRecord
   # Associations
   has_many :transactions, dependent: :destroy
   has_one :credit_card
+  has_one :savings_fund
 
   belongs_to :user
   belongs_to :budget_type, class_name: 'Catalog', foreign_key: 'budget_type_id'
   belongs_to :color, class_name: 'Catalog', foreign_key: 'color_id'
   belongs_to :icon, class_name: 'Catalog', foreign_key: 'icon_id'
 
-  accepts_nested_attributes_for :credit_card
+  # Solo acepta atributos de credit_card si es tipo credit_card
+  accepts_nested_attributes_for :credit_card,
+                                allow_destroy: true,
+                                update_only: true, reject_if: :should_reject_credit_card?
+  accepts_nested_attributes_for :savings_fund,
+                                allow_destroy: true,
+                                update_only: true, reject_if: :should_reject_savings_fund?
 
   # Construir credit_card automáticamente
-  after_initialize :build_credit_card_if_needed
+  after_initialize :build_budget_type_if_needed
 
   def budget_color
-    self.class.progress_color(current_amount, limit_amount)
+    self.class.progress_color(debt_amount, limit_amount)
   end
 
   def budget_percentage
-    self.class.progress_percentage(current_amount, limit_amount)
+    self.class.progress_percentage(debt_amount, limit_amount)
   end
 
   def budget_status
-    self.class.progress_status(current_amount, limit_amount)
+    self.class.progress_status(debt_amount, limit_amount)
   end
 
   private
 
-  def build_credit_card_if_needed
+  def build_budget_type_if_needed
     # Para registros nuevos, siempre construir credit_card
     # Para registros existentes, solo si es credit_card y no existe
-    if new_record?
-      build_credit_card if credit_card.nil?
-    elsif credit_card.nil? && budget_type&.code == 'credit_card'
-      build_credit_card
-    end
+    return unless new_record?
+    return build_credit_card if credit_card.nil? && budget_type&.code == 'credit_card'
+
+    build_savings_fund if savings_fund.nil? && budget_type&.code == 'savings_fund'
+  end
+
+  def should_reject_credit_card?
+    # Rechazar los atributos de credit_card si no es tipo credit_card
+    budget_type&.code != 'credit_card'
+  end
+
+  def should_reject_savings_fund?
+    # Rechazar los atributos de savings_fund si no es tipo savings_fund
+    budget_type&.code != 'savings_fund'
   end
 end

@@ -10,8 +10,8 @@
             help_text: "Cantidad ya gastada en este período",
             required: true,
             data: {
-                "budgets--preview-target": "current",
-                action: "input->budgets--preview#updatePreview",
+                "budgets--preview-target": "debt",
+                action: "input->budgets--preview#updateCreditPreview",
                 required_message: "Por favor, ingresa la cantidad ya gastada"
             }
         }
@@ -29,7 +29,7 @@
             required: true,
             data: {
                 "budgets--preview-target": "limit",
-                action: "input->budgets--preview#updatePreview",
+                action: "input->budgets--preview#updateCreditPreview",
                 required_message: "Por favor, ingresa el límite del presupuesto"
             }
         }

@@ -1,0 +1,145 @@
+<%= fields_for "budget", budget do |form| %>
+    <%= fields_for "budget[savings_fund_attributes]", budget.savings_fund || budget.build_savings_fund do |sf_form| %>
+        
+        <%= render Forms::InputComponent.new(
+            name: :current_amount,
+            form:,
+            type: :number,
+            options: { 
+                step: 0.01,
+                placeholder: "0.00",
+                prefix: "$",
+                help_text: "Cantidad actual",
+                required: true,
+                data: {
+                    "budgets--preview-target": "current",
+                    action: "input->budgets--preview#updateSavingsPreview",
+                    required_message: "Por favor, ingresa la cantidad actual"
+                }
+            }
+        ) %>
+
+        <!-- Goal Amount -->
+        <%= render Forms::InputComponent.new(
+            name: :goal_amount,
+            form: sf_form,
+            type: :number,
+            options: { 
+                step: 0.01,
+                placeholder: "0.00",
+                prefix: "$",
+                help_text: "Cantidad objetivo del fondo de ahorro",
+                required: true,
+                data: {
+                    "budgets--preview-target": "goal",
+                    action: "input->budgets--preview#updateSavingsPreview",
+                    required_message: "Por favor, ingresa la cantidad objetivo del fondo de ahorro.",
+                }
+            }
+        ) %>
+
+        <!-- Target Date -->
+        <%= render Forms::InputComponent.new(
+            name: :target_date,
+            form: sf_form,
+            type: :date,
+            options: { 
+                help_text: "Fecha objetivo para alcanzar la meta",
+                required: true,
+                data: {
+                    required_message: "Por favor, ingresa la fecha objetivo para alcanzar la meta.",
+                }
+            }
+        ) %>
+
+        <!-- Monthly Contribution -->
+        <%= render Forms::InputComponent.new(
+            name: :monthly_contribution,
+            form: sf_form,
+            type: :number,
+            options: { 
+                step: 0.01,
+                placeholder: "0.00",
+                prefix: "$",
+                help_text: "Aporte mensual al fondo de ahorro",
+                required: true,
+                data: {
+                    "budgets--preview-target": "monthlyContribution",
+                    action: "input->budgets--preview#updateSavingsPreview",
+                    required_message: "Por favor, ingresa el aporte mensual al fondo de ahorro.",
+                }
+            }
+        ) %>
+
+        <!-- Interest Rate -->
+        <%= render Forms::InputComponent.new(
+            name: :interest_rate,
+            form: sf_form,
+            type: :number,
+            options: { 
+                step: 0.01,
+                placeholder: "0.00",
+                suffix: "%",
+                help_text: "Tasa de interés anual del fondo de ahorro",
+                required: true,
+                data: {
+                    "budgets--preview-target": "interestRate",
+                    action: "input->budgets--preview#updateSavingsPreview",
+                    required_message: "Por favor, ingresa la tasa de interés anual del fondo de ahorro.",
+                }
+            }
+        ) %>
+
+        <!-- Compound Frequency -->
+        <%= render Forms::SelectComponent.new(
+            name: :compound_frequency_id,
+            form: sf_form,
+            options_collection: Catalog.get_by_group_pluck('compound_frequencies'),
+            options: { 
+                help_text: "Frecuencia de capitalización del interés",
+                required: true
+            }
+        ) %>
+
+        <!-- Compound Frequency -->
+        <%= render Forms::SelectComponent.new(
+            name: :account_type_id,
+            form: sf_form,
+            options_collection: Catalog.get_by_group_pluck('account_types'),
+            options: { 
+                help_text: "Tipo de cuenta del fondo de ahorro",
+                required: true
+            }
+        ) %>
+
+        <!-- Minimum and Maximum Balance -->
+        <%= render Forms::InputComponent.new(
+            name: :minimum_balance,
+            form: sf_form,
+            type: :number,
+            options: { 
+                step: 0.01,
+                placeholder: "0.00",
+                prefix: "$",
+                help_text: "Saldo mínimo requerido en el fondo de ahorro",
+                required: true,
+                data: {
+                    required_message: "Por favor, ingresa el saldo mínimo requerido en el fondo de ahorro.",
+                }
+            }
+        ) %>
+
+        <%= render Forms::InputComponent.new(
+            name: :max_balance,
+            form: sf_form,
+            type: :number,
+            options: { 
+                step: 0.01,
+                placeholder: "0.00",
+                prefix: "$",
+                help_text: "Saldo máximo permitido en el fondo de ahorro"
+            }
+        ) %>
+        
+    <% end %>
+<% end %>

@@ -19,7 +19,7 @@ module BudgetsHelper
       [
         { type: 'icon', icon: budget_presenter.icon, color: budget_presenter.color,
           main_text: budget_presenter.name, sub_text: budget_presenter.budget_type },
-        { value: budget_presenter.current_amount,
+        { value: budget_presenter.debt_amount,
           div_color: budget.budget_color },
         { value: budget_presenter.limit_amount },
         { value: budget_presenter.available_amount,
