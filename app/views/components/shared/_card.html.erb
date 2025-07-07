@@ -1,0 +1,19 @@
+<%
+    title = component.title
+    text_color = component.text_color
+    bg_color = component.bg_color
+    icon = component.icon
+    main_text = component.main_text
+    subtitle = component.subtitle
+%>
+
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+    <div class="flex items-center justify-between mb-4">
+        <div class="w-12 h-12 <%= bg_color %> rounded-xl flex items-center justify-center">
+            <%= render_svg(icon, text_color) %>
+        </div>
+        <span class="text-xs text-bunker-400 font-medium"><%= title %></span>
+    </div>
+    <div class="text-3xl font-bold <%= text_color %> mb-1"><%= main_text %></div>
+    <div class="text-sm text-bunker-300"><%= subtitle %></div>
+</div>

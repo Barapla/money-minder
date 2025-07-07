@@ -75,7 +75,7 @@
             <%= render Forms::RadioComponent.new(
                 name: :color_id,
                 form:,
-                collection: Catalog.by_group('budget_colors'),
+                collection: Catalog.by_group('colors'),
                 options: { 
                     is_colors: true,
                     default_object_label: 'value',

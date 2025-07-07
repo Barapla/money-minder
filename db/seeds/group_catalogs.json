@@ -24,8 +24,8 @@
       ]
     },
     {
-      "name": "Colores de Presupuesto",
-      "code": "budget_colors",
+      "name": "Colores",
+      "code": "colors",
       "catalogs": [
         {
           "value": "orange-500",
@@ -128,6 +128,82 @@
         {
           "value": "Mercado Monetario",
           "code": "money_market"
+        }
+      ]
+    },
+    {
+      "name": "Tipos de Transacción",
+      "code": "transaction_types",
+      "catalogs": [
+        {
+          "value": "Ingreso",
+          "code": "income"
+        },
+        {
+          "value": "Gasto",
+          "code": "expense"
+        },
+        {
+          "value": "Transferencia",
+          "code": "transfer"
+        },
+        {
+          "value": "Reembolso",
+          "code": "refund"
+        }
+      ]
+    },
+    {
+      "name": "Iconos de Transacción",
+      "code": "transaction_icons",  
+      "catalogs": [
+        {
+          "value": "🏠",
+          "code": "home"
+        },
+        {
+          "value": "🍔",
+          "code": "food"
+        },
+        {
+          "value": "🚗",
+          "code": "transport"
+        },
+        {
+          "value": "💊",
+          "code": "health"
+        },
+        {
+          "value": "🎓",
+          "code": "education"
+        },
+        {
+          "value": "🎉",
+          "code": "entertainment"
+        },
+        {
+          "value": "👗",
+          "code": "clothing"
+        },
+        {
+          "value": "🐾",
+          "code": "pets"
+        },
+        {
+          "value": "🎁",
+          "code": "gifts"
+        },
+        {
+          "value": "💼",
+          "code": "professional_services"
+        },
+        {
+          "value": "💰",
+          "code": "savings"
+        },
+        {
+          "value": "📦",
+          "code": "miscellaneous"
         }
       ]
     }

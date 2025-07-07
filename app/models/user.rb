@@ -44,7 +44,7 @@ class User < ApplicationRecord
       name: "Efectivo de #{first_name}",
       budget_type: Catalog.by_group('budget_types').find_by(code: 'cash'),
       icon: Catalog.by_group('budget_icons').find_by(code: 'cash'),
-      color: Catalog.by_group('budget_colors').find_by(code: 'purple'),
+      color: Catalog.by_group('colors').find_by(code: 'purple'),
       personal: true,
       user: self
     )

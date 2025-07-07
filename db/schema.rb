@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_07_07_064627) do
+ActiveRecord::Schema[7.0].define(version: 2025_07_07_233157) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -197,9 +197,13 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_07_064627) do
     t.bigint "budget_id"
     t.bigint "related_budget_id"
     t.bigint "related_transaction_id"
+    t.bigint "icon_id"
+    t.bigint "color_id"
     t.index ["budget_id"], name: "index_transactions_on_budget_id"
     t.index ["category_id"], name: "index_transactions_on_category_id"
+    t.index ["color_id"], name: "index_transactions_on_color_id"
     t.index ["currency_id"], name: "index_transactions_on_currency_id"
+    t.index ["icon_id"], name: "index_transactions_on_icon_id"
     t.index ["related_budget_id"], name: "index_transactions_on_related_budget_id"
     t.index ["related_transaction_id"], name: "index_transactions_on_related_transaction_id"
     t.index ["user_id"], name: "index_transactions_on_user_id"
@@ -249,6 +253,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_07_064627) do
   add_foreign_key "savings_funds", "catalogs", column: "compound_frequency_id", name: "fk_savings_funds_compound_frequency"
   add_foreign_key "transactions", "budgets", column: "related_budget_id", name: "fk_transactions_related_budget"
   add_foreign_key "transactions", "budgets", name: "fk_transactions_budget"
+  add_foreign_key "transactions", "catalogs", column: "color_id", name: "fk_transactions_color"
+  add_foreign_key "transactions", "catalogs", column: "icon_id", name: "fk_transactions_icon"
   add_foreign_key "transactions", "categories", name: "fk_transactions_category"
   add_foreign_key "transactions", "currencies", name: "fk_transactions_currency"
   add_foreign_key "transactions", "transactions", column: "related_transaction_id", name: "fk_transactions_related_transaction"

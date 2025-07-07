@@ -1,0 +1,19 @@
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <%= render Shared::CardComponent.new(
+            title: "GASTADO", subtitle: "de #{@budget_presenter.limit_amount}", 
+            main_text: @budget_presenter.debt_amount, 
+            options: { color: "orange", icon: "money" }) %>
+    <%= render Shared::CardComponent.new(
+            title: "DISPONIBLE", subtitle: "restante", 
+            main_text: @budget_presenter.available_amount, 
+            options: { color: "emerald", icon: "check" }) %>
+    <%= render Shared::CardComponent.new(
+            title: "PROGRESO", subtitle: "del límite", 
+            main_text: @budget_presenter.budget_percentage, 
+            options: { color: "purple", icon: "progress" }) %>
+    <%= render Shared::CardComponent.new(
+            title: "DÍAS RESTANTES", subtitle: "este mes", 
+            main_text: (@budget.payday.to_date - Time.now.to_date).to_i, 
+            options: { color: "blue", icon: "calendar" }) %>
+</div>

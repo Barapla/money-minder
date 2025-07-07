@@ -1,6 +1,28 @@
 es:
   app_name: "MoneyMinder"
   continue: "Continuar"
+
+  date:
+    formats:
+      default: "%d/%m/%Y"
+      short: "%-d %b %Y"
+      very_short: "%b %-d"
+      only_month: "%-d de %B"
+    abbr_month_names:
+      [~, Ene, Feb, Mar, Abr, May, Jun, Jul, Ago, Sep, Oct, Nov, Dic]
+    month_names:
+      [~, Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre]
+  
+  time:
+    formats:
+      default: "%d/%m/%Y"
+      short: "%-d %b %Y"
+      very_short: "%b %-d"
+      time_only: "%I:%M %p"
+    abbr_month_names:
+      [~, Ene, Feb, Mar, Abr, May, Jun, Jul, Ago, Sep, Oct, Nov, Dic]
+     
+
   activerecord:
     attributes:
       user:
