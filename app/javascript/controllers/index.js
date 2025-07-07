@@ -15,3 +15,6 @@ application.register("form-validator", FormValidatorController)
 
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
+
+import SelectToController from "./select_to_controller"
+application.register("select-to", SelectToController)

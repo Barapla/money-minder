@@ -37,8 +37,9 @@ module BudgetsHelper
             {
               name: 'Eliminar', icon: 'trash', path: budget_path(budget),
               options: {
-                class: 'hover:text-red-400', method: :delete,
-                data: { confirm: '¿Estás seguro de que deseas eliminar este presupuesto?' }
+                class: 'hover:text-red-400',
+                data: { turbo_method: :delete,
+                        turbo_confirm: '¿Estás seguro de que quieres eliminar este presupuesto?' }
               }
             }
           ]

@@ -42,6 +42,14 @@ class BudgetPresenter < ApplicationPresenter
     "#{@resource.budget_percentage}%"
   end
 
+  def cutting_day
+    @resource.cutting_day.strftime('%d %b')
+  end
+
+  def payday
+    @resource.payday.strftime('%d %b')
+  end
+
   def created_at
     @resource.created_at.strftime('%d %b %Y')
   end

@@ -2,9 +2,9 @@
     content = component.content
     href = component.href 
     options = component.options || {}
-    class_name = options.delete(:class) || "link"
+    class_name = options[:class] || "link"
 %>
 
-<%= link_to href, class: class_name, **options do %>
+<%= link_to href, class: class_name do %>
     <%= content.html_safe %>
 <% end %>

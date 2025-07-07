@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_07_04_073107) do
+ActiveRecord::Schema[7.0].define(version: 2025_07_06_080731) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -46,16 +46,12 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_04_073107) do
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
     t.decimal "current_amount", precision: 10, scale: 2, default: "0.0"
-    t.decimal "limit_amount", precision: 10, scale: 2, default: "0.0"
     t.bigint "budget_type_id", null: false
     t.bigint "color_id", null: false
     t.bigint "icon_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "name", default: "", null: false
-    t.decimal "debt_amount", precision: 10, scale: 2, default: "0.0"
-    t.date "payday"
-    t.date "cutting_day"
+    t.string "name", null: false
     t.boolean "personal", default: false
     t.bigint "user_id", null: false
     t.index ["budget_type_id"], name: "index_budgets_on_budget_type_id"
@@ -87,6 +83,21 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_04_073107) do
     t.datetime "updated_at", null: false
     t.index ["parent_category_id"], name: "index_categories_on_parent_category_id"
     t.index ["uuid"], name: "index_categories_on_uuid", unique: true
+  end
+
+  create_table "credit_cards", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.decimal "current_amount"
+    t.decimal "limit_amount"
+    t.decimal "debt_amount"
+    t.date "payday"
+    t.date "cutting_day"
+    t.bigint "budget_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["budget_id"], name: "index_credit_cards_on_budget_id"
+    t.index ["uuid"], name: "index_credit_cards_on_uuid", unique: true
   end
 
   create_table "currencies", force: :cascade do |t|
@@ -194,6 +205,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_04_073107) do
   add_foreign_key "budgets", "users", name: "fk_budgets_user"
   add_foreign_key "catalogs", "group_catalogs", name: "fk_catalogs_group_catalog"
   add_foreign_key "categories", "categories", column: "parent_category_id", name: "fk_categories_parent"
+  add_foreign_key "credit_cards", "budgets", name: "fk_credit_cards_budget"
   add_foreign_key "recurring_transactions", "categories", name: "fk_recurring_transactions_category"
   add_foreign_key "recurring_transactions", "currencies", name: "fk_recurring_transactions_currency"
   add_foreign_key "recurring_transactions", "users", name: "fk_recurring_transactions_user"

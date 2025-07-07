@@ -1,0 +1,17 @@
+<%= fields_for "budget", budget.credit_card || budget.build_credit_card do |dc_form| %>
+    <%= render Forms::InputComponent.new(
+        name: :current_amount,
+        form: dc_form,
+        type: :number,
+        options: { 
+            step: 0.01,
+            placeholder: "0.00",
+            prefix: "$",
+            help_text: "Cantidad actual",
+            required: true,
+            data: {
+                required_message: "Por favor, ingresa la cantidad actual"
+            }
+        }
+    ) %>
+<% end %>

@@ -1,0 +1,30 @@
+<!-- Preview Card -->
+<div class="form-group">
+    <label class="block text-sm font-medium text-bunker-200 mb-2">
+        Vista previa
+    </label>
+    <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-4">
+        <div class="flex items-center gap-3 mb-3">
+            <div data-budgets--preview-target="preview" class="w-10 h-10 bg-<%= budget.color&.value || 'blue-500' %> rounded-lg flex items-center justify-center">
+                <span class="text-lg"><%= budget.icon&.value || "💳" %></span>
+            </div>
+            <div>
+                <div data-budgets--preview-target="previewBudgetType" class="text-sm font-medium text-white"><%= budget.budget_type&.value || "Tarjeta de crédito" %></div>
+                <div data-budgets--preview-target="previewName" class="text-xs text-bunker-400"><%= budget.name.present? ? budget.name : "Nuevo Presupuesto" %></div>
+            </div>
+        </div>
+        <div class="space-y-2 text-xs">
+            <div class="flex justify-between">
+                <span class="text-bunker-300">Gastado</span>
+                <span data-budgets--preview-target="previewCurrent" class="text-orange-400">$<%= budget.current_amount || "0.00" %></span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-bunker-300">Límite</span>
+                <span data-budgets--preview-target="previewLimit" class="text-white">$<%= budget.limit_amount || "0.00" %></span>
+            </div>
+            <div class="bg-bunker-700 rounded-full h-2">
+                <div data-budgets--preview-target="previewProgressBar" class="bg-purple-400 h-2 rounded-full" style="width: <%= budget.budget_percentage || '0' %>%"></div>
+            </div>
+        </div>
+    </div>
+</div>

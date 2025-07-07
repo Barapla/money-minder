@@ -10,7 +10,11 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
 
-  resources :budgets
+  resources :budgets do
+    collection do
+      post :change_budget_type
+    end
+  end
 
   root 'home#index'
 end

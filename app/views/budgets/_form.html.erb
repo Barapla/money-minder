@@ -22,74 +22,15 @@
                     }
                 }
             ) %>
-
-            <%= render Forms::InputComponent.new(
-                name: :current_amount,
-                form:,
-                type: :number,
-                options: { 
-                    step: 0.01,
-                    placeholder: "0.00",
-                    prefix: "$",
-                    help_text: "Cantidad ya gastada en este período",
-                    required: true,
-                    data: {
-                        "budgets--preview-target": "current",
-                        action: "input->budgets--preview#updatePreview",
-                        required_message: "Por favor, ingresa la cantidad ya gastada"
-                    }
-                }
-            ) %>
-
-            <%= render Forms::InputComponent.new(
-                name: :limit_amount,
-                form:,
-                type: :number,
-                options: { 
-                    step: 0.01,
-                    placeholder: "0.00",
-                    prefix: "$",
-                    help_text: "Cantidad máxima que planeas gastar",
-                    required: true,
-                    data: {
-                        "budgets--preview-target": "limit",
-                        action: "input->budgets--preview#updatePreview",
-                        required_message: "Por favor, ingresa el límite del presupuesto"
-                    }
-                }
-            ) %>
-
-            <%= render Forms::InputComponent.new(
-                name: :payday,
-                form:,
-                type: :date,
-                options: { 
-                    help_text: "Día de pago del presupuesto",
-                    required: true,
-                    data: {
-                        required_message: "Por favor, ingresa el día de pago",
-                    }
-                }
-            ) %>
-            
-            <%= render Forms::InputComponent.new(
-                name: :cutting_day,
-                form:,
-                type: :date,
-                options: { 
-                    help_text: "Fecha de corte del presupuesto",
-                    required: true,
-                    data: {
-                        required_message: "Por favor, ingresa la fecha de corte"
-                    }
-                }
-            ) %>
-
+            <%= turbo_frame_tag "budget_type_frame" do  %>
+                <% if budget.new_record? || budget.budget_type&.code == 'credit_card'  %>
+                    <%= render partial: "budgets/forms/credit_card/form", locals: { budget: } %>
+                <% end %>
+            <% end %>
         </div>
 
         <!-- Right Column -->
         <div class="space-y-6">
-            
             
             <!-- Budget Type -->
             <%= render Forms::SelectComponent.new(
@@ -100,6 +41,12 @@
                     help_text: "Categoría principal del presupuesto",
                     required: true,
                     data: {
+                        controller: "select-to",
+                        select_to_url_value: change_budget_type_budgets_path,
+                        select_to_method_value: "POST",
+                        select_to_field_value: "budget_type_id",
+                        select_to_model_value: "budget",
+                        select_to_target: "select",
                         "budgets--preview-target": "budgetType",
                         action: "change->budgets--preview#updatePreview"
                     }
@@ -143,8 +90,11 @@
                 }
             ) %>
 
-            <%= render "budgets/forms/preview", budget: %>
-
+            <%= turbo_frame_tag "preview_frame" do  %>
+                <% if budget.new_record? || budget.budget_type&.code == 'credit_card' %>
+                    <%= render "budgets/forms/credit_card/preview", budget: %>
+                <% end %>
+            <% end %>
         </div>
     </div>
 
@@ -152,31 +102,23 @@
     <%= form.hidden_field :user_id, value: current_user.id %>
     <!-- Form Actions -->
     <div class="flex items-center justify-between pt-8 mt-8 border-t border-bunker-800/50">
+        
+        <% href_button = budget.persisted? ? budget : budgets_path %>
         <%= render Buttons::LinkComponent.new(content: '
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
             Cancelar
-            ', href: budgets_path, 
+            ', href: href_button, 
             options: { 
                 class: "btn-cancel" 
             })
         %>
-        <div class="flex gap-3">
-            <button type="button" class="px-6 py-3 text-white border border-purple-500/50 hover:bg-purple-500/10 rounded-xl font-medium transition-all duration-200 flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                </svg>
-                Vista Previa
-            </button>
-            
-            <button type="submit" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                Crear Presupuesto
-            </button>
-        </div>
+        <button type="submit" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Crear Presupuesto
+        </button>
     </div>
 <% end %>

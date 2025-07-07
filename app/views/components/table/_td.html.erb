@@ -34,7 +34,11 @@
         <div class="flex gap-2">
             <% item[:actions].each do |action| %>
                 <%= render Buttons::LinkComponent.new(content: render_svg(action[:icon]), href: action[:path], 
-                    options: { class: "text-bunker-400 transition-colors #{action[:options][:class]}" }) %>
+                    options: { class: "text-bunker-400 transition-colors #{action[:options][:class]}", data: {
+                            **action[:options].fetch(:data, {})
+                        }
+                    }) 
+                %>
             <% end %>
         </div>
     </td>
