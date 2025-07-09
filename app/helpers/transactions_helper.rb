@@ -2,40 +2,36 @@
 
 # TransactionsHelper
 module TransactionsHelper
-  def headers_table_index
+  def headers_table_transactions_index
     [
-      { name: 'Tipo de Presupuesto', size: 'min-w-[180px]' },
-      { name: 'Monto Gastado', size: 'min-w-[120px]' },
-      { name: 'Límite', size: 'min-w-[120px]' },
-      { name: 'Disponible', size: 'min-w-[120px]' },
-      { name: 'Progreso', size: 'min-w-[120px]' },
-      { name: 'Estado', size: 'min-w-[120px]' }
+      { name: 'Tipo de Transacción', size: 'min-w-[180px]' },
+      { name: 'Monto', size: 'min-w-[120px]' },
+      { name: 'Descripción', size: 'min-w-[120px]' },
+      { name: 'Presupuesto', size: 'min-w-[120px]' },
+      { name: 'Fecha de la transacción', size: 'min-w-[120px]' }
     ]
   end
 
-  def values_table_format(budgets)
-    budgets.map do |budget|
-      budget_presenter = BudgetPresenter.new(budget)
+  def values_table_transactions_format(transactions)
+    transactions.map do |transaction|
+      transaction_presenter = TransactionPresenter.new(transaction)
       [
-        { type: 'icon', icon: budget_presenter.icon, color: budget_presenter.color,
-          main_text: budget_presenter.name, sub_text: budget_presenter.budget_type },
-        { value: budget_presenter.debt_amount,
-          div_color: budget.budget_color },
-        { value: budget_presenter.limit_amount },
-        { value: budget_presenter.available_amount,
-          div_color: budget.budget_color },
-        { type: 'progress_bar', value: budget_presenter.budget_percentage,
-          div_color: budget.budget_color },
-        { type: 'status', value: budget.budget_status, color: budget.budget_color },
+        { type: 'icon', icon: transaction_presenter.icon, color: transaction_presenter.color,
+          main_text: transaction_presenter.category, sub_text: transaction_presenter.transaction_type },
+        { value: transaction_presenter.amount,
+          div_color: transaction_presenter.color },
+        { value: transaction_presenter.description },
+        { value: transaction_presenter.budget },
+        { value: transaction_presenter.transaction_date },
         {
           type: 'actions',
           actions: [
-            { name: 'Ver', icon: 'eye', path: budget_path(budget),
+            { name: 'Ver', icon: 'eye', path: transaction_path(transaction),
               options: { class: 'hover:text-white' } },
-            { name: 'Editar', icon: 'edit', path: edit_budget_path(budget),
+            { name: 'Editar', icon: 'edit', path: edit_transaction_path(transaction),
               options: { class: 'hover:text-purple-400' } },
             {
-              name: 'Eliminar', icon: 'trash', path: budget_path(budget),
+              name: 'Eliminar', icon: 'trash', path: transaction_path(transaction),
               options: {
                 class: 'hover:text-red-400',
                 data: { turbo_method: :delete,

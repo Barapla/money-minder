@@ -2,6 +2,7 @@
 
 # BudgetsController handles the display of budgets.
 class BudgetsController < ApplicationController
+  include BudgetsHelper
   before_action :authenticate_user!
   before_action :set_budget, only: %i[show edit update destroy]
 

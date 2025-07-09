@@ -54,7 +54,11 @@ export default class extends Controller {
   }
 
   updatePreview(event) {
-    this.previewNameTarget.textContent = this.nameTarget.value || "Nuevo Presupuesto";
+    if (this.nameTarget.tagName === 'SELECT') {
+      this.previewNameTarget.textContent = this.nameTarget.selectedOptions[0].textContent;
+    } else {
+      this.previewNameTarget.textContent = this.nameTarget.value || "Nuevo Presupuesto";
+    }
     this.previewBudgetTypeTarget.textContent = this.budgetTypeTarget.selectedOptions[0].textContent;
   }
 
@@ -70,9 +74,17 @@ export default class extends Controller {
 
   updateDebitPreview(event) {
     const current = parseFloat(this.currentTarget.value) || 0;
-    const previewStatusSpan = this.previewDebitStatusTarget.querySelector('span');
 
     this.previewCurrentTarget.textContent = `$${current.toFixed(2)}`;
+
+     if (!this.previewDebitStatusTarget) {
+      return;
+    }
+
+    const previewStatusSpan = this.previewDebitStatusTarget.querySelector('span');
+
+   
+
     if( current > 0) {
       previewStatusSpan.textContent = "✓ Con fondos";
       previewStatusSpan.classList.remove('bg-red-500/20', 'text-red-400');

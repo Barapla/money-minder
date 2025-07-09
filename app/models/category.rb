@@ -10,4 +10,9 @@ class Category < ApplicationRecord
   validates :name, presence: true, uniqueness: true
 
   scope :parents, -> { where(parent_category_id: nil) }
+  scope :children, -> { where.not(parent_category_id: nil) }
+
+  def self.children_pluck
+    children.pluck(:name, :id)
+  end
 end

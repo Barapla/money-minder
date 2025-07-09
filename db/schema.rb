@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_07_07_233157) do
+ActiveRecord::Schema[7.0].define(version: 2025_07_09_231855) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -187,7 +187,6 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_07_233157) do
     t.boolean "active", default: true
     t.decimal "amount"
     t.text "description"
-    t.integer "transaction_type"
     t.bigint "category_id", null: false
     t.bigint "user_id", null: false
     t.bigint "currency_id", null: false
@@ -199,6 +198,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_07_233157) do
     t.bigint "related_transaction_id"
     t.bigint "icon_id"
     t.bigint "color_id"
+    t.bigint "transaction_type_id", null: false
     t.index ["budget_id"], name: "index_transactions_on_budget_id"
     t.index ["category_id"], name: "index_transactions_on_category_id"
     t.index ["color_id"], name: "index_transactions_on_color_id"
@@ -206,6 +206,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_07_233157) do
     t.index ["icon_id"], name: "index_transactions_on_icon_id"
     t.index ["related_budget_id"], name: "index_transactions_on_related_budget_id"
     t.index ["related_transaction_id"], name: "index_transactions_on_related_transaction_id"
+    t.index ["transaction_type_id"], name: "index_transactions_on_transaction_type_id"
     t.index ["user_id"], name: "index_transactions_on_user_id"
     t.index ["uuid"], name: "index_transactions_on_uuid", unique: true
   end
@@ -255,6 +256,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_07_233157) do
   add_foreign_key "transactions", "budgets", name: "fk_transactions_budget"
   add_foreign_key "transactions", "catalogs", column: "color_id", name: "fk_transactions_color"
   add_foreign_key "transactions", "catalogs", column: "icon_id", name: "fk_transactions_icon"
+  add_foreign_key "transactions", "catalogs", column: "transaction_type_id", name: "fk_transactions_transaction_type"
   add_foreign_key "transactions", "categories", name: "fk_transactions_category"
   add_foreign_key "transactions", "currencies", name: "fk_transactions_currency"
   add_foreign_key "transactions", "transactions", column: "related_transaction_id", name: "fk_transactions_related_transaction"

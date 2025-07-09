@@ -1,17 +1,199 @@
-<%= form_with(model: transaction) do |form| %>
-  <% if transaction.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(transaction.errors.count, "error") %> prohibited this transaction from being saved:</h2>
+<!-- Form -->
+<%= form_with(model: transaction, local: true, html: { class: "px-8 py-6", 
+    data: { controller: "budgets--preview form-validator", 
+        form_validator_validate_on_blur_value: true,
+        form_validator_validate_on_input_value: false} }) do |form| %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Left Column -->
+        <div>
 
-      <ul>
-        <% transaction.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
+            
+            <!-- Transaction type -->
+            <%= render Forms::SelectComponent.new(
+                name: :transaction_type_id,
+                form:,
+                options_collection: Catalog.get_by_group_pluck('transaction_types'),
+                options: { 
+                    help_text: "Selecciona el tipo de transacción",
+                    required: true,
+                    data: {
+                        "budgets--preview-target": "name",
+                        action: "change->budgets--preview#updatePreview"
+                    }
+                }
+            ) %>
+    
+            <%= render Forms::InputComponent.new(
+                name: :amount,
+                form:,
+                type: :number,
+                options: { 
+                    step: 0.01,
+                    placeholder: "0.00",
+                    prefix: "$",
+                    help_text: "Ingresa el monto de la transacción",
+                    required: true,
+                    data: {
+                        "budgets--preview-target": "current",
+                        action: "input->budgets--preview#updateDebitPreview",
+                        required_message: "Por favor, ingresa un monto para la transacción",
+                    }
+                }
+            ) %>
+
+            <%= render Forms::InputComponent.new(
+                name: :description,
+                form:,
+                type: :text,
+                options: { 
+                    placeholder: "Descripción de la transacción",
+                    help_text: "Proporciona una breve descripción de la transacción",
+                    required: true,
+                    data: {
+                        required_message: "Por favor, ingresa una descripción para la transacción",
+                    }
+                }
+            ) %>
+            
+            
+            <%= render Forms::SelectComponent.new(
+                name: :category_id,
+                form:,
+                options_collection: Category.children_pluck,
+                options: { 
+                    help_text: "Selecciona la categoría de la transacción",
+                    required: true,
+                    data: {
+                        "budgets--preview-target": "budgetType",
+                        action: "change->budgets--preview#updatePreview"
+                    }
+                }
+            ) %>
+
+            <%= render Forms::InputComponent.new(
+                name: :transaction_date,
+                form:,
+                type: :date,
+                options: { 
+                    placeholder: "Fecha de la transacción",
+                    help_text: "Selecciona la fecha de la transacción",
+                    required: true,
+                    data: {
+                        required_message: "Por favor, selecciona una fecha para la transacción",
+                    }
+                }
+            ) %>
+
+        </div>
+
+        <!-- Right Column -->
+        <div class="space-y-6">
+            <!-- Budget -->
+            <%= render Forms::SelectComponent.new(
+                name: :budget_id,
+                form:,
+                options_collection: Budget.all.pluck(:name, :id),
+                options: { 
+                    help_text: "Selecciona el presupuesto al que pertenece esta transacción",
+                    required: true
+                }
+            ) %>
+
+            <!-- Related Budget -->
+            <%= render Forms::SelectComponent.new(
+                name: :related_budget_id,
+                form:,
+                options_collection: Budget.all.pluck(:name, :id),
+                options: { 
+                    prompt: "Ninguno",
+                    help_text: "Selecciona un presupuesto relacionado (opcional)",
+                }
+            ) %>
+
+            <!-- Icon Selection -->
+            <%= render Forms::RadioComponent.new(
+                name: :icon_id,
+                form:,
+                collection: Catalog.by_group('transaction_icons'),
+                options: { 
+                    default_object_label: 'value',
+                    help_text: "Selecciona un icono para identificar tu transacción",
+                    value: transaction.icon&.id,
+                    collection_options: {
+                        data: {
+                            "budgets--preview-target": "icons",
+                            action: "click->budgets--preview#selectIcon"
+                        }
+                    }
+                }
+            ) %>
+
+            <!-- Color Selection -->
+            <%= render Forms::RadioComponent.new(
+                name: :color_id,
+                form:,
+                collection: Catalog.by_group('colors'),
+                options: { 
+                    is_colors: true,
+                    default_object_label: 'value',
+                    help_text: "Elige un color para personalizar tu transacción",
+                    value: transaction.color&.id,
+                    collection_options: {
+                        data: {
+                            "budgets--preview-target": "colors",
+                            action: "click->budgets--preview#selectColor"
+                        }
+                    }
+                }
+            ) %>
+
+            <!-- Preview Section -->
+            <div class="form-group">
+                <label class="block text-sm font-medium text-bunker-200 mb-2">
+                    Vista previa
+                </label>
+                <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div data-budgets--preview-target="preview" class="w-10 h-10 bg-<%= transaction.color&.value || 'blue-500' %> rounded-lg flex items-center justify-center">
+                            <span class="text-lg"><%= transaction.icon&.value || "👗" %></span>
+                        </div>
+                        <div>
+                            <div data-budgets--preview-target="previewBudgetType" class="text-sm font-medium text-white"><%= transaction.category&.name || "Tarjeta de débito" %></div>
+                            <div data-budgets--preview-target="previewName" class="text-xs text-bunker-400"><%= transaction.transaction_type&.value || "Nuevo Presupuesto" %></div>
+                        </div>
+                    </div>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between items-center">
+                            <span class="text-bunker-300">Saldo disponible</span>
+                            <span data-budgets--preview-target="previewCurrent" class="text-emerald-400 text-lg font-semibold">$<%= transaction.amount || "0.00" %></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  <% end %>
 
-  <div>
-    <%= form.submit %>
-  </div>
+
+    <%= form.hidden_field :user_id, value: current_user.id %>
+    <!-- Form Actions -->
+    <div class="flex items-center justify-between pt-8 mt-8 border-t border-bunker-800/50">
+        
+        <% href_button = transaction.persisted? ? transaction : transactions_path %>
+        <%= render Buttons::LinkComponent.new(content: '
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            Cancelar
+            ', href: href_button, 
+            options: { 
+                class: "btn-cancel" 
+            })
+        %>
+        <button type="submit" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Guardar Transacción
+        </button>
+    </div>
 <% end %>

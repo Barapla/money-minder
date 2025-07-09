@@ -48,7 +48,17 @@ es:
         interest_rate: "Tasa de interés"
         compound_frequency_id: "Frecuencia de capitalización"
         minimum_balance: "Saldo mínimo"
-        max_balance: "Saldo máximo"      
+        max_balance: "Saldo máximo"    
+      transaction:
+        amount: "Monto"
+        transaction_date: "Fecha"
+        description: "Descripción"
+        transaction_type_id: "Tipo de transacción"
+        category_id: "Categoría"
+        icon_id: "Icono"
+        color_id: "Color"
+        related_budget_id: "Presupuesto relacionado"
+        budget_id: "Presupuesto relacionado"  
     models:
       user: "Usuario"
       budget: "Presupuesto"
