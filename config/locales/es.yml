@@ -6,6 +6,7 @@ es:
     formats:
       default: "%d/%m/%Y"
       short: "%-d %b %Y"
+      long: "%-d de %B de %Y"
       very_short: "%b %-d"
       only_month: "%-d de %B"
     abbr_month_names:

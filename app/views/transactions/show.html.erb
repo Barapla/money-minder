@@ -1,10 +1,315 @@
-<p style="color: green"><%= notice %></p>
+<div class="max-w-5xl mx-auto">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-bunker-900/80 to-purple-900/80 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8">
+      <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+              <%= render Buttons::LinkComponent.new(content: '
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                ', href: transactions_path, options: { class: "btn-icon" }) %>
+              
+              <div class="flex items-center gap-4">
+                  <div class="w-16 h-16 bg-<%= @transaction_presenter.color %> rounded-xl flex items-center justify-center">
+                      <span class="text-3xl"><%= @transaction_presenter.icon %></span>
+                  </div>
+                  <div>
+                      <h1 class="text-4xl font-bold text-white"><%= @transaction_presenter.category %></h1>
+                      <p class="text-bunker-300"><%= @transaction_presenter.transaction_type %> • <%= @transaction_presenter.transaction_date %></p>
+                  </div>
+              </div>
+          </div>
+          <div class="flex gap-3">
+            <%= render Buttons::LinkComponent.new(content: '
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                Editar
+                ', href: edit_transaction_path(@transaction), 
+                options: { 
+                    class: "btn-cancel" 
+                })
+            %>
+            <%= link_to transaction_path(@transaction), 
+                class: "px-4 py-2 text-red-400 hover:text-red-300 border border-red-500/50 hover:border-red-400/50 rounded-xl font-medium transition-all duration-200 flex items-center gap-2",
+                data: { 
+                    turbo_method: :delete,
+                    turbo_confirm: "¿Estás seguro de que quieres eliminar este presupuesto?" 
+                } do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                Eliminar
+            <% end %>
+          </div>
+      </div>
+  </div>
 
-<%= render @transaction %>
+  <!-- Transaction Amount Card -->
+  <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8 text-center">
+      <div class="flex items-center justify-center gap-3 mb-4">
+          <div class="w-20 h-20 bg-<%= @transaction_presenter.color %> rounded-2xl flex items-center justify-center">
+              <span class="text-4xl"><%= @transaction_presenter.icon %></span>
+          </div>
+      </div>
+      <div class="text-6xl font-bold text-red-400 mb-2">-<%= @transaction_presenter.amount %></div>
+      <div class="text-bunker-300 text-lg"><%= @transaction_presenter.description%></div>
+      <div class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-red-500/20 text-red-400 mt-4">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m0 0l7-7m0 0l7 7"></path>
+          </svg>
+          Expense
+      </div>
+  </div>
 
-<div>
-  <%= link_to "Edit this transaction", edit_transaction_path(@transaction) %> |
-  <%= link_to "Back to transactions", transactions_path %>
+  <!-- Main Content -->
+  <div class="grid lg:grid-cols-3 gap-8">
+      <!-- Transaction Details -->
+      <div class="lg:col-span-2 space-y-8">
+          <!-- Basic Information -->
+          <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+              <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                  <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Información de la Transacción
+              </h2>
 
-  <%= button_to "Destroy this transaction", @transaction, method: :delete %>
+              <div class="grid md:grid-cols-2 gap-6">
+                  <div class="space-y-4">
+                      <div class="bg-bunker-800/30 rounded-xl p-4">
+                          <div class="text-bunker-300 text-sm mb-1">Descripción</div>
+                          <div class="text-white font-medium"><%= @transaction_presenter.description %></div>
+                      </div>
+                      
+                      <div class="bg-bunker-800/30 rounded-xl p-4">
+                          <div class="text-bunker-300 text-sm mb-1">Categoría</div>
+                          <div class="flex items-center gap-2">
+                              <span class="text-lg"><%= @transaction_presenter.icon %></span>
+                              <span class="text-white font-medium"><%= @transaction_presenter.category %></span>
+                          </div>
+                      </div>
+
+                      <div class="bg-bunker-800/30 rounded-xl p-4">
+                          <div class="text-bunker-300 text-sm mb-1">Fecha</div>
+                          <div class="text-white font-medium"><%= @transaction_presenter.transaction_date %></div>
+                      </div>
+                  </div>
+
+                  <div class="space-y-4">
+                      <div class="bg-bunker-800/30 rounded-xl p-4">
+                          <div class="text-bunker-300 text-sm mb-1">Presupuesto Afectado</div>
+                          <% budget_presenter = BudgetPresenter.new(@transaction.budget) %>
+                          <div class="flex items-center gap-2">
+                              <div class="w-8 h-8 bg-<%= budget_presenter.color %> rounded-lg flex items-center justify-center">
+                                  <span class="text-sm"><%= budget_presenter.icon %></span>
+                              </div>
+                              <span class="text-white font-medium"><%= @transaction_presenter.budget %></span>
+                          </div>
+                      </div>
+
+                      <div class="bg-bunker-800/30 rounded-xl p-4">
+                            <div class="text-bunker-300 text-sm mb-1">Moneda</div>
+                            <% currency_presenter = CurrencyPresenter.new(@transaction.currency) %>
+                            <div class="flex items-center gap-2">
+                                <span class="text-white font-medium"><%= "#{currency_presenter.name} (#{currency_presenter.code})" %></span>
+                                <span class="text-bunker-400"><%= currency_presenter.symbol %></span>
+                            </div>
+                      </div>
+
+                      <div class="bg-bunker-800/30 rounded-xl p-4">
+                          <div class="text-bunker-300 text-sm mb-1">Estado</div>
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400">
+                              ✓ Confirmada
+                          </span>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Impact Analysis -->
+          <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+              <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                  <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                  Impacto en el Presupuesto
+              </h2>
+
+              <div class="grid md:grid-cols-3 gap-4 mb-6">
+                  <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
+                      <div class="text-bunker-300 text-sm mb-1">Saldo Anterior</div>
+                      <div class="text-emerald-400 text-xl font-semibold">$8,750.00</div>
+                  </div>
+                  <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
+                      <div class="text-bunker-300 text-sm mb-1">Esta Transacción</div>
+                      <div class="text-red-400 text-xl font-semibold">-<%= @transaction_presenter.amount %></div>
+                  </div>
+                  <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
+                      <div class="text-bunker-300 text-sm mb-1">Saldo Actual</div>
+                      <div class="text-white text-xl font-semibold">$7,500.00</div>
+                  </div>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="bg-bunker-800/30 rounded-xl p-4">
+                  <div class="flex justify-between items-center mb-2">
+                      <span class="text-bunker-300 text-sm">Utilización del presupuesto</span>
+                      <span class="text-white font-medium">62.5%</span>
+                  </div>
+                  <div class="bg-bunker-700 rounded-full h-3 mb-2">
+                      <div class="bg-gradient-to-r from-emerald-500 to-yellow-500 h-3 rounded-full transition-all duration-500" style="width: 62.5%"></div>
+                  </div>
+                  <div class="flex justify-between text-xs text-bunker-400">
+                      <span>$0</span>
+                      <span>$6,000</span>
+                      <span>$12,000</span>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Related Transactions (if transfer) -->
+          <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+              <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                  <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                  </svg>
+                  Transacciones Relacionadas
+              </h2>
+
+              <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
+                  <svg class="w-12 h-12 text-bunker-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                  </svg>
+                  <div class="text-bunker-400 text-sm">Esta transacción no tiene relaciones con otras transacciones</div>
+              </div>
+
+              <!-- Example for transfer transactions -->
+              <!--
+              <div class="space-y-3">
+                  <div class="flex items-center justify-between p-4 bg-bunker-800/30 rounded-xl">
+                      <div class="flex items-center gap-3">
+                          <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                              <span class="text-lg">💳</span>
+                          </div>
+                          <div>
+                              <div class="text-white font-medium">Transferencia de entrada</div>
+                              <div class="text-bunker-400 text-sm">Desde: Tarjeta BBVA</div>
+                          </div>
+                      </div>
+                      <div class="text-emerald-400 font-semibold">+$1,250.00</div>
+                  </div>
+              </div>
+              -->
+          </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="space-y-6">
+          <!-- Quick Actions -->
+          <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+              <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                  Acciones Rápidas
+              </h3>
+              <div class="space-y-3">
+                  <button class="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-3 rounded-xl font-medium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                      </svg>
+                      Duplicar Transacción
+                  </button>
+                  <button class="w-full bg-bunker-800/60 hover:bg-bunker-700/60 text-white px-4 py-3 rounded-xl font-medium transition-all duration-200 border border-bunker-700/50 hover:border-bunker-600/50 flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                      </svg>
+                      Exportar Recibo
+                  </button>
+                  <button class="w-full bg-bunker-800/60 hover:bg-bunker-700/60 text-white px-4 py-3 rounded-xl font-medium transition-all duration-200 border border-bunker-700/50 hover:border-bunker-600/50 flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
+                      </svg>
+                      Crear Recurrente
+                  </button>
+              </div>
+          </div>
+
+          <!-- Transaction Metadata -->
+          <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+              <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                  </svg>
+                  Metadatos
+              </h3>
+              <div class="space-y-4">
+                  <div class="flex justify-between items-center">
+                      <span class="text-bunker-300">ID de Transacción:</span>
+                      <span class="text-white font-mono text-sm">#TXN-2024-001587</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                      <span class="text-bunker-300">UUID:</span>
+                      <span class="text-white font-mono text-xs">550e8400-e29b-41d4...</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                      <span class="text-bunker-300">Creada:</span>
+                      <span class="text-white font-medium">15 Dic, 2024 - 14:30</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                      <span class="text-bunker-300">Última modificación:</span>
+                      <span class="text-white font-medium">15 Dic, 2024 - 14:32</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                      <span class="text-bunker-300">Estado:</span>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400">
+                          Activa
+                      </span>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Category Analysis -->
+          <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+              <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                  Análisis de Categoría
+              </h3>
+              <div class="space-y-4">
+                  <div class="bg-bunker-800/30 rounded-xl p-4">
+                      <div class="text-bunker-300 text-sm mb-2">Gasto total en "Comida" este mes</div>
+                      <div class="text-orange-400 text-2xl font-semibold">$4,350.00</div>
+                      <div class="text-bunker-400 text-sm">Esta transacción representa el 28.7% del total</div>
+                  </div>
+                  
+                  <div class="bg-bunker-800/30 rounded-xl p-4">
+                      <div class="text-bunker-300 text-sm mb-2">Promedio por transacción</div>
+                      <div class="text-purple-400 text-lg font-semibold">$435.00</div>
+                      <div class="text-bunker-400 text-sm">Esta transacción está 187% sobre el promedio</div>
+                  </div>
+
+                  <div class="bg-bunker-800/30 rounded-xl p-4">
+                      <div class="text-bunker-300 text-sm mb-2">Últimas 3 transacciones similares</div>
+                      <div class="space-y-2">
+                          <div class="flex justify-between text-sm">
+                              <span class="text-bunker-300">Soriana</span>
+                              <span class="text-white">$380.00</span>
+                          </div>
+                          <div class="flex justify-between text-sm">
+                              <span class="text-bunker-300">Walmart</span>
+                              <span class="text-white">$420.00</span>
+                          </div>
+                          <div class="flex justify-between text-sm">
+                              <span class="text-bunker-300">Chedraui</span>
+                              <span class="text-white">$310.00</span>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
 </div>

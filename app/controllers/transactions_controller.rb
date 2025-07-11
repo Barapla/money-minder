@@ -8,6 +8,7 @@ class TransactionsController < ApplicationController
 
   # GET /transactions/1 or /transactions/1.json
   def show
+    @transaction_presenter = TransactionPresenter.new(@transaction)
   end
 
   # GET /transactions/new

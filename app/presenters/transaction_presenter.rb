@@ -30,7 +30,7 @@ class TransactionPresenter < ApplicationPresenter
   end
 
   def transaction_date
-    @resource.transaction_date
+    DatePresenter.new(@resource.transaction_date).date_in_words_long
   end
 
   def budget

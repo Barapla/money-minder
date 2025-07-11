@@ -4,8 +4,8 @@
 class DatePresenter < ApplicationPresenter
   FORMATS = {
     default: :default,
-    short: :very_short,
-    long: :short
+    short: :short,
+    long: :long
   }.freeze
 
   def date
