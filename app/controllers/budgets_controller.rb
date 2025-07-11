@@ -23,6 +23,7 @@ class BudgetsController < ApplicationController
 
   def create
     @budget = Budget.new(budget_params)
+    @budget.current_amount = @budget.credit_card.limit_amount - @budget.credit_card.debt_amount
     if @budget.save
       redirect_to budgets_path, notice: 'Presupuesto creado exitosamente.'
     else

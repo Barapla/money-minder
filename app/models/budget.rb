@@ -32,6 +32,8 @@ class Budget < ApplicationRecord
   # Construir credit_card automáticamente
   after_initialize :build_budget_type_if_needed
 
+  after_update :update_debt_amount, if: :saved_change_to_current_amount?
+
   def budget_color
     self.class.progress_color(debt_amount, limit_amount)
   end
@@ -63,5 +65,11 @@ class Budget < ApplicationRecord
   def should_reject_savings_fund?
     # Rechazar los atributos de savings_fund si no es tipo savings_fund
     budget_type&.code != 'savings_fund'
+  end
+
+  def update_debt_amount
+    return if credit_card.nil?
+
+    credit_card.update(debt_amount: credit_card.limit_amount - current_amount)
   end
 end

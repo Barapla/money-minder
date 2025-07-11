@@ -33,9 +33,8 @@ class BudgetPresenter < ApplicationPresenter
     number_to_currency(@resource.limit_amount, unit: '$')
   end
 
-  def available_amount
-    available_amount = @resource.personal? ? @resource.current_amount : @resource.limit_amount - @resource.debt_amount
-    number_to_currency(available_amount, unit: '$')
+  def current_amount
+    number_to_currency(@resource.current_amount, unit: '$')
   end
 
   def status

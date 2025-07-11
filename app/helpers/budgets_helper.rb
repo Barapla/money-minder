@@ -22,7 +22,7 @@ module BudgetsHelper
         { value: budget_presenter.debt_amount,
           div_color: budget.budget_color },
         { value: budget_presenter.limit_amount },
-        { value: budget_presenter.available_amount,
+        { value: budget_presenter.current_amount,
           div_color: budget.budget_color },
         { type: 'progress_bar', value: budget_presenter.budget_percentage,
           div_color: budget.budget_color },

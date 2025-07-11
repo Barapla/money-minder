@@ -6,7 +6,7 @@
             options: { color: "orange", icon: "money" }) %>
     <%= render Shared::CardComponent.new(
             title: "DISPONIBLE", subtitle: "restante", 
-            main_text: @budget_presenter.available_amount, 
+            main_text: @budget_presenter.current_amount, 
             options: { color: "emerald", icon: "check" }) %>
     <%= render Shared::CardComponent.new(
             title: "PROGRESO", subtitle: "del límite", 

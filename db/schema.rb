@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_07_09_231855) do
+ActiveRecord::Schema[7.0].define(version: 2025_07_11_021018) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -182,6 +182,18 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_09_231855) do
     t.index ["uuid"], name: "index_savings_funds_on_uuid", unique: true
   end
 
+  create_table "transaction_histories", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.bigint "transaction_id", null: false
+    t.decimal "pre_amount"
+    t.decimal "post_amount"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["transaction_id"], name: "index_transaction_histories_on_transaction_id"
+    t.index ["uuid"], name: "index_transaction_histories_on_uuid", unique: true
+  end
+
   create_table "transactions", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
@@ -252,6 +264,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_09_231855) do
   add_foreign_key "savings_funds", "budgets", name: "fk_savings_funds_budget"
   add_foreign_key "savings_funds", "catalogs", column: "account_type_id", name: "fk_savings_funds_account_type"
   add_foreign_key "savings_funds", "catalogs", column: "compound_frequency_id", name: "fk_savings_funds_compound_frequency"
+  add_foreign_key "transaction_histories", "transactions", name: "fk_transaction_histories_transactions"
   add_foreign_key "transactions", "budgets", column: "related_budget_id", name: "fk_transactions_related_budget"
   add_foreign_key "transactions", "budgets", name: "fk_transactions_budget"
   add_foreign_key "transactions", "catalogs", column: "color_id", name: "fk_transactions_color"
