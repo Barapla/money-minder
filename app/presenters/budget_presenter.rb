@@ -33,8 +33,16 @@ class BudgetPresenter < ApplicationPresenter
     number_to_currency(@resource.limit_amount, unit: '$')
   end
 
-  def current_amount
-    number_to_currency(@resource.current_amount, unit: '$')
+  def spend_last_days
+    number_to_currency(@resource.spend_last_days, unit: '$')
+  end
+
+  def earnings_last_days
+    number_to_currency(@resource.earnings_last_days, unit: '$')
+  end
+
+  def difference_last_days
+    number_to_currency(@resource.difference_last_days, unit: '$')
   end
 
   def status

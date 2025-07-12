@@ -1,0 +1,19 @@
+<%= fields_for "budget", budget do |dc_form| %>
+    <%= render Forms::InputComponent.new(
+        name: :current_amount,
+        form: dc_form,
+        type: :number,
+        options: { 
+            step: 0.01,
+            placeholder: "0.00",
+            prefix: "$",
+            help_text: "Cantidad actual",
+            required: true,
+            data: {
+                "budgets--preview-target": "current",
+                action: "input->budgets--preview#updateDebitPreview",
+                required_message: "Por favor, ingresa la cantidad actual"
+            }
+        }
+    ) %>
+<% end %>

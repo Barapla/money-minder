@@ -46,6 +46,32 @@ class Budget < ApplicationRecord
     self.class.progress_status(debt_amount, limit_amount)
   end
 
+  def transactions_last_days(days = 30)
+    transactions
+      .where('transaction_date >= ?', days.days.ago)
+      .order(transaction_date: :desc)
+  end
+
+  def spend_last_days(days = 30)
+    transactions
+      .joins(:transaction_type)
+      .where('transaction_date >= ?', days.days.ago)
+      .where(transaction_type: { code: 'expense' })
+      .sum(:amount)
+  end
+
+  def earnings_last_days(days = 30)
+    transactions
+      .joins(:transaction_type)
+      .where('transaction_date >= ?', days.days.ago)
+      .where(transaction_type: { code: 'income' })
+      .sum(:amount)
+  end
+
+  def difference_last_days(days = 30)
+    earnings_last_days(days) - spend_last_days(days)
+  end
+
   private
 
   def build_budget_type_if_needed

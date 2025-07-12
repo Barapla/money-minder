@@ -35,7 +35,7 @@
             <%= render Forms::SelectComponent.new(
                 name: :budget_type_id,
                 form:,
-                options_collection: Catalog.get_by_group_pluck('budget_types', ['cash']),
+                options_collection: Catalog.get_by_group_pluck('budget_types'),
                 options: { 
                     help_text: "Categoría principal del presupuesto",
                     required: true,
@@ -57,7 +57,7 @@
             <%= render Forms::RadioComponent.new(
                 name: :icon_id,
                 form:,
-                collection: Catalog.by_group('budget_icons', ['cash']),
+                collection: Catalog.by_group('budget_icons'),
                 options: { 
                     default_object_label: 'value',
                     help_text: "Selecciona un icono para identificar tu presupuesto",

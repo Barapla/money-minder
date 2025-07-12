@@ -1,0 +1,37 @@
+<!-- Preview Card - Debit Card -->
+<div class="form-group">
+    <label class="block text-sm font-medium text-bunker-200 mb-2">
+        Vista previa
+    </label>
+    <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-4">
+        <div class="flex items-center gap-3 mb-3">
+            <div data-budgets--preview-target="preview" class="w-10 h-10 bg-<%= budget.color&.value || 'blue-500' %> rounded-lg flex items-center justify-center">
+                <span class="text-lg"><%= budget.icon&.value || "💳" %></span>
+            </div>
+            <div>
+                <div data-budgets--preview-target="previewBudgetType" class="text-sm font-medium text-white"><%= budget.budget_type&.value || "Tarjeta de débito" %></div>
+                <div data-budgets--preview-target="previewName" class="text-xs text-bunker-400"><%= budget.name || "Nuevo Presupuesto" %></div>
+            </div>
+        </div>
+        <div class="space-y-2 text-xs">
+            <div class="flex justify-between items-center">
+                <span class="text-bunker-300">Saldo disponible</span>
+                <span data-budgets--preview-target="previewCurrent" class="text-emerald-400 text-lg font-semibold">$<%= budget.current_amount || "0.00" %></span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-bunker-300">Estado</span>
+                <span class="text-white" data-budgets--preview-target="previewDebitStatus">
+                    <% if (budget.current_amount || 0) > 0 %>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-emerald-500/20 text-emerald-400">
+                            ✓ Con fondos
+                        </span>
+                    <% else %>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-500/20 text-red-400">
+                            ⚠ Sin fondos
+                        </span>
+                    <% end %>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

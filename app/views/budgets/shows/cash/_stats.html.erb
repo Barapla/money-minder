@@ -1,0 +1,19 @@
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <%= render Shared::CardComponent.new(
+            title: "SALDO DISPONIBLE", subtitle: "en tu cuenta", 
+            main_text: @budget_presenter.current_amount, 
+            options: { color: "emerald", icon: "money" }) %>
+    <%= render Shared::CardComponent.new(
+            title: "GASTADO ESTE MES", subtitle: "desde el #{DatePresenter.new(Date.today.at_beginning_of_month).date_in_words_only_month}", 
+            main_text: @budget_presenter.current_amount, 
+            options: { color: "orange", icon: "bag" }) %>
+    <%= render Shared::CardComponent.new(
+            title: "PROMEDIO DIARIO", subtitle: "últimos 15 días", 
+            main_text: @budget_presenter.budget_percentage, 
+            options: { color: "purple", icon: "stats" }) %>
+    <%= render Shared::CardComponent.new(
+            title: "ESTADO", subtitle: "sin bloqueos", 
+            main_text: @budget.active? ? "Activo" : "Inactivo", 
+            options: { color: "blue", icon: "calendar" }) %>
+</div>

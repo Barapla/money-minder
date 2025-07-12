@@ -54,6 +54,28 @@ module TransactionsHelper
     end
   end
 
+  def transaction_color_class(transaction_type_code)
+    case transaction_type_code
+    when 'income'
+      'bg-emerald-400'
+    when 'expense'
+      'bg-orange-400'
+    else
+      'bg-purple-400'
+    end
+  end
+
+  def transaction_text_color_class(transaction_type_code)
+    case transaction_type_code
+    when 'income'
+      'text-emerald-400'
+    when 'expense'
+      'text-red-400'
+    else
+      'text-purple-400'
+    end
+  end
+
   def transaction_type_badge(transaction_type)
     case transaction_type&.code
     when 'income'
