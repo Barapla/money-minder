@@ -1,0 +1,14 @@
+<div class="mb-6">
+    <div class="flex justify-between items-center mb-2">
+        <span class="text-sm text-bunker-300">Progreso actual</span>
+        <span class="text-lg font-semibold text-white"><%= @budget.budget_percentage %>%</span>
+    </div>
+    <div class="bg-bunker-800/60 rounded-full h-4 mb-4">
+        <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-4 rounded-full transition-all duration-500" style="width: <%= @budget.budget_percentage %>%"></div>
+    </div>
+    <div class="flex justify-between text-sm text-bunker-400">
+        <span>$0</span>
+        <span><%= number_to_currency(@budget.limit_amount/2) %></span>
+        <span><%= @budget_presenter.limit_amount %></span>
+    </div>
+</div>

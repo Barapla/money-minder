@@ -16,7 +16,8 @@ class Transaction < ApplicationRecord
   after_create :create_transaction_history, :update_budget_amount
 
   def create_transaction_history
-    transaction_history.create!(
+    TransactionHistory.create(
+      transaction_record: self,
       pre_amount: budget.current_amount,
       post_amount: budget.current_amount - amount
     )
@@ -24,5 +25,17 @@ class Transaction < ApplicationRecord
 
   def update_budget_amount
     budget.update(current_amount: budget.current_amount - amount)
+  end
+
+  def preview_amount
+    transaction_history&.pre_amount
+  end
+
+  def post_amount
+    transaction_history&.post_amount
+  end
+
+  def used_percentage
+    ((amount / transaction_history&.pre_amount.to_f) * 100).round(2)
   end
 end

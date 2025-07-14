@@ -6,7 +6,7 @@
             options: { color: "emerald", icon: "money" }) %>
     <%= render Shared::CardComponent.new(
             title: "GASTADO ESTE MES", subtitle: "desde el #{DatePresenter.new(Date.today.at_beginning_of_month).date_in_words_only_month}", 
-            main_text: @budget_presenter.spent_amount_this_month, 
+            main_text: @budget_presenter.current_amount, 
             options: { color: "orange", icon: "bag" }) %>
     <%= render Shared::CardComponent.new(
             title: "PROMEDIO DIARIO", subtitle: "últimos 15 días", 

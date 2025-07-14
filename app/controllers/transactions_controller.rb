@@ -14,6 +14,7 @@ class TransactionsController < ApplicationController
   # GET /transactions/new
   def new
     @transaction = Transaction.new
+    @transaction.budget_id = params[:budget_id] if params[:budget_id].present?
   end
 
   # GET /transactions/1/edit

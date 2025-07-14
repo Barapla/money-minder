@@ -25,19 +25,19 @@ es:
      
   datetime:
     distance_in_words:
-      about_x_hours:
-        one: "hace 1 hora"
-        other: "hace %{count} horas"
-      about_x_minutes:
+      x_minutes:
         one: "hace 1 minuto"
         other: "hace %{count} minutos"
-      about_x_days:
+      x_hours:
+        one: "hace 1 hora"
+        other: "hace %{count} horas"
+      x_days:
         one: "hace 1 día"
         other: "hace %{count} días"
-      about_x_months:
+      x_months:
         one: "hace 1 mes"
         other: "hace %{count} meses"
-      about_x_years:
+      x_years:
         one: "hace 1 año"
         other: "hace %{count} años"
 

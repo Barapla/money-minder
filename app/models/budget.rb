@@ -52,7 +52,15 @@ class Budget < ApplicationRecord
       .order(transaction_date: :desc)
   end
 
-  def spend_last_days(days = 30)
+  def spent_amount_this_month
+    transactions
+      .joins(:transaction_type)
+      .where('transaction_date >= ?', Date.today.at_beginning_of_month)
+      .where(transaction_type: { code: 'expense' })
+      .sum(:amount)
+  end
+
+  def spent_last_days(days = 30)
     transactions
       .joins(:transaction_type)
       .where('transaction_date >= ?', days.days.ago)
@@ -69,7 +77,16 @@ class Budget < ApplicationRecord
   end
 
   def difference_last_days(days = 30)
-    earnings_last_days(days) - spend_last_days(days)
+    earnings_last_days(days) - spent_last_days(days)
+  end
+
+  def last_change
+    date_change = updated_at
+
+    last_transaction = transactions.order(transaction_date: :desc).first
+    date_change = last_transaction.transaction_date if last_transaction
+
+    date_change
   end
 
   private

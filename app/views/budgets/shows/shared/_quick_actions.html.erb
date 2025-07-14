@@ -1,0 +1,32 @@
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+    <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+        Acciones Rápidas
+    </h3>
+    <div class="space-y-3">
+        <%= render Buttons::LinkComponent.new(content: '
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Agregar Transacción
+            ', href: new_transaction_path(budget_id: @budget.id), 
+            options: { 
+                class: "btn-new" 
+            })
+        %>
+        <button class="w-full bg-bunker-800/60 hover:bg-bunker-700/60 text-white px-4 py-3 rounded-xl font-medium transition-all duration-200 border border-bunker-700/50 hover:border-bunker-600/50 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+            </svg>
+            Transferir Dinero
+        </button>
+        <button class="w-full bg-bunker-800/60 hover:bg-bunker-700/60 text-white px-4 py-3 rounded-xl font-medium transition-all duration-200 border border-bunker-700/50 hover:border-bunker-600/50 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            Ver Estadísticas
+        </button>
+    </div>
+</div>

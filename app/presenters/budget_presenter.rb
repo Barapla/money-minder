@@ -21,6 +21,10 @@ class BudgetPresenter < ApplicationPresenter
     @resource.color.value
   end
 
+  def last_change
+    time_ago_in_words(@resource.last_change)
+  end
+
   def debt_amount
     number_to_currency(@resource.debt_amount, unit: '$')
   end
@@ -33,8 +37,12 @@ class BudgetPresenter < ApplicationPresenter
     number_to_currency(@resource.limit_amount, unit: '$')
   end
 
-  def spend_last_days
-    number_to_currency(@resource.spend_last_days, unit: '$')
+  def spent_amount_this_month
+    number_to_currency(@resource.spent_amount_this_month, unit: '$')
+  end
+
+  def spent_last_days
+    number_to_currency(@resource.spent_last_days, unit: '$')
   end
 
   def earnings_last_days

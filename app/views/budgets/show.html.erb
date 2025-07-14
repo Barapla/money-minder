@@ -1,1 +1,109 @@
-<%= render partial: "budgets/shows/#{@budget.budget_type.code}" %>
+<div class="max-w-6xl mx-auto">
+    <!-- Header (mantenemos el mismo) -->
+    <%= render partial: "budgets/shows/shared/header" %>
+    <!-- Main Content -->
+    <div class="grid lg:grid-cols-3 gap-8">
+        <!-- Progress and Details -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Balance Chart -->
+            <%= render partial: "budgets/shows/shared/balance_chart" %>
+
+            <!-- Recent Transactions -->
+            <%= render partial: "budgets/shows/shared/recent_transactions" %>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Quick Actions -->
+            <%= render partial: "budgets/shows/shared/quick_actions" %>
+
+            <!-- Card Info -->
+            <%= render partial: "budgets/shows/shared/card_info" %>
+
+            <!-- Spending Analysis -->
+            <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                </svg>
+                Análisis de Gastos
+            </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-blue-400 rounded-full"></div>
+                            <span class="text-bunker-300 text-sm">Compras</span>
+                        </div>
+                        <span class="text-white font-medium">$2,100</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-orange-400 rounded-full"></div>
+                            <span class="text-bunker-300 text-sm">Restaurantes</span>
+                        </div>
+                        <span class="text-white font-medium">$1,580</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-red-400 rounded-full"></div>
+                            <span class="text-bunker-300 text-sm">Retiros ATM</span>
+                        </div>
+                        <span class="text-white font-medium">$1,000</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-purple-400 rounded-full"></div>
+                            <span class="text-bunker-300 text-sm">Otros</span>
+                        </div>
+                        <span class="text-white font-medium">$0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Balance Recommendations -->
+            <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 0v1m0 0v4.5M12 6V3m6 3L6 21"></path>
+                    </svg>
+                    Recomendaciones
+                </h3>
+                <div class="space-y-3">
+                    <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                            </svg>
+                            <div>
+                                <div class="text-emerald-300 text-sm font-medium">Saldo Saludable</div>
+                                <div class="text-emerald-200 text-xs">Tu saldo actual de $15,250 es bueno para tus gastos mensuales promedio.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <div class="text-blue-300 text-sm font-medium">Tip de Ahorro</div>
+                                <div class="text-blue-200 text-xs">Considera transferir $5,000 a una cuenta de ahorros para generar intereses.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                            <div>
+                                <div class="text-yellow-300 text-sm font-medium">Gastos Elevados</div>
+                                <div class="text-yellow-200 text-xs">Tus gastos en restaurantes han aumentado 20% este mes. Considera cocinar más en casa.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

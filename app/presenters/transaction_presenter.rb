@@ -25,6 +25,18 @@ class TransactionPresenter < ApplicationPresenter
     number_to_currency(@resource.amount, unit: '$')
   end
 
+  def preview_amount
+    number_to_currency(@resource.preview_amount, unit: '$')
+  end
+
+  def post_amount
+    number_to_currency(@resource.post_amount, unit: '$')
+  end
+
+  def used_percentage
+    "#{@resource.used_percentage}%"
+  end
+
   def description
     @resource.description
   end
@@ -39,5 +51,9 @@ class TransactionPresenter < ApplicationPresenter
 
   def created_at
     @resource.created_at.strftime('%d %b %Y')
+  end
+
+  def updated_at
+    @resource.updated_at.strftime('%d %b %Y')
   end
 end

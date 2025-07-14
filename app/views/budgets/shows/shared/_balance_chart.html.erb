@@ -1,0 +1,50 @@
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold text-white flex items-center gap-2">
+            <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            Evolución del Saldo
+        </h2>
+        <div class="flex gap-2">
+            <button class="px-3 py-1 text-sm bg-purple-500 text-white rounded-lg">7 días</button>
+            <button class="px-3 py-1 text-sm text-bunker-400 hover:text-white border border-bunker-700 rounded-lg">30 días</button>
+            <button class="px-3 py-1 text-sm text-bunker-400 hover:text-white border border-bunker-700 rounded-lg">3 meses</button>
+        </div>
+    </div>
+
+    <% if @budget.budget_type&.code != 'credit_card' %>
+        <!-- Resumen del período -->
+        <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
+                <div class="text-emerald-400 text-lg font-semibold">+<%= @budget_presenter.earnings_last_days %></div>
+                <div class="text-bunker-300 text-sm">Ingresos</div>
+            </div>
+            <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
+                <div class="text-red-400 text-lg font-semibold">-<%= @budget_presenter.spent_last_days %></div>
+                <div class="text-bunker-300 text-sm">Gastos</div>
+            </div>
+            <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
+                <div class="text-orange-400 text-lg font-semibold"><%= @budget_presenter.difference_last_days %></div>
+                <div class="text-bunker-300 text-sm">Diferencia</div>
+            </div>
+        </div>
+    <% else %>
+        <%= render partial: "budgets/shows/credit_card/progress_bar" %>
+    <% end %>
+
+    <!-- Actividad Reciente -->
+    <div class="bg-bunker-800/30 rounded-xl p-4">
+        <h3 class="text-lg font-medium text-white mb-4">Actividad Reciente</h3>
+        <div class="space-y-3">
+            <% @budget.transactions_last_days.each do |transaction| %>
+                <% transaction_presenter = TransactionPresenter.new(transaction) %>
+                <div class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full <%= transaction_color_class(transaction.transaction_type.code) %>"></div>
+                    <span class="text-sm text-bunker-300"><%= time_ago_in_words(transaction.transaction_date) %></span>
+                    <span class="text-sm text-white"><%= "#{transaction_presenter.description} - #{transaction_presenter.amount}" %></span>
+                </div>
+            <% end %>
+        </div>
+    </div>
+</div>

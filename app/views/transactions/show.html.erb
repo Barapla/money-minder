@@ -139,15 +139,15 @@
               <div class="grid md:grid-cols-3 gap-4 mb-6">
                   <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
                       <div class="text-bunker-300 text-sm mb-1">Saldo Anterior</div>
-                      <div class="text-emerald-400 text-xl font-semibold">$8,750.00</div>
+                      <div class="text-emerald-400 text-xl font-semibold"><%= @transaction_presenter.preview_amount %></div>
                   </div>
                   <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
                       <div class="text-bunker-300 text-sm mb-1">Esta Transacción</div>
                       <div class="text-red-400 text-xl font-semibold">-<%= @transaction_presenter.amount %></div>
                   </div>
                   <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
-                      <div class="text-bunker-300 text-sm mb-1">Saldo Actual</div>
-                      <div class="text-white text-xl font-semibold">$7,500.00</div>
+                      <div class="text-bunker-300 text-sm mb-1">Saldo Posterior</div>
+                      <div class="text-white text-xl font-semibold"><%= @transaction_presenter.post_amount %></div>
                   </div>
               </div>
 
@@ -155,15 +155,15 @@
               <div class="bg-bunker-800/30 rounded-xl p-4">
                   <div class="flex justify-between items-center mb-2">
                       <span class="text-bunker-300 text-sm">Utilización del presupuesto</span>
-                      <span class="text-white font-medium">62.5%</span>
+                      <span class="text-white font-medium"><%= @transaction_presenter.used_percentage %></span>
                   </div>
                   <div class="bg-bunker-700 rounded-full h-3 mb-2">
-                      <div class="bg-gradient-to-r from-emerald-500 to-yellow-500 h-3 rounded-full transition-all duration-500" style="width: 62.5%"></div>
+                      <div class="bg-gradient-to-r from-emerald-500 to-yellow-500 h-3 rounded-full transition-all duration-500" style="width: <%= @transaction_presenter.used_percentage %>"></div>
                   </div>
                   <div class="flex justify-between text-xs text-bunker-400">
                       <span>$0</span>
-                      <span>$6,000</span>
-                      <span>$12,000</span>
+                      <span><%= number_to_currency(@transaction.preview_amount / 2, unit: '$') %></span>
+                      <span><%= @transaction_presenter.preview_amount %></span>
                   </div>
               </div>
           </div>
@@ -251,15 +251,15 @@
                   </div>
                   <div class="flex justify-between items-center">
                       <span class="text-bunker-300">UUID:</span>
-                      <span class="text-white font-mono text-xs">550e8400-e29b-41d4...</span>
+                      <span class="text-white font-mono text-xs"><%= @transaction.uuid.truncate(22) %></span>
                   </div>
                   <div class="flex justify-between items-center">
                       <span class="text-bunker-300">Creada:</span>
-                      <span class="text-white font-medium">15 Dic, 2024 - 14:30</span>
+                      <span class="text-white font-medium"><%= @transaction_presenter.created_at %></span>
                   </div>
                   <div class="flex justify-between items-center">
                       <span class="text-bunker-300">Última modificación:</span>
-                      <span class="text-white font-medium">15 Dic, 2024 - 14:32</span>
+                      <span class="text-white font-medium"><%= @transaction_presenter.updated_at %></span>
                   </div>
                   <div class="flex justify-between items-center">
                       <span class="text-bunker-300">Estado:</span>
