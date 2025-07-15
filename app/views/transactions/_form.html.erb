@@ -15,8 +15,15 @@
                 options_collection: Catalog.get_by_group_pluck('transaction_types'),
                 options: { 
                     help_text: "Selecciona el tipo de transacción",
+                    disabled: transaction.persisted?,
                     required: true,
                     data: {
+                        controller: "select-to",
+                        select_to_url_value: change_categories_transactions_path,
+                        select_to_method_value: "POST",
+                        select_to_field_value: "transaction_type_id",
+                        select_to_model_value: "transaction",
+                        select_to_target: "select",
                         "budgets--preview-target": "name",
                         action: "change->budgets--preview#updatePreview"
                     }
@@ -55,20 +62,11 @@
                 }
             ) %>
             
-            
-            <%= render Forms::SelectComponent.new(
-                name: :category_id,
-                form:,
-                options_collection: Category.children_pluck,
-                options: { 
-                    help_text: "Selecciona la categoría de la transacción",
-                    required: true,
-                    data: {
-                        "budgets--preview-target": "budgetType",
-                        action: "change->budgets--preview#updatePreview"
-                    }
-                }
-            ) %>
+            <%= turbo_frame_tag "categories_frame" do  %>
+                <% if transaction.new_record? || transaction.transaction_type != nil %>
+                    <%= render "transactions/forms/#{transaction.transaction_type&.code || 'expense'}/categories", transaction: %>
+                <% end %>
+            <% end %>
 
             <%= render Forms::InputComponent.new(
                 name: :transaction_date,
@@ -155,7 +153,7 @@
                 <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-4">
                     <div class="flex items-center gap-3 mb-3">
                         <div data-budgets--preview-target="preview" class="w-10 h-10 bg-<%= transaction.color&.value || 'blue-500' %> rounded-lg flex items-center justify-center">
-                            <span class="text-lg"><%= transaction.icon&.value || "👗" %></span>
+                            <span class="text-lg"><%= transaction.icon&.value || Catalog.by_group('transaction_icons').first.value %></span>
                         </div>
                         <div>
                             <div data-budgets--preview-target="previewBudgetType" class="text-sm font-medium text-white"><%= transaction.category&.name || "Tarjeta de débito" %></div>

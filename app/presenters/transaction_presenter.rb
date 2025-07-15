@@ -56,4 +56,8 @@ class TransactionPresenter < ApplicationPresenter
   def updated_at
     @resource.updated_at.strftime('%d %b %Y')
   end
+
+  def spent_amount_the_month_by_category
+    number_to_currency(@resource.spent_amount_the_month_by_category, unit: '$')
+  end
 end

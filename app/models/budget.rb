@@ -60,6 +60,25 @@ class Budget < ApplicationRecord
       .sum(:amount)
   end
 
+  def spent_amount_this_month_by_category(category)
+    transactions
+      .joins(:transaction_type)
+      .joins(:category)
+      .where('transaction_date >= ?', Date.today.at_beginning_of_month)
+      .where(transaction_type: { code: 'expense' })
+      .where(category:)
+      .sum(:amount)
+  end
+
+  # last 15 days average daily spent
+  def average_daily_spent
+    transactions
+      .joins(:transaction_type)
+      .where('transaction_date >= ?', 15.days.ago)
+      .where(transaction_type: { code: 'expense' })
+      .sum(:amount) / 15.0
+  end
+
   def spent_last_days(days = 30)
     transactions
       .joins(:transaction_type)

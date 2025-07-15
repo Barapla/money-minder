@@ -41,6 +41,14 @@ class BudgetPresenter < ApplicationPresenter
     number_to_currency(@resource.spent_amount_this_month, unit: '$')
   end
 
+  def spent_amount_this_month_by_category(category)
+    number_to_currency(@resource.spent_amount_this_month_by_category(category), unit: '$')
+  end
+
+  def average_daily_spent
+    number_to_currency(@resource.average_daily_spent, unit: '$')
+  end
+
   def spent_last_days
     number_to_currency(@resource.spent_last_days, unit: '$')
   end

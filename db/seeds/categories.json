@@ -240,6 +240,28 @@
           "description": "Gastos que no encajan en ninguna otra categoría específica."
         }
       ]
+    },
+    {
+      "name": "Ingresos",
+      "description": "Todas las fuentes de ingresos, tanto regulares como irregulares.",
+      "subcategories": [
+        {
+          "name": "Salario",
+          "description": "Ingresos provenientes del trabajo o empleo regular."
+        },
+        {
+          "name": "Ingresos por inversiones",
+          "description": "Ganancias obtenidas de inversiones financieras, acciones o bienes raíces."
+        },
+        {
+          "name": "Ingresos por freelance",
+          "description": "Pagos recibidos por trabajos independientes o proyectos freelance."
+        },
+        {
+          "name": "Otros ingresos",
+          "description": "Cualquier otra fuente de ingresos no especificada, como regalos monetarios o premios."
+        }
+      ]
     }
   ]
 }

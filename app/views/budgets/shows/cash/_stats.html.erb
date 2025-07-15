@@ -10,7 +10,7 @@
             options: { color: "orange", icon: "bag" }) %>
     <%= render Shared::CardComponent.new(
             title: "PROMEDIO DIARIO", subtitle: "últimos 15 días", 
-            main_text: @budget_presenter.budget_percentage, 
+            main_text: @budget_presenter.average_daily_spent, 
             options: { color: "purple", icon: "stats" }) %>
     <%= render Shared::CardComponent.new(
             title: "ESTADO", subtitle: "sin bloqueos", 

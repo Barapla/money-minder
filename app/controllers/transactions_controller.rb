@@ -9,12 +9,23 @@ class TransactionsController < ApplicationController
   # GET /transactions/1 or /transactions/1.json
   def show
     @transaction_presenter = TransactionPresenter.new(@transaction)
+    @budget_presenter = BudgetPresenter.new(@transaction.budget)
   end
 
   # GET /transactions/new
   def new
     @transaction = Transaction.new
     @transaction.budget_id = params[:budget_id] if params[:budget_id].present?
+  end
+
+  def change_categories
+    transaction_type = Catalog.find(params[:transaction][:transaction_type_id])
+    stream = get_turbo_stream_for_transaction_type(transaction_type)
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: stream
+      end
+    end
   end
 
   # GET /transactions/1/edit
@@ -79,5 +90,15 @@ class TransactionsController < ApplicationController
                                         :icon_id,
                                         :color_id,
                                         :user_id)
+  end
+
+  def get_turbo_stream_for_transaction_type(transaction_type)
+    [
+      turbo_stream.update(
+        'categories_frame',
+        partial: "transactions/forms/#{transaction_type.code}/categories",
+        locals: { transaction: Transaction.new(transaction_type:) }
+      )
+    ]
   end
 end

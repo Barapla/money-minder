@@ -9,10 +9,22 @@ class Category < ApplicationRecord
 
   validates :name, presence: true, uniqueness: true
 
+  scope :exclude_categories_by_parent, lambda { |categories|
+    joins(:parent_category)
+      .where.not(parent_category: { name: categories })
+  }
+  scope :by_parent_category, lambda { |parent_category|
+    joins(:parent_category)
+      .where(parent_category: { name: parent_category })
+  }
   scope :parents, -> { where(parent_category_id: nil) }
   scope :children, -> { where.not(parent_category_id: nil) }
 
   def self.children_pluck
     children.pluck(:name, :id)
+  end
+
+  def self.by_parent_category_pluck(parent_category)
+    by_parent_category(parent_category).pluck(:name, :id)
   end
 end

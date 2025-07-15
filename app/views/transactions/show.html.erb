@@ -280,32 +280,33 @@
               </h3>
               <div class="space-y-4">
                   <div class="bg-bunker-800/30 rounded-xl p-4">
-                      <div class="text-bunker-300 text-sm mb-2">Gasto total en "Comida" este mes</div>
-                      <div class="text-orange-400 text-2xl font-semibold">$4,350.00</div>
-                      <div class="text-bunker-400 text-sm">Esta transacción representa el 28.7% del total</div>
+                      <div class="text-bunker-300 text-sm mb-2">Gasto total en "<%= @transaction_presenter.category %>" 
+                        <% if @transaction.transaction_date.month == Date.today.month %>
+                          este mes
+                        <% else %>
+                          en <%= @transaction.transaction_date.strftime("%B") %>
+                        <% end %>
+                      </div>
+                      <div class="text-orange-400 text-2xl font-semibold"><%= @transaction_presenter.spent_amount_the_month_by_category %></div>
+                      <div class="text-bunker-400 text-sm">Esta transacción representa el 
+                        <%= format_percentage(calculate_percentage(@transaction.amount,  @transaction.spent_amount_the_month_by_category )) %> del total</div>
                   </div>
                   
                   <div class="bg-bunker-800/30 rounded-xl p-4">
                       <div class="text-bunker-300 text-sm mb-2">Promedio por transacción</div>
-                      <div class="text-purple-400 text-lg font-semibold">$435.00</div>
-                      <div class="text-bunker-400 text-sm">Esta transacción está 187% sobre el promedio</div>
+                      <div class="text-purple-400 text-lg font-semibold"><%= number_to_currency(average(@transaction.by_category.pluck(:amount)), unit: "$") %></div>
+                      <div class="text-bunker-400 text-sm">Esta transacción está <%= calculate_percentage(@transaction.amount, average(@transaction.by_category.pluck(:amount))) %>% del promedio</div>
                   </div>
 
                   <div class="bg-bunker-800/30 rounded-xl p-4">
                       <div class="text-bunker-300 text-sm mb-2">Últimas 3 transacciones similares</div>
                       <div class="space-y-2">
-                          <div class="flex justify-between text-sm">
-                              <span class="text-bunker-300">Soriana</span>
-                              <span class="text-white">$380.00</span>
-                          </div>
-                          <div class="flex justify-between text-sm">
-                              <span class="text-bunker-300">Walmart</span>
-                              <span class="text-white">$420.00</span>
-                          </div>
-                          <div class="flex justify-between text-sm">
-                              <span class="text-bunker-300">Chedraui</span>
-                              <span class="text-white">$310.00</span>
-                          </div>
+                            <% @transaction.by_category.order("transaction_date DESC").limit(3).each do |transaction| %>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-bunker-300"><%= transaction.description %></span>
+                                    <span class="text-white"><%= number_to_currency(transaction.amount, unit: "$") %></span>
+                                </div>
+                            <% end %>
                       </div>
                   </div>
               </div>

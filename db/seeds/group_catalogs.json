@@ -204,6 +204,58 @@
         {
           "value": "📦",
           "code": "miscellaneous"
+        },
+        {
+          "value": "🚀",
+          "code": "investments"
+        },
+        {
+          "value": "💪",
+          "code": "exercise"
+        },
+        {
+          "value": "🛍️",
+          "code": "shopping"
+        },
+        {
+          "value": "📚",
+          "code": "books"
+        },
+        {
+          "value": "🎨",
+          "code": "hobbies"
+        },
+        {
+          "value": "🌍",
+          "code": "travel"
+        },
+        {
+          "value": "🧹",
+          "code": "cleaning"
+        },
+        {
+          "value": "🛠️",
+          "code": "home_improvement"
+        },
+        {
+          "code": "supermarket",
+          "value": "🛒"
+        },
+        {
+          "code": "utilities",
+          "value": "💡"
+        },
+        {
+          "code": "subscriptions",
+          "value": "📅"
+        },
+        {
+          "code": "donations",
+          "value": "🤝"
+        },
+        {
+          "code": "taxes",
+          "value": "💸"
         }
       ]
     }
