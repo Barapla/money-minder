@@ -54,6 +54,17 @@ module TransactionsHelper
     end
   end
 
+  def transaction_color_20_class(transaction_type_code)
+    case transaction_type_code
+    when 'income'
+      'bg-emerald-500/20'
+    when 'expense'
+      'bg-red-500/20'
+    else
+      'bg-purple-500/20'
+    end
+  end
+
   def transaction_color_class(transaction_type_code)
     case transaction_type_code
     when 'income'

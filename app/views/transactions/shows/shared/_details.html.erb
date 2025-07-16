@@ -1,0 +1,59 @@
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+    <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        Información de la Transacción
+    </h2>
+
+    <div class="grid md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+            <div class="bg-bunker-800/30 rounded-xl p-4">
+                <div class="text-bunker-300 text-sm mb-1">Descripción</div>
+                <div class="text-white font-medium"><%= @transaction_presenter.description %></div>
+            </div>
+            
+            <div class="bg-bunker-800/30 rounded-xl p-4">
+                <div class="text-bunker-300 text-sm mb-1">Categoría</div>
+                <div class="flex items-center gap-2">
+                    <span class="text-lg"><%= @transaction_presenter.icon %></span>
+                    <span class="text-white font-medium"><%= @transaction_presenter.category %></span>
+                </div>
+            </div>
+
+            <div class="bg-bunker-800/30 rounded-xl p-4">
+                <div class="text-bunker-300 text-sm mb-1">Fecha</div>
+                <div class="text-white font-medium"><%= @transaction_presenter.transaction_date %></div>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div class="bg-bunker-800/30 rounded-xl p-4">
+                <div class="text-bunker-300 text-sm mb-1">Presupuesto Afectado</div>
+                <% budget_presenter = BudgetPresenter.new(@transaction.budget) %>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-<%= budget_presenter.color %> rounded-lg flex items-center justify-center">
+                        <span class="text-sm"><%= budget_presenter.icon %></span>
+                    </div>
+                    <span class="text-white font-medium"><%= @transaction_presenter.budget %></span>
+                </div>
+            </div>
+
+            <div class="bg-bunker-800/30 rounded-xl p-4">
+                <div class="text-bunker-300 text-sm mb-1">Moneda</div>
+                <% currency_presenter = CurrencyPresenter.new(@transaction.currency) %>
+                <div class="flex items-center gap-2">
+                    <span class="text-white font-medium"><%= "#{currency_presenter.name} (#{currency_presenter.code})" %></span>
+                    <span class="text-bunker-400"><%= currency_presenter.symbol %></span>
+                </div>
+            </div>
+
+            <div class="bg-bunker-800/30 rounded-xl p-4">
+                <div class="text-bunker-300 text-sm mb-1">Estado</div>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400">
+                    ✓ Confirmada
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

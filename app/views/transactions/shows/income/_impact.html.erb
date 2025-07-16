@@ -1,0 +1,55 @@
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+    <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+        </svg>
+        Impacto en el Presupuesto
+    </h2>
+
+    <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
+            <div class="text-bunker-300 text-sm mb-1">Saldo Anterior</div>
+            <div class="text-orange-400 text-xl font-semibold"><%= @transaction_presenter.preview_amount %></div>
+        </div>
+        <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
+            <div class="text-bunker-300 text-sm mb-1">Este Ingreso</div>
+            <div class="text-emerald-400 text-xl font-semibold">+<%= @transaction_presenter.amount %></div>
+        </div>
+        <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
+            <div class="text-bunker-300 text-sm mb-1">Saldo Posterior</div>
+            <div class="text-emerald-400 text-xl font-semibold"><%= @transaction_presenter.post_amount %></div>
+        </div>
+    </div>
+
+    <!-- Growth Indicator -->
+    <div class="bg-bunker-800/30 rounded-xl p-4">
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-bunker-300 text-sm">Crecimiento del saldo</span>
+            <span class="text-emerald-400 font-medium">+<%= @transaction_presenter.growth_percentage %>%</span>
+        </div>
+        
+        <!-- Visual representation of growth -->
+        <div class="relative bg-bunker-700 rounded-full h-3 mb-2 overflow-hidden">
+            <!-- Base amount -->
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-400 rounded-full" 
+                 style="width: <%= @transaction_presenter.base_percentage %>%"></div>
+            <!-- Growth amount -->
+            <div class="absolute inset-0 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-500" 
+                 style="width: 100%; left: <%= @transaction_presenter.base_percentage %>%"></div>
+        </div>
+        
+        <div class="flex justify-between text-xs text-bunker-400">
+            <span>$0</span>
+            <span class="text-blue-400">Anterior: <%= @transaction_presenter.preview_amount %></span>
+            <span class="text-emerald-400">Nuevo: <%= @transaction_presenter.post_amount %></span>
+        </div>
+        
+        <!-- Income impact summary -->
+        <div class="mt-4">
+            <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-center">
+                <div class="text-emerald-400 text-lg font-semibold">+<%= @transaction_presenter.amount %></div>
+                <div class="text-emerald-300 text-xs">Incremento</div>
+            </div>
+        </div>
+    </div>
+</div>

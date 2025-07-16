@@ -1,0 +1,15 @@
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8 text-center">
+    <div class="flex items-center justify-center gap-3 mb-4">
+        <div class="w-20 h-20 bg-<%= @transaction_presenter.color %> rounded-2xl flex items-center justify-center">
+            <span class="text-4xl"><%= @transaction_presenter.icon %></span>
+        </div>
+    </div>
+    <div class="text-6xl font-bold <%= transaction_text_color_class(@transaction.transaction_type.code) %> mb-2"><%= @transaction.income? ? "+" : "-" %><%= @transaction_presenter.amount %></div>
+    <div class="text-bunker-300 text-lg"><%= @transaction_presenter.description%></div>
+    <div class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium <%= transaction_color_20_class(@transaction.transaction_type.code) %> <%= transaction_text_color_class(@transaction.transaction_type.code) %> mt-4">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m0 0l7-7m0 0l7 7"></path>
+        </svg>
+        <span><%= @transaction_presenter.transaction_type %></span>
+    </div>
+</div>

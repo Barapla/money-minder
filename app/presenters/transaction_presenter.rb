@@ -60,4 +60,16 @@ class TransactionPresenter < ApplicationPresenter
   def spent_amount_the_month_by_category
     number_to_currency(@resource.spent_amount_the_month_by_category, unit: '$')
   end
+
+  def growth_percentage
+    return 0 if @resource.preview_amount <= 0
+
+    ((@resource.amount.abs / @resource.preview_amount) * 100).round(1)
+  end
+
+  def base_percentage
+    return 0 if @resource.post_amount <= 0
+
+    ((@resource.preview_amount / @resource.post_amount) * 100).round(1)
+  end
 end

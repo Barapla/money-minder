@@ -72,4 +72,8 @@ class Transaction < ApplicationRecord
           .where(category:)
           .where(transaction_type: { code: 'expense' })
   end
+
+  def income?
+    transaction_type&.code == 'income'
+  end
 end
