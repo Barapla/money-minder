@@ -4,7 +4,7 @@
 class BudgetsController < ApplicationController
   include BudgetsHelper
   before_action :authenticate_user!
-  before_action :set_budget, only: %i[show edit update destroy]
+  before_action :set_budget, only: %i[show show_transactions edit update destroy]
 
   # GET /budgets
   # GET /budgets.json
@@ -15,6 +15,15 @@ class BudgetsController < ApplicationController
 
   def show
     @budget_presenter = BudgetPresenter.new(@budget)
+  end
+
+  def show_transactions
+    streams = turbo_stream_for_budget_transactions
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: streams
+      end
+    end
   end
 
   def new
@@ -45,7 +54,7 @@ class BudgetsController < ApplicationController
 
   def change_budget_type
     budget_type = Catalog.find(params[:budget][:budget_type_id])
-    stream = get_turbo_stream_for_budget_type(budget_type)
+    stream = turbo_stream_for_budget_type(budget_type)
     respond_to do |format|
       format.turbo_stream do
         render turbo_stream: stream
@@ -76,7 +85,7 @@ class BudgetsController < ApplicationController
     redirect_to budgets_path, alert: 'Presupuesto no encontrado.'
   end
 
-  def get_turbo_stream_for_budget_type(budget_type)
+  def turbo_stream_for_budget_type(budget_type)
     [
       turbo_stream.update(
         'budget_type_frame',
@@ -86,6 +95,16 @@ class BudgetsController < ApplicationController
         'preview_frame',
         partial: "budgets/forms/#{budget_type.code}/preview", locals: { budget: Budget.new(budget_type:) }
       )
+    ]
+  end
+
+  def turbo_stream_for_budget_transactions
+    [
+      turbo_stream.update(
+        'recent_transactions',
+        partial: 'budgets/shows/shared/recent_transactions/transactions', locals: { limit: nil }
+      ),
+      turbo_stream.remove('button_show_transactions')
     ]
   end
 end

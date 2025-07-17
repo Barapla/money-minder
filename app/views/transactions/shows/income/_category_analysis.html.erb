@@ -1,0 +1,41 @@
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+    <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        Análisis de Categoría
+    </h3>
+    <div class="space-y-4">
+        <div class="bg-bunker-800/30 rounded-xl p-4">
+            <div class="text-bunker-300 text-sm mb-2">Gasto total en "<%= @transaction_presenter.category %>" 
+                <% if @transaction.transaction_date.month == Date.today.month %>
+                    este mes
+                <% else %>
+                    en <%= @transaction.transaction_date.strftime("%B") %>
+                <% end %>
+            </div>
+            <div class="text-orange-400 text-2xl font-semibold"><%= @transaction_presenter.earned_amount_the_month_by_category %></div>
+            <div class="text-bunker-400 text-sm">Esta transacción representa el 
+                <%= format_percentage(calculate_percentage(@transaction.amount,  @transaction.earned_amount_the_month_by_category )) %> del total
+            </div>
+        </div>
+        
+        <div class="bg-bunker-800/30 rounded-xl p-4">
+            <div class="text-bunker-300 text-sm mb-2">Promedio por transacción</div>
+            <div class="text-purple-400 text-lg font-semibold"><%= number_to_currency(average(@transaction.by_category.pluck(:amount)), unit: "$") %></div>
+            <div class="text-bunker-400 text-sm">Esta transacción está <%= calculate_percentage(@transaction.amount, average(@transaction.by_category.pluck(:amount))) %>% del promedio</div>
+        </div>
+
+        <div class="bg-bunker-800/30 rounded-xl p-4">
+            <div class="text-bunker-300 text-sm mb-2">Últimas 3 transacciones similares</div>
+            <div class="space-y-2">
+                    <% @transaction.by_category.order("transaction_date DESC").limit(3).each do |transaction| %>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-bunker-300"><%= transaction.description %></span>
+                            <span class="text-white"><%= number_to_currency(transaction.amount, unit: "$") %></span>
+                        </div>
+                    <% end %>
+            </div>
+        </div>
+    </div>
+</div>

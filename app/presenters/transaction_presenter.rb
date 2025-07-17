@@ -61,6 +61,10 @@ class TransactionPresenter < ApplicationPresenter
     number_to_currency(@resource.spent_amount_the_month_by_category, unit: '$')
   end
 
+  def earned_amount_the_month_by_category
+    number_to_currency(@resource.earned_amount_the_month_by_category, unit: '$')
+  end
+
   def growth_percentage
     return 0 if @resource.preview_amount <= 0
 

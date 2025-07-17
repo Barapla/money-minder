@@ -60,12 +60,12 @@ class Budget < ApplicationRecord
       .sum(:amount)
   end
 
-  def spent_amount_this_month_by_category(category)
+  def amount_this_month_by_category(category, transaction_type = 'expense')
     transactions
       .joins(:transaction_type)
       .joins(:category)
       .where('transaction_date >= ?', Date.today.at_beginning_of_month)
-      .where(transaction_type: { code: 'expense' })
+      .where(transaction_type: { code: transaction_type })
       .where(category:)
       .sum(:amount)
   end
@@ -106,6 +106,19 @@ class Budget < ApplicationRecord
     date_change = last_transaction.transaction_date if last_transaction
 
     date_change
+  end
+
+  def categories_with_more_transactions(limit = 5, transaction_type = 'expense',
+                                        from_date = Date.today.at_beginning_of_month)
+    transactions
+      .joins(:transaction_type)
+      .joins(:category)
+      .where(transaction_type: { code: transaction_type })
+      .where('transaction_date >= ?', from_date)
+      .group('categories.id')
+      .order('COUNT(transactions.id) DESC')
+      .limit(limit)
+      .select('categories.*, COUNT(transactions.id) AS transactions_count')
   end
 
   private

@@ -14,6 +14,10 @@ Rails.application.routes.draw do
     collection do
       post :change_budget_type
     end
+
+    member do
+      post :show_transactions
+    end
   end
 
   resources :transactions do

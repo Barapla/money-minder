@@ -65,12 +65,21 @@ class Transaction < ApplicationRecord
           .sum(:amount)
   end
 
-  def by_category
+  def earned_amount_the_month_by_category
     budget.transactions
           .joins(:transaction_type)
           .joins(:category)
           .where(category:)
-          .where(transaction_type: { code: 'expense' })
+          .where('transaction_date >= ?', transaction_date.beginning_of_month)
+          .where('transaction_date <= ?', transaction_date.end_of_month)
+          .where(transaction_type: { code: 'income' })
+          .sum(:amount)
+  end
+
+  def by_category
+    budget.transactions
+          .joins(:category)
+          .where(category:)
   end
 
   def income?

@@ -9,9 +9,9 @@
         <div class="bg-bunker-800/30 rounded-xl p-4">
             <div class="text-bunker-300 text-sm mb-2">Gasto total en "<%= @transaction_presenter.category %>" 
                 <% if @transaction.transaction_date.month == Date.today.month %>
-                este mes
+                    este mes
                 <% else %>
-                en <%= @transaction.transaction_date.strftime("%B") %>
+                    en <%= @transaction.transaction_date.strftime("%B") %>
                 <% end %>
             </div>
             <div class="text-orange-400 text-2xl font-semibold"><%= @transaction_presenter.spent_amount_the_month_by_category %></div>

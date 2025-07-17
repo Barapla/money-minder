@@ -37,7 +37,7 @@
     <div class="bg-bunker-800/30 rounded-xl p-4">
         <h3 class="text-lg font-medium text-white mb-4">Actividad Reciente</h3>
         <div class="space-y-3">
-            <% @budget.transactions_last_days.each do |transaction| %>
+            <% @budget.transactions_last_days.limit(5).each do |transaction| %>
                 <% transaction_presenter = TransactionPresenter.new(transaction) %>
                 <div class="flex items-center gap-3">
                     <div class="w-2 h-2 rounded-full <%= transaction_color_class(transaction.transaction_type.code) %>"></div>

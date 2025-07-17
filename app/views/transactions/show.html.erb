@@ -31,7 +31,7 @@
             <%= render "transactions/shows/shared/metadata" %>
 
             <!-- Category Analysis -->
-            <%= render "transactions/shows/shared/category_analysis" %>
+            <%= render "transactions/shows/#{@transaction.transaction_type.code}/category_analysis" %>
         </div>
     </div>
 </div>

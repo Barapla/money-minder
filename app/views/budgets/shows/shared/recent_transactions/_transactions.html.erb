@@ -1,0 +1,18 @@
+<% @budget.transactions_last_days.limit(limit).each do |transaction| %>
+    <% transaction_presenter = TransactionPresenter.new(transaction) %>
+    <%= link_to transaction, data: { turbo: false }, class: "flex items-center justify-between p-4 bg-bunker-800/30 rounded-xl hover:bg-bunker-700/30 transition-colors duration-200" do %>
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-<%= transaction_presenter.color %> rounded-lg flex items-center justify-center">
+                <span class="text-lg"><%= transaction_presenter.icon %></span>
+            </div>
+            <div>
+                <div class="text-white font-medium"><%= transaction_presenter.description %></div>
+                <div class="text-bunker-400 text-sm"><%= time_ago_in_words(transaction.transaction_date) %></div>
+            </div>
+        </div>
+        <div class="text-right">
+            <div class="font-semibold <%= transaction_text_color_class(transaction.transaction_type.code) %>"><%= transaction_presenter.amount %></div>
+            <div class="text-bunker-400 text-sm"><%= transaction_presenter.transaction_type %></div>
+        </div>
+    <% end %>
+<% end %>
