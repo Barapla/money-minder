@@ -26,7 +26,7 @@ class TransactionPresenter < ApplicationPresenter
   end
 
   def preview_amount
-    number_to_currency(@resource.preview_amount, unit: '$')
+    number_to_currency(@resource.pre_amount, unit: '$')
   end
 
   def post_amount
@@ -66,14 +66,14 @@ class TransactionPresenter < ApplicationPresenter
   end
 
   def growth_percentage
-    return 0 if @resource.preview_amount <= 0
+    return 0 if @resource.pre_amount <= 0
 
-    ((@resource.amount.abs / @resource.preview_amount) * 100).round(1)
+    ((@resource.amount.abs / @resource.pre_amount) * 100).round(1)
   end
 
   def base_percentage
     return 0 if @resource.post_amount <= 0
 
-    ((@resource.preview_amount / @resource.post_amount) * 100).round(1)
+    ((@resource.pre_amount / @resource.post_amount) * 100).round(1)
   end
 end

@@ -262,6 +262,24 @@
           "description": "Cualquier otra fuente de ingresos no especificada, como regalos monetarios o premios."
         }
       ]
+    },
+    {
+      "name": "Transferencias",
+      "description": "Movimientos de dinero entre cuentas o a otras personas.",
+      "subcategories": [
+        {
+          "name": "Transferencias entre cuentas",
+          "description": "Movimientos de fondos entre cuentas bancarias propias."
+        },
+        {
+          "name": "Transferencias a familiares/amigos",
+          "description": "Envíos de dinero a familiares o amigos, ya sea como ayuda o regalo."
+        },
+        {
+          "name": "Retiros de efectivo",
+          "description": "Extracciones de efectivo de cajeros automáticos o bancos."
+        }
+      ]
     }
   ]
 }

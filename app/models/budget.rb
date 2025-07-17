@@ -56,7 +56,7 @@ class Budget < ApplicationRecord
     transactions
       .joins(:transaction_type)
       .where('transaction_date >= ?', Date.today.at_beginning_of_month)
-      .where(transaction_type: { code: 'expense' })
+      .where(transaction_type: { code: %w[expense transfer] })
       .sum(:amount)
   end
 
@@ -75,7 +75,7 @@ class Budget < ApplicationRecord
     transactions
       .joins(:transaction_type)
       .where('transaction_date >= ?', 15.days.ago)
-      .where(transaction_type: { code: 'expense' })
+      .where(transaction_type: { code: %w[expense transfer] })
       .sum(:amount) / 15.0
   end
 
@@ -83,7 +83,7 @@ class Budget < ApplicationRecord
     transactions
       .joins(:transaction_type)
       .where('transaction_date >= ?', days.days.ago)
-      .where(transaction_type: { code: 'expense' })
+      .where(transaction_type: { code: %w[expense transfer] })
       .sum(:amount)
   end
 

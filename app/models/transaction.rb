@@ -2,6 +2,10 @@
 
 # Transaction model
 class Transaction < ApplicationRecord
+  include Utils::Transaction::TransactionHistory
+  include Utils::Transaction::RelatedTransaction
+  include Utils::Transaction::AmountUsage
+  include Utils::Transaction::TransactionType
   belongs_to :budget
   belongs_to :related_budget, class_name: 'Budget', optional: true
   belongs_to :category
@@ -13,76 +17,15 @@ class Transaction < ApplicationRecord
 
   has_one :transaction_history, dependent: :destroy
 
-  after_create :create_transaction_history, :update_budget_amount
+  before_validation :set_default_values
 
-  def create_transaction_history
-    post_amount = if transaction_type.code == 'expense'
-                    budget.current_amount - amount
-                  elsif transaction_type.code == 'income'
-                    budget.current_amount + amount
-                  end
-
-    TransactionHistory.create(
-      transaction_record: self,
-      pre_amount: budget.current_amount,
-      post_amount:
-    )
+  def set_default_values
+    self.currency ||= Currency.default
   end
 
-  def update_budget_amount
-    budget.update(current_amount: transaction_history.post_amount)
-  end
-
-  def preview_amount
-    transaction_history&.pre_amount
-  end
-
-  def post_amount
-    transaction_history&.post_amount
-  end
-
-  def used_percentage
-    ((amount / transaction_history&.pre_amount.to_f) * 100).round(2)
-  end
-
-  def spent_amount_by_category
-    budget.transactions
-          .joins(:transaction_type)
-          .joins(:category)
-          .where(category:)
-          .where(transaction_type: { code: 'expense' })
-          .sum(:amount)
-  end
-
-  def spent_amount_the_month_by_category
-    budget.transactions
-          .joins(:transaction_type)
-          .joins(:category)
-          .where(category:)
-          .where('transaction_date >= ?', transaction_date.beginning_of_month)
-          .where('transaction_date <= ?', transaction_date.end_of_month)
-          .where(transaction_type: { code: 'expense' })
-          .sum(:amount)
-  end
-
-  def earned_amount_the_month_by_category
-    budget.transactions
-          .joins(:transaction_type)
-          .joins(:category)
-          .where(category:)
-          .where('transaction_date >= ?', transaction_date.beginning_of_month)
-          .where('transaction_date <= ?', transaction_date.end_of_month)
-          .where(transaction_type: { code: 'income' })
-          .sum(:amount)
-  end
-
-  def by_category
+  def transactions_by_category
     budget.transactions
           .joins(:category)
           .where(category:)
-  end
-
-  def income?
-    transaction_type&.code == 'income'
   end
 end

@@ -9,4 +9,6 @@ class Currency < ApplicationRecord
   validates :name, presence: true, uniqueness: true
   validates :code, presence: true
   validates :symbol, presence: true
+
+  scope :default, -> { find_by(code: 'MXN') }
 end

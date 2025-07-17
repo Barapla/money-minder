@@ -75,8 +75,8 @@ es:
         category_id: "Categoría"
         icon_id: "Icono"
         color_id: "Color"
-        related_budget_id: "Presupuesto relacionado"
-        budget_id: "Presupuesto relacionado"  
+        related_budget_id: "Presupuesto destino"
+        budget_id: "Presupuesto afectado"  
     models:
       user: "Usuario"
       budget: "Presupuesto"

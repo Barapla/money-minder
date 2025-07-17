@@ -93,20 +93,19 @@
                 options_collection: Budget.all.pluck(:name, :id),
                 options: { 
                     help_text: "Selecciona el presupuesto al que pertenece esta transacción",
-                    required: true
+                    required: true,
+                    disabled: transaction.persisted?
                 }
             ) %>
 
             <!-- Related Budget -->
-            <%= render Forms::SelectComponent.new(
-                name: :related_budget_id,
-                form:,
-                options_collection: Budget.all.pluck(:name, :id),
-                options: { 
-                    prompt: "Ninguno",
-                    help_text: "Selecciona un presupuesto relacionado (opcional)",
-                }
-            ) %>
+            <%= turbo_frame_tag "budget_related_frame" do  %>
+                <% unless transaction.new_record? %>
+                    <% if transaction.transfer? %>
+                        <%= render "transactions/forms/transfer/budget_related", transaction: %>
+                    <% end %>
+                <% end %>
+            <% end %>
 
             <!-- Icon Selection -->
             <%= render Forms::RadioComponent.new(

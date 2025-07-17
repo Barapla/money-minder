@@ -22,14 +22,14 @@
         
         <div class="bg-bunker-800/30 rounded-xl p-4">
             <div class="text-bunker-300 text-sm mb-2">Promedio por transacción</div>
-            <div class="text-purple-400 text-lg font-semibold"><%= number_to_currency(average(@transaction.by_category.pluck(:amount)), unit: "$") %></div>
-            <div class="text-bunker-400 text-sm">Esta transacción está <%= calculate_percentage(@transaction.amount, average(@transaction.by_category.pluck(:amount))) %>% del promedio</div>
+            <div class="text-purple-400 text-lg font-semibold"><%= number_to_currency(average(@transaction.transactions_by_category.pluck(:amount)), unit: "$") %></div>
+            <div class="text-bunker-400 text-sm">Esta transacción está <%= calculate_percentage(@transaction.amount, average(@transaction.transactions_by_category.pluck(:amount))) %>% del promedio</div>
         </div>
 
         <div class="bg-bunker-800/30 rounded-xl p-4">
             <div class="text-bunker-300 text-sm mb-2">Últimas 3 transacciones similares</div>
             <div class="space-y-2">
-                    <% @transaction.by_category.order("transaction_date DESC").limit(3).each do |transaction| %>
+                    <% @transaction.transactions_by_category.order("transaction_date DESC").limit(3).each do |transaction| %>
                         <div class="flex justify-between text-sm">
                             <span class="text-bunker-300"><%= transaction.description %></span>
                             <span class="text-white"><%= number_to_currency(transaction.amount, unit: "$") %></span>

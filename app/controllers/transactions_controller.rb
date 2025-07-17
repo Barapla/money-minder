@@ -35,7 +35,6 @@ class TransactionsController < ApplicationController
   # POST /transactions or /transactions.json
   def create
     @transaction = Transaction.new(transaction_params)
-    @transaction.currency = Currency.find_by(code: 'MXN')
 
     respond_to do |format|
       if @transaction.save
@@ -93,12 +92,27 @@ class TransactionsController < ApplicationController
   end
 
   def get_turbo_stream_for_transaction_type(transaction_type)
-    [
+    streams = [
       turbo_stream.update(
         'categories_frame',
         partial: "transactions/forms/#{transaction_type.code}/categories",
         locals: { transaction: Transaction.new(transaction_type:) }
       )
     ]
+
+    streams << if transaction_type.code == 'transfer'
+                 turbo_stream.update(
+                   'budget_related_frame',
+                   partial: 'transactions/forms/transfer/budget_related',
+                   locals: { transaction: Transaction.new(transaction_type:) }
+                 )
+               else
+                 turbo_stream.update(
+                   'budget_related_frame',
+                   ''
+                 )
+               end
+
+    streams
   end
 end

@@ -1,0 +1,12 @@
+<%= fields_for "transaction", transaction do |form| %>
+    <%= render Forms::SelectComponent.new(
+                    name: :related_budget_id,
+                    form:,
+                    options_collection: Budget.all.pluck(:name, :id),
+                    options: { 
+                        help_text: "Selecciona un presupuesto relacionado (opcional)",
+                        required: true,
+                        disabled: transaction.persisted?
+                    }
+                ) %>
+<% end %>
