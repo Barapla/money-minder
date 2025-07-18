@@ -2,6 +2,7 @@
 
 # BudgetsController handles the display of budgets.
 class BudgetsController < ApplicationController
+  include PaginationHelper
   include BudgetsHelper
   before_action :authenticate_user!
   before_action :set_budget, only: %i[show show_transactions edit update destroy]
@@ -9,8 +10,46 @@ class BudgetsController < ApplicationController
   # GET /budgets
   # GET /budgets.json
   def index
-    # @budgets = Budget.where(budget_type: Catalog.by_group_and_code('budget_types', 'credit_card'))
-    @budgets = Budget.where(user: current_user)
+    budgets = Budget.where(budget_type: Catalog.by_group_and_code('budget_types', 'credit_card'),
+                           user: current_user)
+    @total_collections = budgets.count
+    @budgets = budgets.limit(10)
+
+    # @budgets = Budget.where(user: current_user)
+  end
+
+  def budgets_table
+    id = params[:id]
+    # query = params[:query]
+    current_page = params[:page]
+    per_page = params[:perPage].to_i
+    # select_filters = params[:select_filters] || []
+    # checkbox_filters = params[:checkbox_filters] || {}
+
+    budgets = Budget.where(budget_type: Catalog.by_group_and_code('budget_types', 'credit_card'),
+                           user: current_user).order(:id)
+
+    # tickets = apply_select_filters(tickets, select_filters)
+    # users = apply_checkbox_filters(users, checkbox_filters)
+    # users = apply_query(users, query) if query.present?
+
+    total_budgets = budgets.count
+
+    budgets = budgets.offset(
+      (current_page.to_i - 1) * per_page.to_i
+    ).limit(per_page)
+
+    total_pages = total_pages(per_page, total_budgets)
+    pagination_pages = pagination_pages(current_page, total_pages)
+
+    @budgets = values_table_format(budgets)
+    stream = turbo_stream.update("table-#{id}", partial: 'components/table/main/table',
+                                                locals: { headers: headers_table_index, values: @budgets, id:,
+                                                          per_page:, current_page:, total_collections: total_budgets,
+                                                          total_pages:, pagination_pages: })
+    respond_to do |format|
+      format.turbo_stream { render turbo_stream: stream }
+    end
   end
 
   def show
@@ -32,7 +71,6 @@ class BudgetsController < ApplicationController
 
   def create
     @budget = Budget.new(budget_params)
-    @budget.current_amount = @budget.credit_card.limit_amount - @budget.credit_card.debt_amount
     if @budget.save
       redirect_to budgets_path, notice: 'Presupuesto creado exitosamente.'
     else

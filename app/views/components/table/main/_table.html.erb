@@ -1,0 +1,70 @@
+<div class="overflow-x-auto">
+    <table class="w-full">
+        <thead class="bg-bunker-800/30">
+            <tr>
+                <% headers.each do |header| %>
+                    <%= render Table::HeaderComponent.new(name: header[:name], size: header[:size]) %>
+                <% end %>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-bunker-800/30">
+            <!-- Ejemplo de datos que vendrían del controlador con @budgets.each do |budget| -->
+            
+            <% values.each do |items| %>
+                <!-- Budget 1 -->
+                <tr class="hover:bg-bunker-800/20 transition-colors duration-200">
+                    <% items.each do |item|%>
+                        <%= render Table::TdComponent.new(item:) %>
+                    <% end %>
+                </tr>
+            <% end %>
+            <!-- Empty state si no hay budgets -->
+            <!--
+                <tr>
+                    <td colspan="7" class="px-6 py-12 text-center">
+                        <div class="text-bunker-400">
+                            <svg class="mx-auto h-12 w-12 text-bunker-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                            <h3 class="text-lg font-medium text-bunker-300 mb-2">No hay presupuestos</h3>
+                            <p class="text-bunker-400 mb-4">Comienza creando tu primer presupuesto</p>
+                            <a href="#" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-500 hover:bg-purple-600">
+                                Crear Presupuesto
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+<div data-controller="pagination" class="px-6 py-4 border-t border-bunker-800/50 flex items-center justify-between">
+    <div class="text-sm text-bunker-400">
+        Mostrando <%= values.size %> de <%= total_collections %> registros
+    </div>
+    <div class="flex items-center space-x-2">
+        <button class="px-3 py-1 text-sm text-bunker-400 hover:text-white border border-bunker-700 rounded-lg hover:bg-bunker-800/50 transition-colors duration-200
+            <%= 'disabled' if current_page == 1 %>"
+            data-action="click->pagination#changePage"
+            data-page="<%= current_page - 1 %>">
+            Anterior
+        </button>
+        <% pagination_pages.each do |page| %>
+            <% if page == current_page %>
+                <button class="px-3 py-1 text-sm text-white bg-purple-500 rounded-lg"><%= page %></button>
+            <% else %>
+                <button class="px-3 py-1 text-sm text-bunker-400 hover:text-white border border-bunker-700 rounded-lg hover:bg-bunker-800/50 transition-colors duration-200"  
+                            data-action="click->pagination#changePage"
+                            data-page="<%= page %>"><%= page %></button>
+            <% end %>
+        <% end %>
+        <button class="px-3 py-1 text-sm text-bunker-400 hover:text-white border border-bunker-700 rounded-lg hover:bg-bunker-800/50 transition-colors duration-200 
+            <%= 'disabled' if current_page == pagination_pages.last %>"
+            data-action="click->pagination#changePage"
+            data-page="<%= current_page + 1 %>">
+            Siguiente
+        </button>
+    </div>
+</div>

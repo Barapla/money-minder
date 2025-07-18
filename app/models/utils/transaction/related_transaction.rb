@@ -15,9 +15,9 @@ module Utils
       private
 
       def create_related_transaction
-        new_transaction_type = Catalog.by_group_and_code('transaction_types', 'income')
+        new_transaction_type = ::Catalog.by_group_and_code('transaction_types', 'income')
 
-        Transaction.create(
+        ::Transaction.create(
           budget: related_budget,
           related_budget: budget,
           transaction_type: new_transaction_type,

@@ -1,77 +1,32 @@
 <%
+    id = component.id
+    url = component.url
     title = component.title
     headers = component.headers
     values = component.values || []
+    per_page = 10
+    current_page = 1
+    total_collections = component.total_collections
+    total_pages = component.total_pages(per_page, total_collections)
+    pagination_pages = component.pagination_pages(current_page, total_pages)
 %>
 
 <!-- Table Container -->
-    <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl overflow-hidden">
-        <!-- Table Header -->
-        <div class="px-6 py-4 border-b border-bunker-800/50">
-            <h2 class="text-xl font-semibold text-white flex items-center gap-2">
-                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
-                <%= title %>
-            </h2>
-        </div>
-
-        <!-- Table -->
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-bunker-800/30">
-                    <tr>
-                        <% headers.each do |header| %>
-                            <%= render Table::HeaderComponent.new(name: header[:name], size: header[:size]) %>
-                        <% end %>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-bunker-800/30">
-                    <!-- Ejemplo de datos que vendrían del controlador con @budgets.each do |budget| -->
-                    
-                    <% values.each do |items| %>
-                        <!-- Budget 1 -->
-                        <tr class="hover:bg-bunker-800/20 transition-colors duration-200">
-                            <% items.each do |item|%>
-                                <%= render Table::TdComponent.new(item:) %>
-                            <% end %>
-                        </tr>
-                    <% end %>
-                    <!-- Empty state si no hay budgets -->
-                    <!--
-                    <tr>
-                        <td colspan="7" class="px-6 py-12 text-center">
-                            <div class="text-bunker-400">
-                                <svg class="mx-auto h-12 w-12 text-bunker-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                </svg>
-                                <h3 class="text-lg font-medium text-bunker-300 mb-2">No hay presupuestos</h3>
-                                <p class="text-bunker-400 mb-4">Comienza creando tu primer presupuesto</p>
-                                <a href="#" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-500 hover:bg-purple-600">
-                                    Crear Presupuesto
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    -->
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="px-6 py-4 border-t border-bunker-800/50 flex items-center justify-between">
-            <div class="text-sm text-bunker-400">
-                Mostrando 4 de 4 presupuestos
-            </div>
-            <div class="flex items-center space-x-2">
-                <button class="px-3 py-1 text-sm text-bunker-400 hover:text-white border border-bunker-700 rounded-lg hover:bg-bunker-800/50 transition-colors duration-200">
-                    Anterior
-                </button>
-                <span class="px-3 py-1 text-sm text-white bg-purple-500 rounded-lg">1</span>
-                <button class="px-3 py-1 text-sm text-bunker-400 hover:text-white border border-bunker-700 rounded-lg hover:bg-bunker-800/50 transition-colors duration-200">
-                    Siguiente
-                </button>
-            </div>
-        </div>
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl overflow-hidden" data-controller="datatable-filters" data-datatable-filters-url-value="<%= url %>" data-datatable-filters-id-value="<%= id %>">
+    <!-- Table Header -->
+    <div class="px-6 py-4 border-b border-bunker-800/50">
+        <h2 class="text-xl font-semibold text-white flex items-center gap-2">
+            <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            <%= title %>
+        </h2>
     </div>
+
+    
+    <%= turbo_frame_tag "table-#{id}" do %>  
+        <!-- Table -->
+        <%= render partial: 'components/table/main/table', locals: { id:, headers:, values:, per_page:, current_page:, total_collections:, total_pages:, pagination_pages: } %>
+    <% end %>
+</div>
 <!-- End of Table Container -->

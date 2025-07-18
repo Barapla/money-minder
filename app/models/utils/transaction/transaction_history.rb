@@ -27,7 +27,7 @@ module Utils
       def create_transaction_history
         post_amount = calculate_post_amount(budget.current_amount)
 
-        TransactionHistory.create(
+        ::TransactionHistory.create(
           transaction_record: self,
           pre_amount: budget.current_amount,
           post_amount:

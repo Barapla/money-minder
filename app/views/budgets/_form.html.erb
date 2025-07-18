@@ -23,7 +23,7 @@
             ) %>
             <%= turbo_frame_tag "budget_type_frame" do  %>
                 <% if budget.new_record? || budget.budget_type != nil %>
-                    <%= render partial: "budgets/forms/#{budget.budget_type&.code || 'credit_card'}/form", locals: { budget: } %>
+                    <%= render partial: "budgets/forms/#{budget.budget_type&.code || 'cash'}/form", locals: { budget: } %>
                 <% end %>
             <% end %>
         </div>
@@ -92,7 +92,7 @@
 
             <%= turbo_frame_tag "preview_frame" do  %>
                 <% if budget.new_record? || budget.budget_type != nil %>
-                    <%= render "budgets/forms/#{budget.budget_type&.code || 'credit_card'}/preview", budget: %>
+                    <%= render "budgets/forms/#{budget.budget_type&.code || 'cash'}/preview", budget: %>
                 <% end %>
             <% end %>
         </div>

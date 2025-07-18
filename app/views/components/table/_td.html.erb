@@ -44,6 +44,6 @@
     </td>
 <% else %>
     <td class="px-6 py-4 whitespace-nowrap">
-        <div class="text-sm font-semibold <%= color_text_class(item[:div_color]) %>"><%= item[:value] %></div>
+        <div class="text-sm font-semibold <%= color_text_class(item[:div_color]) %>"><%= item[:value].truncate(30) %></div>
     </td>
 <% end %>

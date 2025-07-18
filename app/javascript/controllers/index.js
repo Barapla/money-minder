@@ -18,3 +18,9 @@ application.register("hello", HelloController)
 
 import SelectToController from "./select_to_controller"
 application.register("select-to", SelectToController)
+
+import PaginationController from "./pagination_controller"
+application.register("pagination", PaginationController)
+
+import DatatableFiltersController from "./datatable_filters_controller"
+application.register("datatable-filters", DatatableFiltersController)

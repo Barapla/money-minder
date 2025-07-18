@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   resources :budgets do
     collection do
       post :change_budget_type
+      post :budgets_table
     end
 
     member do
@@ -23,6 +24,7 @@ Rails.application.routes.draw do
   resources :transactions do
     collection do
       post :change_categories
+      post :transactions_table
     end
   end
 

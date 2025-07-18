@@ -22,5 +22,6 @@
         </div>
     </div>
 
-    <%= render Table::MainComponent.new(title: "Lista de Transacciones", headers: headers_table_transactions_index, values: values_table_transactions_format(@transactions)) %>
+    <%= render Table::MainComponent.new(url: transactions_table_transactions_path, title: "Lista de Transacciones", headers: headers_table_transactions_index, 
+    values: values_table_transactions_format(@transactions), options: { total_collections: @total_collections }) %>
 </div>
