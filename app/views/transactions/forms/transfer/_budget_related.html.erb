@@ -6,7 +6,8 @@
                     options: { 
                         help_text: "Selecciona un presupuesto relacionado (opcional)",
                         required: true,
-                        disabled: transaction.persisted?
+                        disabled: transaction.persisted?,
+                        selected: transaction.related_budget_id,
                     }
                 ) %>
 <% end %>

@@ -10,12 +10,11 @@ class BudgetsController < ApplicationController
   # GET /budgets
   # GET /budgets.json
   def index
-    budgets = Budget.where(budget_type: Catalog.by_group_and_code('budget_types', 'credit_card'),
-                           user: current_user)
+    budgets = Budget.where(user: current_user)
+    # budgets = Budget.where(budget_type: Catalog.by_group_and_code('budget_types', 'credit_card'),
+    #                        user: current_user)
     @total_collections = budgets.count
     @budgets = budgets.limit(10)
-
-    # @budgets = Budget.where(user: current_user)
   end
 
   def budgets_table

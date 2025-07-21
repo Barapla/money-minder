@@ -27,9 +27,9 @@ module TransactionsHelper
           type: 'actions',
           actions: [
             { name: 'Ver', icon: 'eye', path: transaction_path(transaction),
-              options: { class: 'hover:text-white' } },
+              options: { class: 'hover:text-white', data: { turbo: false } } },
             { name: 'Editar', icon: 'edit', path: edit_transaction_path(transaction),
-              options: { class: 'hover:text-purple-400' } },
+              options: { class: 'hover:text-purple-400', data: { turbo: false } } },
             {
               name: 'Eliminar', icon: 'trash', path: transaction_path(transaction),
               options: {

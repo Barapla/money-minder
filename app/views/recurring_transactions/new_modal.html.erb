@@ -1,0 +1,6 @@
+
+<%= turbo_frame_tag "modal_frame" do %>
+    <%= render Shared::ModalComponent.new do |component| %>
+        <%= render "recurring_transactions/modals/form", transaction: @transaction %>
+    <% end %>
+<% end %>

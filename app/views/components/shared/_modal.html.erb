@@ -1,0 +1,36 @@
+<!-- Modal Overlay -->
+<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" data-controller="modal">
+
+    <!-- Modal Container -->
+    <div class="bg-bunker-900/95 modal-container border border-bunker-800/50 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl" data-modal-target="container">
+         
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-bunker-900/80 to-purple-900/80 px-8 py-6 border-b border-bunker-800/50">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Nueva Transacción Recurrente</h2>
+                        <p class="text-bunker-300">Configura una transacción que se repita automáticamente</p>
+                    </div>
+                </div>
+                <button data-action="click->modal#close" class="text-bunker-400 hover:text-white transition-colors p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body p-8 max-h-[calc(90vh-200px)]">
+            <div class="modal-content">
+                <%= component.content %>
+            </div>
+        </div>
+    </div>
+</div>

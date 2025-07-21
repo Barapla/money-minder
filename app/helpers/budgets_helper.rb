@@ -31,9 +31,9 @@ module BudgetsHelper
           type: 'actions',
           actions: [
             { name: 'Ver', icon: 'eye', path: budget_path(budget),
-              options: { class: 'hover:text-white' } },
+              options: { class: 'hover:text-white', data: { turbo: false } } },
             { name: 'Editar', icon: 'edit', path: edit_budget_path(budget),
-              options: { class: 'hover:text-purple-400' } },
+              options: { class: 'hover:text-purple-400', data: { turbo: false } } },
             {
               name: 'Eliminar', icon: 'trash', path: budget_path(budget),
               options: {

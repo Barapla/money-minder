@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_07_11_021018) do
+ActiveRecord::Schema[7.0].define(version: 2025_07_21_032816) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -125,19 +125,19 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_11_021018) do
   create_table "recurring_transactions", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
-    t.decimal "amount"
-    t.text "description"
-    t.integer "transaction_type"
-    t.bigint "category_id", null: false
     t.bigint "user_id", null: false
-    t.bigint "currency_id", null: false
     t.integer "frequency"
     t.date "start_date"
     t.date "end_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["category_id"], name: "index_recurring_transactions_on_category_id"
-    t.index ["currency_id"], name: "index_recurring_transactions_on_currency_id"
+    t.date "next_execution_date"
+    t.integer "status", default: 0
+    t.integer "execution_count", default: 0
+    t.integer "max_executions"
+    t.text "tags"
+    t.boolean "auto_approve", default: true
+    t.jsonb "transaction_options", default: {}
     t.index ["user_id"], name: "index_recurring_transactions_on_user_id"
     t.index ["uuid"], name: "index_recurring_transactions_on_uuid", unique: true
   end
@@ -258,8 +258,6 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_11_021018) do
   add_foreign_key "catalogs", "group_catalogs", name: "fk_catalogs_group_catalog"
   add_foreign_key "categories", "categories", column: "parent_category_id", name: "fk_categories_parent"
   add_foreign_key "credit_cards", "budgets", name: "fk_credit_cards_budget"
-  add_foreign_key "recurring_transactions", "categories", name: "fk_recurring_transactions_category"
-  add_foreign_key "recurring_transactions", "currencies", name: "fk_recurring_transactions_currency"
   add_foreign_key "recurring_transactions", "users", name: "fk_recurring_transactions_user"
   add_foreign_key "savings_funds", "budgets", name: "fk_savings_funds_budget"
   add_foreign_key "savings_funds", "catalogs", column: "account_type_id", name: "fk_savings_funds_account_type"

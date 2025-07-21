@@ -19,6 +19,10 @@ class Transaction < ApplicationRecord
 
   before_validation :set_default_values
 
+  scope :by_category, lambda { |category|
+    joins(:category).where(categories: { name: category })
+  }
+
   def set_default_values
     self.currency ||= Currency.default
   end

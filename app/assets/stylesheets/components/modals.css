@@ -1,0 +1,26 @@
+@layer components {
+    .modal-backdrop {
+        backdrop-filter: none;
+        background: rgba(0, 0, 0, 0.8);
+    }
+
+    .modal-container {
+        will-change: transform, opacity;
+        /* Añade estas optimizaciones */
+        transform: translateZ(0); /* Fuerza GPU acceleration */
+        backface-visibility: hidden;
+    }
+    
+    /* Optimización para el contenido del modal */
+    .modal-content {
+        contain: layout style paint;
+        transform: translateZ(0);
+    }
+    
+    /* Reduce repaints en scroll */
+    .modal-body {
+        contain: layout;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+}

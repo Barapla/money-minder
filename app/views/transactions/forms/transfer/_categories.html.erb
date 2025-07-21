@@ -6,6 +6,7 @@
         options: { 
             help_text: "Selecciona la categoría de la transacción",
             required: true,
+            selected: transaction.category_id,
             data: {
                 "budgets--preview-target": "budgetType",
                 action: "change->budgets--preview#updatePreview"

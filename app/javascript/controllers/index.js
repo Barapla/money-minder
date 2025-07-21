@@ -7,6 +7,9 @@ import { application } from "./application"
 import Budgets__PreviewController from "./budgets/preview_controller"
 application.register("budgets--preview", Budgets__PreviewController)
 
+import DatatableFiltersController from "./datatable_filters_controller"
+application.register("datatable-filters", DatatableFiltersController)
+
 import DatePickerController from "./date_picker_controller"
 application.register("date-picker", DatePickerController)
 
@@ -16,11 +19,14 @@ application.register("form-validator", FormValidatorController)
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
 
-import SelectToController from "./select_to_controller"
-application.register("select-to", SelectToController)
+import ModalController from "./modal_controller"
+application.register("modal", ModalController)
 
 import PaginationController from "./pagination_controller"
 application.register("pagination", PaginationController)
 
-import DatatableFiltersController from "./datatable_filters_controller"
-application.register("datatable-filters", DatatableFiltersController)
+import RecurringTransactionFormController from "./recurring_transaction_form_controller"
+application.register("recurring-transaction-form", RecurringTransactionFormController)
+
+import SelectToController from "./select_to_controller"
+application.register("select-to", SelectToController)

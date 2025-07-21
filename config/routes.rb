@@ -28,5 +28,11 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :recurring_transactions, only: %i[create] do
+    collection do
+      get :new_modal
+    end
+  end
+
   root 'home#index'
 end

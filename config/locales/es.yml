@@ -59,6 +59,8 @@ es:
         limit_amount: "Presupuesto límite"
         payday: "Siguiente día de pago"
         cutting_day: "Siguiente día de corte"
+      recurring_transaction:
+        transaction_id: "Transacción"
       savings_fund:
         goal_amount: "Meta de ahorro"
         target_date: "Fecha objetivo"

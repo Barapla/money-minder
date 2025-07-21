@@ -1,0 +1,309 @@
+<%= form_with(model: RecurringTransaction.new, local: true, html: { class: "space-y-8", 
+        data: { controller: "budgets--preview form-validator recurring-transaction-form", 
+            form_validator_validate_on_blur_value: true,
+            form_validator_validate_on_input_value: false} }) do |form|%>
+    <!-- Basic Information -->
+    <div class="bg-bunker-800/30 rounded-2xl p-6">
+        <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Información Básica
+        </h3>
+        
+        <div class="grid lg:grid-cols-2 gap-6">
+            <%= fields_for "transaction", transaction do |t_form| %>
+                <%= render Forms::SelectComponent.new(
+                    name: :transaction_type_id,
+                    form: t_form,
+                    options_collection: Catalog.get_by_group_pluck('transaction_types'),
+                    options: { 
+                        help_text: "Selecciona el tipo de transacción",
+                        disabled: true,
+                        required: true
+                    }
+                ) %>
+        
+                <%= render Forms::InputComponent.new(
+                    name: :amount,
+                    form: t_form,
+                    type: :number,
+                    options: { 
+                        step: 0.01,
+                        placeholder: "0.00",
+                        prefix: "$",
+                        help_text: "Ingresa el monto de la transacción",
+                        required: true,
+                        data: {
+                            "budgets--preview-target": "current",
+                            action: "input->budgets--preview#updateDebitPreview",
+                            required_message: "Por favor, ingresa un monto para la transacción",
+                        }
+                    }
+                ) %>
+
+                <%= render Forms::InputComponent.new(
+                    name: :description,
+                    form: t_form,
+                    type: :text,
+                    options: { 
+                        placeholder: "Descripción de la transacción",
+                        help_text: "Proporciona una breve descripción de la transacción",
+                        required: true,
+                        data: {
+                            required_message: "Por favor, ingresa una descripción para la transacción",
+                        }
+                    }
+                ) %>
+                
+                <%= render "transactions/forms/#{transaction.transaction_type&.code || 'expense'}/categories", transaction: %>    
+                
+                <%= render Forms::SelectComponent.new(
+                    name: :budget_id,
+                    form: t_form,
+                    options_collection: Budget.all.pluck(:name, :id),
+                    options: { 
+                        help_text: "Selecciona el presupuesto al que pertenece esta transacción",
+                        required: true,
+                        disabled: transaction.persisted?,
+                        selected: transaction.budget_id,
+                    }
+                ) %>
+
+                <%= turbo_frame_tag "budget_related_frame" do  %>
+                    <% if transaction.transfer? %>
+                        <%= render "transactions/forms/transfer/budget_related", transaction: %>
+                    <% end %>
+                <% end %>
+
+                <!-- Icon Selection -->
+                <%= render Forms::RadioComponent.new(
+                    name: :icon_id,
+                    form: t_form,
+                    collection: Catalog.by_group('transaction_icons'),
+                    options: { 
+                        default_object_label: 'value',
+                        help_text: "Selecciona un icono para identificar tu transacción",
+                        value: transaction.icon&.id,
+                        collection_options: {
+                            data: {
+                                "budgets--preview-target": "icons",
+                                action: "click->budgets--preview#selectIcon"
+                            }
+                        }
+                    }
+                ) %>
+
+                <!-- Color Selection -->
+                <%= render Forms::RadioComponent.new(
+                    name: :color_id,
+                    form: t_form,
+                    collection: Catalog.by_group('colors'),
+                    options: { 
+                        is_colors: true,
+                        default_object_label: 'value',
+                        help_text: "Elige un color para personalizar tu transacción",
+                        value: transaction.color&.id,
+                        collection_options: {
+                            data: {
+                                "budgets--preview-target": "colors",
+                                action: "click->budgets--preview#selectColor"
+                            }
+                        }
+                    }
+                ) %>
+        
+                <div class="form-group col-span-2">
+                    <label class="block text-sm font-medium text-bunker-200 mb-2">
+                        Vista previa
+                    </label>
+                    <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-4">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div data-budgets--preview-target="preview" class="w-10 h-10 bg-<%= transaction.color&.value || 'blue-500' %> rounded-lg flex items-center justify-center">
+                                <span class="text-lg"><%= transaction.icon&.value || Catalog.by_group('transaction_icons').first.value %></span>
+                            </div>
+                            <div>
+                                <div data-budgets--preview-target="previewBudgetType" class="text-sm font-medium text-white"><%= transaction.category&.name || "Tarjeta de débito" %></div>
+                                <div data-budgets--preview-target="previewName" class="text-xs text-bunker-400"><%= transaction.transaction_type&.value || "Nuevo Presupuesto" %></div>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between items-center">
+                                <span class="text-bunker-300">Cantidad de Transacción</span>
+                                <span data-budgets--preview-target="previewCurrent" class="text-emerald-400 text-lg font-semibold">$<%= transaction.amount || "0.00" %></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% end %>
+        </div>
+    </div>
+
+    <!-- Frequency Configuration -->
+    <div class="bg-bunker-800/30 rounded-2xl p-6">
+        <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Configuración de Frecuencia
+        </h3>
+
+        <div class="grid lg:grid-cols-3 gap-6">
+            <!-- Frequency -->
+            <div>
+                <label class="block text-sm font-medium text-bunker-200 mb-2">
+                    Frecuencia *
+                </label>
+                <select name="frequency" 
+                        class="w-full px-4 py-3 bg-bunker-800/60 border border-bunker-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 appearance-none"
+                        data-action="change->recurring-transaction-form#updateFrequency"
+                        required>
+                    <option value="">Selecciona frecuencia</option>
+                    <option value="daily">📅 Diario</option>
+                    <option value="weekly">📅 Semanal</option>
+                    <option value="bi_weekly">📅 Quincenal</option>
+                    <option value="monthly">📅 Mensual</option>
+                    <option value="bi_monthly">📅 Bimestral</option>
+                    <option value="quarterly">📅 Trimestral</option>
+                    <option value="semi_annually">📅 Semestral</option>
+                    <option value="annually">📅 Anual</option>
+                </select>
+            </div>
+
+            <!-- Start Date -->
+            <div>
+                <label class="block text-sm font-medium text-bunker-200 mb-2">
+                    Fecha de Inicio *
+                </label>
+                <input type="date" 
+                        name="start_date"
+                        class="w-full px-4 py-3 bg-bunker-800/60 border border-bunker-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                        data-action="change->recurring-transaction-form#updatePreview"
+                        required>
+                <p class="text-xs text-bunker-400 mt-1">Cuándo inicia la recurrencia</p>
+            </div>
+
+            <!-- End Date -->
+            <div>
+                <label class="block text-sm font-medium text-bunker-200 mb-2">
+                    Fecha de Fin (Opcional)
+                </label>
+                <input type="date" 
+                        name="end_date"
+                        class="w-full px-4 py-3 bg-bunker-800/60 border border-bunker-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                        data-action="change->recurring-transaction-form#updatePreview">
+                <p class="text-xs text-bunker-400 mt-1">Deja vacío para sin fin</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Options -->
+    <div class="bg-bunker-800/30 rounded-2xl p-6">
+        <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            Opciones Avanzadas
+        </h3>
+
+        <div class="grid lg:grid-cols-2 gap-6">
+            <!-- Max Executions -->
+            <div>
+                <label class="block text-sm font-medium text-bunker-200 mb-2">
+                    Máximo de Ejecuciones
+                </label>
+                <input type="number" 
+                        name="max_executions"
+                        min="1"
+                        placeholder="Sin límite"
+                        class="w-full px-4 py-3 bg-bunker-800/60 border border-bunker-700/50 rounded-xl text-white placeholder-bunker-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200">
+                <p class="text-xs text-bunker-400 mt-1">Límite de veces que se ejecutará</p>
+            </div>
+
+            <!-- Auto Approve -->
+            <div>
+                <label class="block text-sm font-medium text-bunker-200 mb-2">
+                    Aprobación Automática
+                </label>
+                <div class="flex items-center space-x-3">
+                    <label class="flex items-center">
+                        <input type="radio" name="auto_approve" value="true" checked 
+                                class="w-4 h-4 text-purple-500 bg-bunker-800 border-bunker-600 focus:ring-purple-500">
+                        <span class="ml-2 text-white">Sí, ejecutar automáticamente</span>
+                    </label>
+                </div>
+                <div class="flex items-center space-x-3 mt-2">
+                    <label class="flex items-center">
+                        <input type="radio" name="auto_approve" value="false" 
+                                class="w-4 h-4 text-purple-500 bg-bunker-800 border-bunker-600 focus:ring-purple-500">
+                        <span class="ml-2 text-white">No, requerir aprobación manual</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="bg-gradient-to-r from-purple-900/30 to-bunker-900/30 rounded-2xl p-6 border border-purple-800/30">
+        <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            Vista Previa de la Recurrencia
+        </h3>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="bg-bunker-800/30 rounded-xl p-4">
+                <h4 class="text-white font-medium mb-3">Resumen</h4>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-bunker-300">Descripción:</span>
+                        <span class="text-white" data-recurring-transaction-form-target="previewDescription">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-bunker-300">Monto:</span>
+                        <span class="text-white" data-recurring-transaction-form-target="previewAmount">$0.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-bunker-300">Frecuencia:</span>
+                        <span class="text-white" data-recurring-transaction-form-target="previewFrequency">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-bunker-300">Total anual estimado:</span>
+                        <span class="text-purple-400 font-semibold" data-recurring-transaction-form-target="previewAnnualTotal">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-bunker-800/30 rounded-xl p-4">
+                <h4 class="text-white font-medium mb-3">Próximas Ejecuciones</h4>
+                <div class="space-y-2 text-sm" data-recurring-transaction-form-target="previewSchedule">
+                    <div class="text-bunker-400">Selecciona fecha de inicio y frecuencia</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-bunker-800/30 rounded-2xl px-8 py-6 flex justify-between items-center">
+        <button type="button" 
+                data-action="click->modal#close"
+                class="px-6 py-3 text-bunker-300 hover:text-white border border-bunker-700/50 hover:border-bunker-600/50 rounded-xl font-medium transition-all duration-200 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            Cancelar
+        </button>
+
+        <div class="flex gap-3">
+            <button type="submit" 
+                    class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Crear Transacción Recurrente
+            </button>
+        </div>
+    </div>
+<% end %>
