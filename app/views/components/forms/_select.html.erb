@@ -25,6 +25,9 @@
                 **options 
             }) %>
         
+        <% if options[:disabled].present? %>
+            <%= form.hidden_field name %>
+        <% end %>
         <!-- Chevron Icon -->
         <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
             <%= component.send(:chevron_icon) %>

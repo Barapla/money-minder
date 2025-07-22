@@ -14,6 +14,7 @@ class Transaction < ApplicationRecord
   belongs_to :color, class_name: 'Catalog', foreign_key: 'color_id'
   belongs_to :icon, class_name: 'Catalog', foreign_key: 'icon_id'
   belongs_to :transaction_type, class_name: 'Catalog', foreign_key: 'transaction_type_id'
+  belongs_to :recurring_transaction, optional: true
 
   has_one :transaction_history, dependent: :destroy
 

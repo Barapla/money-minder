@@ -10,25 +10,39 @@
         <!-- Transaction Details -->
         <div class="lg:col-span-2 space-y-8">
             <!-- Basic Information -->
-            <%= render "transactions/shows/shared/details" %>
+            <%= render "transactions/shows/shared/main/details" %>
             
-
             <!-- Impact Analysis -->
             <%= render "transactions/shows/#{@transaction.transaction_type.code}/impact" %>
-            
 
+            
             <!-- Related Transactions (if transfer) -->
-            <%= render "transactions/shows/shared/related_transactions" %>
+            <%= render "transactions/shows/shared/main/related_transactions" %>
+
+            <!-- Recurring Transactions -->
+            <% if @transaction.recurring_transaction_id? %>
+                <%= render "transactions/shows/shared/main/recurrence/configuration", recurring_transaction: @transaction.recurring_transaction %>
+            
+                <%= render "transactions/shows/shared/main/recurrence/template", recurring_transaction: @transaction.recurring_transaction %>
+                
+                <%= render "transactions/shows/shared/main/recurrence/statistics", recurring_transaction: @transaction.recurring_transaction %>
+            
+            <% end %>
+
         </div>
 
         <!-- Sidebar -->
         <div class="space-y-6">
             <!-- Quick Actions -->
-            <%= render "transactions/shows/shared/quick_actions" %>
+            <%= render "transactions/shows/shared/sidebar/quick_actions" %>
             
-
             <!-- Transaction Metadata -->
-            <%= render "transactions/shows/shared/metadata" %>
+            <%= render "transactions/shows/shared/sidebar/metadata" %>
+
+            <!-- Recurring Transactions -->
+            <% if @transaction.recurring_transaction_id? %>
+                <%= render "transactions/shows/shared/sidebar/recurrence_details", recurring_transaction: @transaction.recurring_transaction %>
+            <% end %>
 
             <!-- Category Analysis -->
             <%= render "transactions/shows/#{@transaction.transaction_type.code}/category_analysis" %>

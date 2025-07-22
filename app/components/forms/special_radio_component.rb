@@ -2,8 +2,8 @@
 
 # app/components/forms/radio_component.rb
 module Forms
-  # InputComponent
-  class RadioComponent < Forms::ApplicationComponent
+  # SpecialRadioComponent
+  class SpecialRadioComponent < Forms::ApplicationComponent
     attr_reader :name, :collection, :default_object_value, :default_object_label, :help_text, :required,
                 :collection_options
 

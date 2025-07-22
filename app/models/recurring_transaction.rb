@@ -2,34 +2,17 @@
 
 # RecurringTransaction model
 class RecurringTransaction < ApplicationRecord
-  belongs_to :transaction_record, class_name: 'Transaction', foreign_key: 'transaction_id'
   belongs_to :user
   # Enums
-  enum frequency: {
-    daily: 0,
-    weekly: 1,
-    bi_weekly: 2,      # Cada 2 semanas
-    monthly: 3,
-    bi_monthly: 4,     # Cada 2 meses
-    quarterly: 5,      # Cada 3 meses
-    semi_annually: 6,  # Cada 6 meses
-    annually: 7
-  }
+  enum frequency: %i[daily weekly bi_weekly monthly bi_monthly quarterly semi_annually annually]
 
-  enum status: {
-    active: 0,
-    paused: 1,
-    completed: 2,
-    cancelled: 3
-  }
+  enum status: %i[active paused completed cancelled], _default: :active
 
   belongs_to :budget, optional: true # Para asociar a un presupuesto específico
   has_many :generated_transactions, class_name: 'Transaction',
                                     foreign_key: 'recurring_transaction_id', dependent: :nullify
 
   # Validations
-  validates :description, presence: true, length: { maximum: 255 }
-  validates :amount, presence: true, numericality: { greater_than: 0 }
   validates :start_date, presence: true
   validates :end_date, comparison: { greater_than: :start_date }, allow_blank: true
   validates :frequency, presence: true
@@ -40,11 +23,36 @@ class RecurringTransaction < ApplicationRecord
 
   # Callbacks
   before_create :set_next_execution_date
+  after_create :define_first_transaction, if: :created_by_transaction?
   after_update :recalculate_next_execution_date, if: :saved_change_to_frequency?
+
+  def self.frequency_options_for_select
+    {
+      'daily' => '📅 Diario',
+      'weekly' => '📅 Semanal',
+      'bi_weekly' => '📅 Quincenal',
+      'monthly' => '📅 Mensual',
+      'bi_monthly' => '📅 Bimestral',
+      'quarterly' => '📅 Trimestral',
+      'semi_annually' => '📅 Semestral',
+      'annually' => '📅 Anual'
+    }.map { |key, label| [label, key] }
+  end
+
+  def define_first_transaction
+    transaction = ::Transaction.find(transaction_options['id'])
+
+    transaction.update(recurring_transaction: self)
+    self.execution_count = 1
+  end
 
   # Instance methods
   def next_execution_date
     calculate_next_date(start_date)
+  end
+
+  def budget
+    Budget.find(transaction_options['budget_id']) if transaction_options['budget_id'].present?
   end
 
   def remaining_executions
@@ -67,6 +75,10 @@ class RecurringTransaction < ApplicationRecord
 
   def can_execute?
     active? && (end_date.nil? || Date.current <= end_date)
+  end
+
+  def created_by_transaction?
+    transaction_options['id'].present?
   end
 
   private

@@ -1,0 +1,44 @@
+<% recurring_transaction_presenter = RecurringTransactionPresenter.new(recurring_transaction) %>
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+    <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+        </svg>
+        Plantilla de Transacción
+    </h2>
+
+    <div class="grid md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+            <div class="bg-bunker-800/30 rounded-xl p-4">
+                <div class="text-bunker-300 text-sm mb-1">Descripción</div>
+                <div class="text-white font-medium"><%= recurring_transaction.transaction_options["description"] %></div>
+            </div>
+            
+            <div class="bg-bunker-800/30 rounded-xl p-4">
+                <div class="text-bunker-300 text-sm mb-1">Monto</div>
+                <div class="text-emerald-400 text-xl font-semibold">$<%= recurring_transaction.transaction_options["amount"] %></div>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div class="bg-bunker-800/30 rounded-xl p-4">
+                <div class="text-bunker-300 text-sm mb-1">Categoría</div>
+                <div class="flex items-center gap-2">
+                    <span class="text-lg"><%= recurring_transaction_presenter.icon %></span>
+                    <span class="text-white font-medium"><%= recurring_transaction_presenter.category %></span>
+                </div>
+            </div>
+
+            <div class="bg-bunker-800/30 rounded-xl p-4">
+                <div class="text-bunker-300 text-sm mb-1">Presupuesto</div>
+                <% budget_presenter = BudgetPresenter.new(recurring_transaction.budget) %>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-<%= budget_presenter.color %> rounded-lg flex items-center justify-center">
+                        <span class="text-sm"><%= budget_presenter.icon %></span>
+                    </div>
+                    <span class="text-white font-medium"><%= recurring_transaction_presenter.budget %></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

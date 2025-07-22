@@ -54,7 +54,7 @@
             ) %>
 
             <!-- Icon Selection -->
-            <%= render Forms::RadioComponent.new(
+            <%= render Forms::SpecialRadioComponent.new(
                 name: :icon_id,
                 form:,
                 collection: Catalog.by_group('budget_icons'),
@@ -72,7 +72,7 @@
             ) %>
 
             <!-- Color Selection -->
-            <%= render Forms::RadioComponent.new(
+            <%= render Forms::SpecialRadioComponent.new(
                 name: :color_id,
                 form:,
                 collection: Catalog.by_group('colors'),

@@ -1,7 +1,7 @@
 <%= form_with(model: RecurringTransaction.new, local: true, html: { class: "space-y-8", 
         data: { controller: "budgets--preview form-validator recurring-transaction-form", 
             form_validator_validate_on_blur_value: true,
-            form_validator_validate_on_input_value: false} }) do |form|%>
+            form_validator_validate_on_input_value: false, turbo: false } }) do |form|%>
     <!-- Basic Information -->
     <div class="bg-bunker-800/30 rounded-2xl p-6">
         <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -20,7 +20,10 @@
                     options: { 
                         help_text: "Selecciona el tipo de transacción",
                         disabled: true,
-                        required: true
+                        required: true,
+                        data: {
+                            action: "change->recurring-transaction-form#updatePreview"
+                        }
                     }
                 ) %>
         
@@ -36,7 +39,8 @@
                         required: true,
                         data: {
                             "budgets--preview-target": "current",
-                            action: "input->budgets--preview#updateDebitPreview",
+                            recurring_transaction_form_target: "amount",
+                            action: "input->budgets--preview#updateDebitPreview input->recurring-transaction-form#updatePreview",
                             required_message: "Por favor, ingresa un monto para la transacción",
                         }
                     }
@@ -51,7 +55,9 @@
                         help_text: "Proporciona una breve descripción de la transacción",
                         required: true,
                         data: {
-                            required_message: "Por favor, ingresa una descripción para la transacción",
+                            recurring_transaction_form_target: "description",
+                            action: "change->recurring-transaction-form#updatePreview",
+                            required_message: "Por favor, ingresa una descripción para la transacción"
                         }
                     }
                 ) %>
@@ -77,7 +83,7 @@
                 <% end %>
 
                 <!-- Icon Selection -->
-                <%= render Forms::RadioComponent.new(
+                <%= render Forms::SpecialRadioComponent.new(
                     name: :icon_id,
                     form: t_form,
                     collection: Catalog.by_group('transaction_icons'),
@@ -95,7 +101,7 @@
                 ) %>
 
                 <!-- Color Selection -->
-                <%= render Forms::RadioComponent.new(
+                <%= render Forms::SpecialRadioComponent.new(
                     name: :color_id,
                     form: t_form,
                     collection: Catalog.by_group('colors'),
@@ -135,6 +141,7 @@
                         </div>
                     </div>
                 </div>
+                <%= t_form.hidden_field :id %>
             <% end %>
         </div>
     </div>
@@ -149,51 +156,51 @@
         </h3>
 
         <div class="grid lg:grid-cols-3 gap-6">
-            <!-- Frequency -->
-            <div>
-                <label class="block text-sm font-medium text-bunker-200 mb-2">
-                    Frecuencia *
-                </label>
-                <select name="frequency" 
-                        class="w-full px-4 py-3 bg-bunker-800/60 border border-bunker-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 appearance-none"
-                        data-action="change->recurring-transaction-form#updateFrequency"
-                        required>
-                    <option value="">Selecciona frecuencia</option>
-                    <option value="daily">📅 Diario</option>
-                    <option value="weekly">📅 Semanal</option>
-                    <option value="bi_weekly">📅 Quincenal</option>
-                    <option value="monthly">📅 Mensual</option>
-                    <option value="bi_monthly">📅 Bimestral</option>
-                    <option value="quarterly">📅 Trimestral</option>
-                    <option value="semi_annually">📅 Semestral</option>
-                    <option value="annually">📅 Anual</option>
-                </select>
-            </div>
+            <%= render Forms::SelectComponent.new(
+                name: :frequency,
+                form:,
+                options_collection: RecurringTransaction.frequency_options_for_select,
+                options: { 
+                    help_text: "Selecciona la frecuencia de la transacción recurrente",
+                    required: true,
+                    data: {
+                        recurring_transaction_form_target: "frequency",
+                        action: "change->recurring-transaction-form#updateFrequency"
+                    }
+                }
+            ) %>
 
-            <!-- Start Date -->
-            <div>
-                <label class="block text-sm font-medium text-bunker-200 mb-2">
-                    Fecha de Inicio *
-                </label>
-                <input type="date" 
-                        name="start_date"
-                        class="w-full px-4 py-3 bg-bunker-800/60 border border-bunker-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
-                        data-action="change->recurring-transaction-form#updatePreview"
-                        required>
-                <p class="text-xs text-bunker-400 mt-1">Cuándo inicia la recurrencia</p>
-            </div>
+            
+            <%= render Forms::InputComponent.new(
+                name: :start_date,
+                form:,
+                type: :date,
+                options: { 
+                    placeholder: "Cuándo inicia la recurrencia",
+                    help_text: "Selecciona la fecha de inicio para la recurrencia",
+                    required: true,
+                    data: {
+                        recurring_transaction_form_target: "startDate",
+                        action: "change->recurring-transaction-form#updatePreview",
+                        required_message: "Por favor, selecciona una fecha de inicio para la recurrencia",
+                    }
+                }
+            ) %>
 
-            <!-- End Date -->
-            <div>
-                <label class="block text-sm font-medium text-bunker-200 mb-2">
-                    Fecha de Fin (Opcional)
-                </label>
-                <input type="date" 
-                        name="end_date"
-                        class="w-full px-4 py-3 bg-bunker-800/60 border border-bunker-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
-                        data-action="change->recurring-transaction-form#updatePreview">
-                <p class="text-xs text-bunker-400 mt-1">Deja vacío para sin fin</p>
-            </div>
+            <%= render Forms::InputComponent.new(
+                name: :end_date,
+                form:,
+                type: :date,
+                options: { 
+                    placeholder: "Cuándo termina la recurrencia",
+                    help_text: "Selecciona la fecha fin para la recurrencia",
+                    data: {
+                        recurring_transaction_form_target: "endDate",
+                        action: "change->recurring-transaction-form#updatePreview"
+                    }
+                }
+            ) %>
+
         </div>
     </div>
 
@@ -209,17 +216,19 @@
 
         <div class="grid lg:grid-cols-2 gap-6">
             <!-- Max Executions -->
-            <div>
-                <label class="block text-sm font-medium text-bunker-200 mb-2">
-                    Máximo de Ejecuciones
-                </label>
-                <input type="number" 
-                        name="max_executions"
-                        min="1"
-                        placeholder="Sin límite"
-                        class="w-full px-4 py-3 bg-bunker-800/60 border border-bunker-700/50 rounded-xl text-white placeholder-bunker-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200">
-                <p class="text-xs text-bunker-400 mt-1">Límite de veces que se ejecutará</p>
-            </div>
+
+            <%= render Forms::InputComponent.new(
+                name: :max_executions,
+                form:,
+                options: { 
+                    placeholder: "Sin límite",
+                    help_text: "Límite de veces que se ejecutará",
+                    data: {
+                        recurring_transaction_form_target: "maxExecutions",
+                        action: "input->recurring-transaction-form#updateFrequency"
+                    }
+                }
+            ) %>
 
             <!-- Auto Approve -->
             <div>

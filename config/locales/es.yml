@@ -61,6 +61,10 @@ es:
         cutting_day: "Siguiente día de corte"
       recurring_transaction:
         transaction_id: "Transacción"
+        frecuency: "Frecuencia"
+        start_date: "Fecha de inicio"
+        end_date: "Fecha de finalización"
+        max_executions: "Máximo de ejecuciones"
       savings_fund:
         goal_amount: "Meta de ahorro"
         target_date: "Fecha objetivo"
@@ -88,3 +92,13 @@ es:
         blank: "no puede estar vacío"
         required: "es requerido"
   
+  recurring_transactions:
+    create:
+      success: "Transacción recurrente creada exitosamente."
+      error: "Error al crear la transacción recurrente: %{errors}."
+    update:
+      success: "Transacción recurrente actualizada exitosamente."
+      error: "Error al actualizar la transacción recurrente: %{errors}."
+    destroy:
+      success: "Transacción recurrente eliminada exitosamente."
+      error: "Error al eliminar la transacción recurrente: %{errors}."

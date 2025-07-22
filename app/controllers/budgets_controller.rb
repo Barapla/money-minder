@@ -25,8 +25,10 @@ class BudgetsController < ApplicationController
     # select_filters = params[:select_filters] || []
     # checkbox_filters = params[:checkbox_filters] || {}
 
-    budgets = Budget.where(budget_type: Catalog.by_group_and_code('budget_types', 'credit_card'),
-                           user: current_user).order(:id)
+    # budgets = Budget.where(budget_type: Catalog.by_group_and_code('budget_types', 'credit_card'),
+    #                        user: current_user).order(:id)
+
+    budgets = Budget.where(user: current_user)
 
     # tickets = apply_select_filters(tickets, select_filters)
     # users = apply_checkbox_filters(users, checkbox_filters)
@@ -71,7 +73,7 @@ class BudgetsController < ApplicationController
   def create
     @budget = Budget.new(budget_params)
     if @budget.save
-      redirect_to budgets_path, notice: 'Presupuesto creado exitosamente.'
+      redirect_to @budget, notice: 'Presupuesto creado exitosamente.'
     else
       flash.now[:alert] = 'Error al crear el presupuesto. Por favor, revisa los datos ingresados.'
       render :new
@@ -82,7 +84,7 @@ class BudgetsController < ApplicationController
 
   def update
     if @budget.update(budget_params)
-      redirect_to budgets_path, notice: 'Presupuesto actualizado exitosamente.'
+      redirect_to @budget, notice: 'Presupuesto actualizado exitosamente.'
     else
       flash.now[:alert] = 'Error al actualizar el presupuesto. Por favor, revisa los datos ingresados.'
       render :edit
