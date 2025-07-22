@@ -6,7 +6,7 @@ class RecurringTransactionPresenter < ApplicationPresenter
   include ActionView::Helpers::TextHelper
   include ActionView::Helpers::DateHelper
 
-  FrequencyOptions = {
+  FREQUENCY_OPTIONS = {
     'daily' => 'Diario',
     'weekly' => 'Semanal',
     'bi_weekly' => 'Quincenal',
@@ -18,7 +18,7 @@ class RecurringTransactionPresenter < ApplicationPresenter
   }.freeze
 
   def frequency
-    FrequencyOptions[@resource.frequency] || 'Desconocida'
+    FREQUENCY_OPTIONS[@resource.frequency] || 'Desconocida'
   end
 
   def category
@@ -30,7 +30,7 @@ class RecurringTransactionPresenter < ApplicationPresenter
   end
 
   def icon
-    category_icon = Catalog.find(@resource.transaction_options['icon_id']).value
+    Catalog.find(@resource.transaction_options['icon_id']).value
   end
 
   def created_at
