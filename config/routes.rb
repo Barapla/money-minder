@@ -34,6 +34,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :reports, only: [:index]
+
   # sidekiq routes
   require 'sidekiq/web'
   mount Sidekiq::Web => '/sidekiq'

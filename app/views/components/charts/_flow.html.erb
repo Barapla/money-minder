@@ -1,0 +1,34 @@
+<%
+    id = component.id
+    datasets = component.datasets
+    url = component.url
+%>
+<!-- Cash Flow Chart -->
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6" data-controller="charts--flow" data-charts--flow-id-value="<%= id %>"
+    data-charts--flow-datasets-value="<%= datasets.to_json %>" data-charts--flow-url-value="<%= url %>">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold text-white flex items-center gap-2">
+            <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            Flujo de Efectivo
+        </h3>
+        <div class="flex gap-2">
+            <button data-charts--flow-target="periodButtons" data-action="click->charts--flow#setFlowPeriod" data-charts--flow-period-param="daily"
+                class="px-3 py-1 text-sm text-bunker-400 hover:text-white border border-bunker-700 rounded-lg hover:bg-bunker-700/50" id="dailyBtn">
+                Diario
+            </button>
+            <button data-charts--flow-target="periodButtons" data-action="click->charts--flow#setFlowPeriod" data-charts--flow-period-param="weekly"
+                class="px-3 py-1 text-sm text-bunker-400 hover:text-white border border-bunker-700 rounded-lg hover:bg-bunker-700/50" id="weeklyBtn">
+                Semanal
+            </button>
+            <button data-charts--flow-target="periodButtons" data-action="click->charts--flow#setFlowPeriod" data-charts--flow-period-param="monthly"
+                class="px-3 py-1 text-sm bg-purple-500 text-white rounded-lg" id="monthlyBtn">
+                Mensual
+            </button>
+        </div>
+    </div>
+    <div class="h-80">
+        <canvas id="<%= id %>" data-charts--flow-target="canvas"></canvas>
+    </div>
+</div>
