@@ -46,9 +46,14 @@ class RecurringTransaction < ApplicationRecord
     self.execution_count = 1
   end
 
-  # Instance methods
-  def next_execution_date
-    calculate_next_date(start_date)
+  def should_process_transaction?
+    return false unless self.can_execute?
+    return false if next_execution_date > Date.current
+    if max_executions.present? && execution_count >= max_executions
+      return false
+    end
+
+    true
   end
 
   def budget

@@ -61,6 +61,7 @@ group :development, :test do
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'rubocop'
+  gem 'dotenv-rails'
 end
 
 group :development do
@@ -81,10 +82,11 @@ group :test do
 
 end
 
-
 gem 'date'
 gem 'inline_svg'
 gem 'foreman'
 gem 'colorize'
 gem 'awesome_print'
 gem 'inline_svg'
+gem 'sidekiq', '~> 6.5'
+gem 'sidekiq-cron'

@@ -19,12 +19,21 @@ default: &default
   encoding: unicode
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  # pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
 development:
-  <<: *default
-  database: money_minder_development
-
+  database: <%= ENV['PGDATABASE'] %>
+  username: <%= ENV['PGUSER'] %>
+  password: <%= ENV['PGPASSWORD'] %>
+  host: <%= ENV['PGHOST'] %>
+  port: <%= ENV['PGPORT'] %>
+  pool: 25                    # Pool más grande
+  timeout: 10000              # 10 segundos  
+  checkout_timeout: 10        # Checkout rápido
+  reaping_frequency: 5        # Limpieza frecuente
+  prepared_statements: false  # Puede ayudar con latencia
+  connect_timeout: 5          # Timeout de conexión
+  
   # The specified database role being used to connect to postgres.
   # To create additional roles in postgres see `$ createuser --help`.
   # When left blank, postgres will use the default role. This is

@@ -45,7 +45,7 @@ class BudgetsController < ApplicationController
 
     @budgets = values_table_format(budgets)
     stream = turbo_stream.update("table-#{id}", partial: 'components/table/main/table',
-                                                locals: { headers: headers_table_index, values: @budgets, id:,
+                                                locals: { headers: headers_table_index.push({ name: 'Acciones', size: 'min-w-[120px]' }), values: @budgets, id:,
                                                           per_page:, current_page:, total_collections: total_budgets,
                                                           total_pages:, pagination_pages: })
     respond_to do |format|

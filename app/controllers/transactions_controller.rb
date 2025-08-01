@@ -38,7 +38,7 @@ class TransactionsController < ApplicationController
 
     @transactions = values_table_transactions_format(transactions)
     stream = turbo_stream.update("table-#{id}", partial: 'components/table/main/table',
-                                                locals: { headers: headers_table_transactions_index,
+                                                locals: { headers: headers_table_transactions_index.push({ name: 'Acciones', size: 'min-w-[120px]' }),
                                                           values: @transactions, id:, per_page:, current_page:,
                                                           total_collections: total_transactions,
                                                           total_pages:, pagination_pages: })
