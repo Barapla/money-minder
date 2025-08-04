@@ -8,12 +8,13 @@ export default class extends Controller {
         datasets: Array, // Data for the chart
         url: String // URL for fetching data
     }
+    static outlets = ["charts--main"]
+
     flowChart = null
     currentFlowPeriod = 'monthly';
 
   connect() {
     this.initializeChart();
-    this.element.addEventListener("dashboard:updateCharts", this.updateChart.bind(this))
   }
 
   initializeChart() {
@@ -72,42 +73,51 @@ export default class extends Controller {
       
       document.getElementById(period + 'Btn').className = 'px-3 py-1 text-sm bg-purple-500 text-white rounded-lg';
       
-      this.updateChart(period);
+      this.updateChart();
   }
 
-  updateChart(period) {
-    // Update cash flow chart based on current period
-    let labels, incomeData, expenseData;
-    
-    clearTimeout(this.timeout)
-    this.timeout = setTimeout(() => {
-      // Evita que el formulario se envíe de la manera tradicional      
-        const url = this.urlValue + `?period=${period}`;
+  updateChart() {
+        console.log('updateChart called'); // Debug
+        
+        let filters = null;
+        
+        if (this.hasChartsMainOutlet) {
+            filters = this.chartsMainOutlet.getFilters();
+            filters.period = this.currentFlowPeriod; // Usar el período actual
+        } else {
+            // Fallback: usar valores por defecto o del período actual
+            filters = {
+                start_date: '',
+                end_date: '',
+                period: this.currentFlowPeriod
+            };
+        }
 
-        fetch(url, {
-            method: 'GET',
-            headers: {
-            "Content-Type": "application/json",
-            'X-CSRF-Token': document.querySelector("[name='csrf-token']").content,
-            'Accept': 'application/json'
-            }      
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Cash flow data fetched:', data);
-            // Assuming data contains the labels and datasets for income and expenses
-            labels = data.labels;
-            incomeData = data.incomeData;
-            expenseData = data.expenseData;
+        // Remover el return que estaba cortando la ejecución
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(() => {
+            const url = this.urlValue + `?start_date=${filters.start_date}&end_date=${filters.end_date}&period=${filters.period}`;
 
-            this.flowChart.data.labels = labels;
-            this.flowChart.data.datasets[0].data = incomeData;
-            this.flowChart.data.datasets[1].data = expenseData;
-            this.flowChart.update();
-        })
-        .catch(error => {
-            console.error('Error fetching cash flow data:', error);
-        });
-    }, 300)
-  }
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    'X-CSRF-Token': document.querySelector("[name='csrf-token']").content,
+                    'Accept': 'application/json'
+                }      
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Cash flow data fetched:', data);
+                
+                this.flowChart.data.labels = data.labels;
+                this.flowChart.data.datasets[0].data = data.incomeData;
+                this.flowChart.data.datasets[1].data = data.expenseData;
+                this.flowChart.update();
+            })
+            .catch(error => {
+                console.error('Error fetching cash flow data:', error);
+            });
+        }, 300);
+    }
 }

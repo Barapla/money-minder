@@ -8,14 +8,14 @@ module Charteable
     def flow_dataset
       [{
         label: 'Ingresos',
-        data: self.first.earned_per_frequency,
+        data: ReportFilter.new().earned_per_frequency,
         borderColor: '#10b981',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         tension: 0.4,
         fill: true
       }, {
         label: 'Gastos',
-        data: self.first.expensed_per_frequency,
+        data: ReportFilter.new().expensed_per_frequency,
         borderColor: '#ef4444',
         backgroundColor: 'rgba(239, 68, 68, 0.1)',
         tension: 0.4,

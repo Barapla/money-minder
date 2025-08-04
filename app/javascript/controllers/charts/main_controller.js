@@ -2,16 +2,16 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="charts--main"
 export default class extends Controller {
-    static targets = ["summaryCards"]
-    static values = { 
-        data: Object,
-        dateRange: Object,
-        selectedBudgets: Array 
-    }
+    static targets = ["startDate", "endDate", "budgets", "transactionTypes", "periodButtons"]
+     static outlets = ["charts--flow"] // Usar el nombre específico del controlador hijo
 
     // Funciones compartidas
     updateAllCharts() {
-        this.dispatch("updateCharts") // Envía evento a todos los charts
+        this.chartsFlowOutlets.forEach(childController => {
+            if (childController.updateChart) {
+                childController.updateChart();
+            }
+        });
     }
     
     filterData() {
@@ -21,4 +21,14 @@ export default class extends Controller {
     exportData() {
         // Función compartida
     }
+
+    // Método para obtener filtros
+    getFilters() {
+        const filters = {
+            start_date: this.startDateTarget.value,
+            end_date: this.endDateTarget.value
+        };
+        return filters;
+    }
+
 }

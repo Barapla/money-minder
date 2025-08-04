@@ -1,6 +1,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl mx-auto" data-controller="charts--main" data-charts--main-charts--flow-outlet="#charts--flow-controller">
     <!-- Header -->
     <div class="bg-gradient-to-r from-bunker-900/80 to-purple-900/80 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8">
         <div class="flex items-center justify-between">
@@ -42,62 +42,82 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Date Range -->
-            <div>
-                <label class="block text-sm font-medium text-bunker-200 mb-2">Rango de Fechas</label>
-                <div class="flex gap-2">
-                    <input type="date" id="startDate" onchange="updateCharts()" 
-                            class="flex-1 px-3 py-2 bg-bunker-800/60 border border-bunker-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                            value="2024-01-01">
-                    <input type="date" id="endDate" onchange="updateCharts()"
-                            class="flex-1 px-3 py-2 bg-bunker-800/60 border border-bunker-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                            value="2024-12-31">
+            <%= fields_for "report_filter", ReportFilter.new do |form| %>
+                <!-- Date Range -->
+                <%= render Forms::InputComponent.new(
+                    name: :start_date,
+                    form:,
+                    type: :date,
+                    options: { 
+                        placeholder: "Fecha de Inicio",
+                        help_text: "Selecciona la fecha de inicio del análisis",
+                        size: :small,
+                        data: {
+                            "charts--main-target": "startDate",
+                            action: "change->charts--main#updateAllCharts"
+                        }
+                    }
+                ) %>
+                
+                <%= render Forms::InputComponent.new(
+                    name: :end_date,
+                    form:,
+                    type: :date,
+                    options: { 
+                        placeholder: "Fecha de Inicio",
+                        help_text: "Selecciona la fecha de inicio del análisis",
+                        size: :small,
+                        data: {
+                            "charts--main-target": "endDate",
+                            action: "change->charts--main#updateAllCharts"
+                        }
+                    }
+                ) %>
+
+                <!-- Budget Selection -->  
+                <div>
+                    <label class="block text-sm font-medium text-bunker-200 mb-2">Presupuestos</label>
+                    <select id="budgetFilter" onchange="updateCharts()"
+                            class="w-full px-3 py-2 bg-bunker-800/60 border border-bunker-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none">
+                        <option value="all">Todos los presupuestos</option>
+                        <option value="1">🏠 Gastos del Hogar</option>
+                        <option value="2">💳 Tarjeta de Crédito</option>
+                        <option value="3">🚗 Transporte</option>
+                        <option value="4">💰 Ahorros</option>
+                    </select>
                 </div>
-            </div>
 
-            <!-- Budget Selection -->  
-            <div>
-                <label class="block text-sm font-medium text-bunker-200 mb-2">Presupuestos</label>
-                <select id="budgetFilter" onchange="updateCharts()"
-                        class="w-full px-3 py-2 bg-bunker-800/60 border border-bunker-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none">
-                    <option value="all">Todos los presupuestos</option>
-                    <option value="1">🏠 Gastos del Hogar</option>
-                    <option value="2">💳 Tarjeta de Crédito</option>
-                    <option value="3">🚗 Transporte</option>
-                    <option value="4">💰 Ahorros</option>
-                </select>
-            </div>
-
-            <!-- Transaction Type -->
-            <div>
-                <label class="block text-sm font-medium text-bunker-200 mb-2">Tipo de Transacción</label>
-                <select id="transactionType" onchange="updateCharts()"
-                        class="w-full px-3 py-2 bg-bunker-800/60 border border-bunker-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none">
-                    <option value="all">Todas</option>
-                    <option value="income">💰 Ingresos</option>
-                    <option value="expense">💸 Gastos</option>
-                    <option value="transfer">🔄 Transferencias</option>
-                </select>
-            </div>
-
-            <!-- Quick Filters -->
-            <div>
-                <label class="block text-sm font-medium text-bunker-200 mb-2">Período Rápido</label>
-                <div class="flex gap-1">
-                    <button onclick="setLastMonth()" class="flex-1 px-2 py-1 text-xs bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-white border border-bunker-700/50 rounded-md transition-colors">
-                        1M
-                    </button>
-                    <button onclick="setLast3Months()" class="flex-1 px-2 py-1 text-xs bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-white border border-bunker-700/50 rounded-md transition-colors">
-                        3M
-                    </button>
-                    <button onclick="setLast6Months()" class="flex-1 px-2 py-1 text-xs bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-white border border-bunker-700/50 rounded-md transition-colors">
-                        6M
-                    </button>
-                    <button onclick="setLastYear()" class="flex-1 px-2 py-1 text-xs bg-purple-500 text-white border border-purple-500 rounded-md">
-                        1A
-                    </button>
+                <!-- Transaction Type -->
+                <div>
+                    <label class="block text-sm font-medium text-bunker-200 mb-2">Tipo de Transacción</label>
+                    <select id="transactionType" onchange="updateCharts()"
+                            class="w-full px-3 py-2 bg-bunker-800/60 border border-bunker-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none">
+                        <option value="all">Todas</option>
+                        <option value="income">💰 Ingresos</option>
+                        <option value="expense">💸 Gastos</option>
+                        <option value="transfer">🔄 Transferencias</option>
+                    </select>
                 </div>
-            </div>
+
+                <!-- Quick Filters -->
+                <div>
+                    <label class="block text-sm font-medium text-bunker-200 mb-2">Período Rápido</label>
+                    <div class="flex gap-1">
+                        <button onclick="setLastMonth()" class="flex-1 px-2 py-1 text-xs bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-white border border-bunker-700/50 rounded-md transition-colors">
+                            1M
+                        </button>
+                        <button onclick="setLast3Months()" class="flex-1 px-2 py-1 text-xs bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-white border border-bunker-700/50 rounded-md transition-colors">
+                            3M
+                        </button>
+                        <button onclick="setLast6Months()" class="flex-1 px-2 py-1 text-xs bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-white border border-bunker-700/50 rounded-md transition-colors">
+                            6M
+                        </button>
+                        <button onclick="setLastYear()" class="flex-1 px-2 py-1 text-xs bg-purple-500 text-white border border-purple-500 rounded-md">
+                            1A
+                        </button>
+                    </div>
+                </div>
+            <% end %>
         </div>
     </div>
 
@@ -158,7 +178,6 @@
 
     <!-- Charts Section -->
     <div class="grid lg:grid-cols-2 gap-8 mb-8">
-        
         <%= render Charts::FlowComponent.new(datasets: @budget_datasets, url: reports_path) %>
 
         <!-- Category Distribution -->
@@ -399,64 +418,6 @@
             initTrendsChart();
         }
 
-        // Cash Flow Chart
-        function initCashFlowChart() {
-            const ctx = document.getElementById('cashFlowChart').getContext('2d');
-            cashFlowChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Ene', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-                    datasets: [{
-                        label: 'Ingresos',
-                        data: [3500, 3500, 3500, 3800, 3800, 4000, 4000, 3900, 3700, 3800, 3900, 4200],
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }, {
-                        label: 'Gastos',
-                        data: [2800, 2650, 2900, 3100, 2850, 3200, 3050, 2950, 2750, 3000, 2800, 3100],
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#d1d5db'
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: '#9ca3af',
-                                callback: function(value) {
-                                    return '' + value.toLocaleString();
-                                }
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: '#9ca3af'
-                            }
-                        }
-                    }
-                }
-            });
-        }
 
         // Category Chart
         function initCategoryChart() {

@@ -23,6 +23,10 @@ class Transaction < ApplicationRecord
   scope :by_category, lambda { |category|
     joins(:category).where(categories: { name: category })
   }
+  scope :expense, -> { joins(:transaction_type).where(transaction_type: { code: 'expense' }) }
+  scope :income, -> { joins(:transaction_type).where(transaction_type: { code: 'income' }, related_transaction_id: nil ) }
+  scope :transfer, -> { joins(:transaction_type).where(transaction_type: { code: 'transfer' }) }
+
 
   def set_default_values
     self.currency ||= Currency.default

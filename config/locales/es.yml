@@ -41,6 +41,14 @@ es:
         one: "hace 1 año"
         other: "hace %{count} años"
 
+  activemodel:
+    attributes:
+      report_filter:
+        start_date: "Fecha de inicio"
+        end_date: "Fecha de finalización"
+        budget_id: "Presupuesto"
+        transaction_type_id: "Tipo de transacción"
+
   activerecord:
     attributes:
       user:
