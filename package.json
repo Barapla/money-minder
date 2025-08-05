@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
-    "@hotwired/turbo-rails": "^8.0.5"
+    "@hotwired/turbo-rails": "^8.0.5",
+    "chart.js": "^4.5.0"
   }
 }

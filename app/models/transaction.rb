@@ -23,9 +23,12 @@ class Transaction < ApplicationRecord
   scope :by_category, lambda { |category|
     joins(:category).where(categories: { name: category })
   }
-  scope :expense, -> { joins(:transaction_type).where(transaction_type: { code: 'expense' }) }
-  scope :income, -> { joins(:transaction_type).where(transaction_type: { code: 'income' }, related_transaction_id: nil ) }
-  scope :transfer, -> { joins(:transaction_type).where(transaction_type: { code: 'transfer' }) }
+  scope :by_transaction_type, lambda { |type_code|
+    joins(:transaction_type).where(transaction_type: { code: type_code })
+  }
+  scope :expense, -> { by_transaction_type('expense') }
+  scope :income, -> { by_transaction_type('income').where( related_transaction_id: nil ) }
+  scope :transfer, -> { by_transaction_type('transfer') }
 
 
   def set_default_values

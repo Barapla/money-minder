@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import Chart from 'chart.js/auto'
 
 // Connects to data-controller="charts--flow"
 export default class extends Controller {
@@ -96,7 +97,8 @@ export default class extends Controller {
         // Remover el return que estaba cortando la ejecución
         clearTimeout(this.timeout);
         this.timeout = setTimeout(() => {
-            const url = this.urlValue + `?start_date=${filters.start_date}&end_date=${filters.end_date}&period=${filters.period}`;
+            const url = this.urlValue + '?' + new URLSearchParams(filters).toString();
+            console.log('Fetching data from URL:', url); // Debug
 
             fetch(url, {
                 method: 'GET',

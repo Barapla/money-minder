@@ -1,0 +1,119 @@
+<%  name = component.name
+    form = component.form 
+    options_collection = component.options_collection
+    placeholder = component.placeholder
+    help_text = component.help_text
+    required = component.required
+    icon = component.icon
+    searchable = component.searchable
+    options = component.options || {} %>
+
+<div class="form-group" 
+     data-controller="multiselect"
+     data-multiselect-name-value="<%= name %>"
+     data-multiselect-placeholder-value="<%= placeholder %>"
+     data-multiselect-selected-value="<%= component.selected_values_as_json %>"
+     data-multiselect-options-value="<%= component.options_collection_as_json %>"
+     data-multiselect-searchable-value="<%= searchable %>">
+     
+    <%= render Forms::LabelComponent.new(form:, name:, required:) %>
+    
+    <div class="<%= component.send(:wrapper_classes) %> z-[9999]">
+        <!-- Campo oculto para almacenar los valores seleccionados -->
+        <%= form.hidden_field name, 
+            value: component.selected.join(','),
+            multiple: true,
+            **component.hidden_options %>
+        
+        <% if icon %>
+            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-bunker-400 pointer-events-none z-10">
+                <%= icon.html_safe %>
+            </div>
+        <% end %>
+        
+        <!-- Botón principal que abre/cierra el dropdown -->
+        <button type="button"
+                data-action="click->multiselect#toggle"
+                data-multiselect-target="trigger"
+                class="<%= component.send(:multiselect_classes) %> w-full bg-bunker-800 border border-bunker-700 rounded-lg px-4 py-3 text-left text-bunker-300 hover:border-bunker-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200 <%= 'pl-10' if icon %>">
+            <span data-multiselect-target="placeholder" class="block truncate"><%= placeholder %></span>
+        </button>
+        
+        <!-- Chevron Icon -->
+        <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <svg class="w-5 h-5 text-bunker-400 pointer-events-none transition-transform duration-200"
+                 data-multiselect-target="chevron"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </div>
+        
+        <!-- Dropdown con opciones -->
+        <div data-multiselect-target="dropdown"
+             class="absolute z-[9999] w-full mt-1 bg-bunker-800 border border-bunker-600 rounded-lg shadow-lg hidden max-h-80 overflow-hidden top-full left-0">
+            
+            <% if searchable %>
+                <!-- Barra de búsqueda -->
+                <div class="p-3 border-b border-bunker-700">
+                    <div class="relative">
+                        <div class="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                            <svg class="w-4 h-4 text-bunker-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <input type="text"
+                               data-multiselect-target="searchInput"
+                               data-action="input->multiselect#filterOptions"
+                               placeholder="Buscar..."
+                               class="w-full bg-bunker-700 border border-bunker-600 rounded-lg pl-10 pr-4 py-2 text-bunker-300 text-sm placeholder-bunker-400 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                    </div>
+                </div>
+            <% end %>
+            
+            <!-- Lista de opciones -->
+            <div data-multiselect-target="optionsList" class="py-1 max-h-52 overflow-y-auto">
+                <% options_collection.each do |option| %>
+                    <% 
+                        if option.is_a?(Array)
+                            option_text = option[0]
+                            option_value = option[1]
+                        else
+                            option_text = option.to_s
+                            option_value = option.to_s
+                        end
+                        is_selected = component.selected.include?(option_value.to_s)
+                    %>
+                    <label class="flex items-center px-4 py-2 hover:bg-bunker-700 cursor-pointer transition-colors duration-150" 
+                           data-multiselect-target="option" 
+                           data-value="<%= option_value %>"
+                           data-text="<%= option_text %>">
+                        <input type="checkbox" 
+                               data-action="change->multiselect#selectOption" 
+                               data-value="<%= option_value %>"
+                               <%= 'checked' if is_selected %>
+                               class="mr-3 text-purple-500 bg-bunker-700 border-bunker-600 rounded focus:ring-purple-500 focus:ring-2">
+                        <span class="text-bunker-300 flex-1"><%= option_text %></span>
+                    </label>
+                <% end %>
+            </div>
+            
+            <!-- Footer con acciones -->
+            <div class="p-3 border-t border-bunker-700 bg-bunker-750">
+                <div class="flex justify-between items-center">
+                    <button type="button"
+                            data-action="click->multiselect#clearAll"
+                            class="text-xs text-bunker-400 hover:text-bunker-300 transition-colors duration-150">
+                        Limpiar todo
+                    </button>
+                    <span data-multiselect-target="counter" class="text-xs text-bunker-400">
+                        0 seleccionados
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <% if help_text %>
+        <p class="text-xs text-bunker-400 mt-1"><%= help_text %></p>
+    <% end %>
+</div>

@@ -111,15 +111,17 @@ class ReportFilter
   end
 
   def budget_ids_from_filter
+    return Budget.pluck(:id) if budgets.blank?
+
     case budgets
     when Array
-      budgets # Si ya es un array de IDs
+      budgets.present? ? budgets : Budget.pluck(:id)
     when String
-      budgets.split(',').map(&:to_i) # Si viene como string separado por comas
+      budgets.split(',').map(&:to_i)
     when Budget
-      [budgets.id] # Si es un objeto Budget
+      [budgets.id]
     else
-      Budget.pluck(:id) # Si no hay filtro, todos los budgets
+      Budget.pluck(:id)
     end
   end
 

@@ -161,3 +161,52 @@
 .form-group.has-error [data-field-suffix] {
     @apply text-red-400;
 }
+
+/* Estilos para el componente multiselect */
+.multiselect-trigger {
+  transition: all 0.2s ease-in-out;
+}
+
+.multiselect-trigger:hover {
+  border-color: rgb(107 114 128); /* bunker-600 equivalent */
+}
+
+.multiselect-sm {
+  @apply py-2 text-sm;
+}
+
+.multiselect-md {
+  @apply py-3;
+}
+
+.multiselect-lg {
+  @apply py-4 text-lg;
+}
+
+/* Animación para el chevron */
+.multiselect-wrapper [data-multiselect-target="chevron"] {
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Scroll personalizado para el dropdown */
+.multiselect-wrapper [data-multiselect-target="optionsList"]::-webkit-scrollbar {
+  width: 6px;
+}
+
+.multiselect-wrapper [data-multiselect-target="optionsList"]::-webkit-scrollbar-track {
+  background: rgb(55 65 81); /* bunker-700 */
+  border-radius: 3px;
+}
+
+.multiselect-wrapper [data-multiselect-target="optionsList"]::-webkit-scrollbar-thumb {
+  background: rgb(107 114 128); /* bunker-600 */
+  border-radius: 3px;
+}
+
+.multiselect-wrapper [data-multiselect-target="optionsList"]::-webkit-scrollbar-thumb:hover {
+  background: rgb(156 163 175); /* bunker-500 */
+}
+
+.multiselect-dropdown {
+  @apply fixed z-[9999];
+}

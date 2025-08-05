@@ -1,5 +1,3 @@
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <div class="max-w-7xl mx-auto" data-controller="charts--main" data-charts--main-charts--flow-outlet="#charts--flow-controller">
     <!-- Header -->
     <div class="bg-gradient-to-r from-bunker-900/80 to-purple-900/80 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8">
@@ -74,18 +72,21 @@
                     }
                 ) %>
 
-                <!-- Budget Selection -->  
-                <div>
-                    <label class="block text-sm font-medium text-bunker-200 mb-2">Presupuestos</label>
-                    <select id="budgetFilter" onchange="updateCharts()"
-                            class="w-full px-3 py-2 bg-bunker-800/60 border border-bunker-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none">
-                        <option value="all">Todos los presupuestos</option>
-                        <option value="1">🏠 Gastos del Hogar</option>
-                        <option value="2">💳 Tarjeta de Crédito</option>
-                        <option value="3">🚗 Transporte</option>
-                        <option value="4">💰 Ahorros</option>
-                    </select>
-                </div>
+                <!-- Budget MultiSelection -->  
+                <%= render Forms::MultiSelectComponent.new(
+                    name: :budgets,
+                    form:,
+                    options_collection: Budget.all.collect { |b| [b.name, b.id] },
+                    options: {
+                        placeholder: "Selecciona presupuestos...",
+                        size: :small,
+                        help_text: "Puedes seleccionar múltiples presupuestos",
+                        data: {
+                            "charts--main-target": "budgets",
+                            action: "change->charts--main#updateAllCharts"
+                        }
+                    }
+                ) %>
 
                 <!-- Transaction Type -->
                 <div>
@@ -123,7 +124,7 @@
 
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+        <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
                     <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,7 +137,7 @@
             <div class="text-sm text-bunker-300">+12.5% vs período anterior</div>
         </div>
 
-        <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+        <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center">
                     <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,7 +150,7 @@
             <div class="text-sm text-bunker-300">+8.3% vs período anterior</div>
         </div>
 
-        <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+        <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
                     <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,7 +163,7 @@
             <div class="text-sm text-bunker-300">+28.9% vs período anterior</div>
         </div>
 
-        <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+        <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
                     <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

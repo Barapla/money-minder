@@ -7,17 +7,17 @@ import { application } from "./application"
 import Budgets__PreviewController from "./budgets/preview_controller"
 application.register("budgets--preview", Budgets__PreviewController)
 
-import Charts__MainController from "./charts/main_controller"
-application.register("charts--main", Charts__MainController)
-
-import Charts__FlowController from "./charts/flow_controller"
-application.register("charts--flow", Charts__FlowController)
-
 import Charts__ComparisonController from "./charts/comparison_controller"
 application.register("charts--comparison", Charts__ComparisonController)
 
 import Charts__DistributionController from "./charts/distribution_controller"
 application.register("charts--distribution", Charts__DistributionController)
+
+import Charts__FlowController from "./charts/flow_controller"
+application.register("charts--flow", Charts__FlowController)
+
+import Charts__MainController from "./charts/main_controller"
+application.register("charts--main", Charts__MainController)
 
 import DatatableFiltersController from "./datatable_filters_controller"
 application.register("datatable-filters", DatatableFiltersController)
@@ -33,6 +33,9 @@ application.register("hello", HelloController)
 
 import ModalController from "./modal_controller"
 application.register("modal", ModalController)
+
+import MultiselectController from "./multiselect_controller"
+application.register("multiselect", MultiselectController)
 
 import PaginationController from "./pagination_controller"
 application.register("pagination", PaginationController)
