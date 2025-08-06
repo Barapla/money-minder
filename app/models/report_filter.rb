@@ -21,9 +21,8 @@ class ReportFilter
     set_default_dates if start_date.blank? || end_date.blank?
   end
 
-  # Método principal para obtener datos de gastos
-  def expensed_per_frequency(frequency = period)
-    base_query = filtered_transactions.expense
+  def transaction_type_per_frequency(transaction_type, frequency = period)
+    base_query = filtered_transactions.try(transaction_type)
 
     case frequency
     when 'monthly'
@@ -37,19 +36,29 @@ class ReportFilter
     end
   end
 
-  # Método principal para obtener datos de ingresos
-  def earned_per_frequency(frequency = period)
-    base_query = filtered_transactions.income
+  def categories(limit = nil)
+    # Construcción de la query con todos los filtros
+    base_query = Category.exclude_categories_by_parent(["Ingresos", "Transferencias"])
+                        .joins(:transactions)
 
-    case frequency
-    when 'monthly'
-      generate_monthly_array(base_query)
-    when 'weekly'
-      generate_weekly_array(base_query)
-    when 'daily'
-      generate_daily_array(base_query)
-    else
-      []
+    # Aplicar filtro de budgets
+    budget_ids = budget_ids_from_filter
+    base_query = base_query.where(transactions: { budget_id: budget_ids }) if budget_ids.present?
+
+    # Aplicar filtros de fecha
+    base_query = apply_date_filters(base_query)
+
+    # Hacer el group by y order una sola vez con todos los filtros aplicados
+    categories = base_query.group('categories.id')
+                          .having('SUM(transactions.amount) > 0')
+                          .order('SUM(transactions.amount) DESC')
+                          .limit(limit)
+
+    # Devolver hash con sumas ya calculadas
+    categories.each_with_object({}) do |category, hash|
+      sum = base_query.where(categories: { id: category.id })
+                    .sum('transactions.amount').abs
+      hash[category.name] = sum if sum.positive?
     end
   end
 
@@ -68,6 +77,18 @@ class ReportFilter
   end
 
   private
+
+  def apply_date_filters(query)
+    if start_date.present? && end_date.present?
+      query.where(transactions: { transaction_date: start_date..end_date })
+    elsif start_date.present?
+      query.where('transactions.transaction_date >= ?', start_date)
+    elsif end_date.present?
+      query.where('transactions.transaction_date <= ?', end_date)
+    else
+      query
+    end
+end
 
   def set_default_dates
     case period
@@ -173,8 +194,6 @@ class ReportFilter
   def generate_monthly_labels
     labels = []
     current_date = start_date.beginning_of_month
-
-    puts "Generating monthly labels from #{current_date} to #{end_date}"
 
     while current_date <= end_date
       labels << I18n.l(current_date, format: '%b')

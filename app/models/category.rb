@@ -19,6 +19,10 @@ class Category < ApplicationRecord
   }
   scope :parents, -> { where(parent_category_id: nil) }
   scope :children, -> { where.not(parent_category_id: nil) }
+  scope :with_transactions, -> {
+    joins(:transactions)
+      .distinct
+  }
 
   def self.children_pluck
     children.pluck(:name, :id)

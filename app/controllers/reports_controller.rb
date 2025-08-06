@@ -4,20 +4,21 @@
 class ReportsController < ApplicationController
   def index
     @budget_datasets = Budget.flow_dataset
+    @transaction_types_datasets = Budget.distribution_dataset
     @report_filter = ReportFilter.new(report_filter_params)
 
     # Si hay parámetros de filtro, generar los datos
     if filter_applied?
-      generate_chart_data
+      generate_flow_chart_data
+      generate_distribution_chart_data
     end
 
     respond_to do |format|
       format.html
       format.json do
         render json: {
-          labels: @labels,
-          incomeData: @income_data,
-          expenseData: @expense_data
+          flow_data: @flow_data,
+          distribution_data: @distribution_data
         }
       end
     end
@@ -44,7 +45,7 @@ class ReportsController < ApplicationController
     params[:transaction_types].present?
   end
 
-  def generate_chart_data
+  def generate_flow_chart_data
     # Validar el filtro antes de procesar
     unless @report_filter.valid?
       Rails.logger.warn "Invalid report filter: #{@report_filter.errors.full_messages}"
@@ -52,11 +53,37 @@ class ReportsController < ApplicationController
     end
 
     # Generar datos usando el filtro
-    @labels = @report_filter.labels_for_period
-    @income_data = @report_filter.earned_per_frequency
-    @expense_data = @report_filter.expensed_per_frequency
+    labels = @report_filter.labels_for_period
+    income_data = @report_filter.transaction_type_per_frequency(:income)
+    expense_data = @report_filter.transaction_type_per_frequency(:expense)
+
+    @flow_data = {
+      labels:,
+      incomeData: income_data,
+      expenseData: expense_data
+    }
 
     Rails.logger.info "Generated data for period: #{@report_filter.period}, " \
                       "from #{@report_filter.start_date} to #{@report_filter.end_date}"
+  end
+
+  def generate_distribution_chart_data
+    # Validar el filtro antes de procesar
+    unless @report_filter.valid?
+      Rails.logger.warn "Invalid report filter: #{@report_filter.errors.full_messages}"
+      return
+    end
+
+    # Obtener categorías filtradas
+    categories = @report_filter.categories(8) # Limitar a 10 categorías
+
+    # Generar datos de distribución
+    labels = @report_filter.categories(8).keys
+    data = @report_filter.categories(8).values
+
+    @distribution_data = {
+      labels:,
+      data:
+    }
   end
 end

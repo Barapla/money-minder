@@ -1,4 +1,7 @@
-<div class="max-w-7xl mx-auto" data-controller="charts--main" data-charts--main-charts--flow-outlet="#charts--flow-controller">
+<div class="max-w-7xl mx-auto" data-controller="charts--main"
+    data-charts--main-url-value="<%= reports_path %>" 
+    data-charts--main-charts--flow-outlet="#charts--flow-controller"
+    data-charts--main-charts--distribution-outlet="#charts--distribution-controller">
     <!-- Header -->
     <div class="bg-gradient-to-r from-bunker-900/80 to-purple-900/80 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8">
         <div class="flex items-center justify-between">
@@ -89,16 +92,20 @@
                 ) %>
 
                 <!-- Transaction Type -->
-                <div>
-                    <label class="block text-sm font-medium text-bunker-200 mb-2">Tipo de Transacción</label>
-                    <select id="transactionType" onchange="updateCharts()"
-                            class="w-full px-3 py-2 bg-bunker-800/60 border border-bunker-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none">
-                        <option value="all">Todas</option>
-                        <option value="income">💰 Ingresos</option>
-                        <option value="expense">💸 Gastos</option>
-                        <option value="transfer">🔄 Transferencias</option>
-                    </select>
-                </div>
+                <%= render Forms::MultiSelectComponent.new(
+                    name: :transaction_types,
+                    form:,
+                    options_collection: Catalog.get_by_group_pluck('transaction_types', ["refund", "transfer"]),
+                    options: {
+                        placeholder: "Selecciona tipos de transacción...",
+                        size: :small,
+                        help_text: "Puedes seleccionar múltiples tipos de transacción",
+                        data: {
+                            "charts--main-target": "transactionTypes",
+                            action: "change->charts--main#updateAllCharts"
+                        }
+                    }
+                ) %>
 
                 <!-- Quick Filters -->
                 <div>
@@ -179,29 +186,9 @@
 
     <!-- Charts Section -->
     <div class="grid lg:grid-cols-2 gap-8 mb-8">
-        <%= render Charts::FlowComponent.new(datasets: @budget_datasets, url: reports_path) %>
+        <%= render Charts::FlowComponent.new(datasets: @budget_datasets) %>
 
-        <!-- Category Distribution -->
-        <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-semibold text-white flex items-center gap-2">
-                    <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
-                    </svg>
-                    Distribución por Categoría
-                </h3>
-                <select id="categoryChartType" onchange="updateCategoryChart()"
-                        class="px-3 py-1 text-sm bg-bunker-800/60 border border-bunker-700/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none">
-                    <option value="expenses">Gastos</option>
-                    <option value="income">Ingresos</option>
-                    <option value="all">Todos</option>
-                </select>
-            </div>
-            <div class="h-80">
-                <canvas id="categoryChart"></canvas>
-            </div>
-        </div>
+        <%= render Charts::DistributionComponent.new(datasets: @transaction_types_datasets) %>
     </div>
 
     <!-- Budget Comparison Chart -->
@@ -414,48 +401,8 @@
 
         // Initialize all charts
         function initializeCharts() {
-            initCategoryChart();
             initBudgetComparisonChart();
             initTrendsChart();
-        }
-
-
-        // Category Chart
-        function initCategoryChart() {
-            const ctx = document.getElementById('categoryChart').getContext('2d');
-            categoryChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Hogar', 'Transporte', 'Comida', 'Entretenimiento', 'Servicios', 'Otros'],
-                    datasets: [{
-                        data: [1750, 650, 800, 400, 350, 200],
-                        backgroundColor: [
-                            '#8b5cf6',
-                            '#06b6d4',
-                            '#10b981',
-                            '#f59e0b',
-                            '#ef4444',
-                            '#6b7280'
-                        ],
-                        borderWidth: 2,
-                        borderColor: '#1f2937'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                color: '#d1d5db',
-                                usePointStyle: true,
-                                padding: 20
-                            }
-                        }
-                    }
-                }
-            });
         }
 
         // Budget Comparison Chart
@@ -570,7 +517,6 @@
         // Update all charts based on filters
         function updateCharts() {
             updateSummary();
-            updateCategoryChart();
             updateBudgetChart();
             updateTrendsChart();
         }
@@ -589,31 +535,6 @@
             document.getElementById('totalTransactions').textContent = totalTransactions;
         }
 
-        function updateCategoryChart() {
-            const chartType = document.getElementById('categoryChartType').value;
-            
-            let data, labels, colors;
-            if (chartType === 'income') {
-                labels = sampleData.categories.income.labels;
-                data = sampleData.categories.income.data;
-                colors = sampleData.categories.income.colors;
-            } else if (chartType === 'expenses') {
-                labels = sampleData.categories.expenses.labels;
-                data = sampleData.categories.expenses.data;
-                colors = sampleData.categories.expenses.colors;
-            } else { // all
-                labels = ['Ingresos', 'Gastos'];
-                const totalIncome = sampleData.categories.income.data.reduce((a, b) => a + b, 0);
-                const totalExpenses = sampleData.categories.expenses.data.reduce((a, b) => a + b, 0);
-                data = [totalIncome, totalExpenses];
-                colors = ['#10b981', '#ef4444'];
-            }
-            
-            categoryChart.data.labels = labels;
-            categoryChart.data.datasets[0].data = data;
-            categoryChart.data.datasets[0].backgroundColor = colors;
-            categoryChart.update();
-        }
 
         // Budget dropdown functions
         function toggleBudgetDropdown() {

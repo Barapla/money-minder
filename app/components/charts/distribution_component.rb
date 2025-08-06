@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module Charts
-  # InputFieldComponent
-  class FlowComponent < Charts::ApplicationComponent
+  # DistributionComponent
+  class DistributionComponent < Charts::ApplicationComponent
     attr_reader :datasets
 
     def initialize(datasets:, options: {})
