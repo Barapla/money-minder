@@ -62,6 +62,13 @@ class ReportFilter
     end
   end
 
+  def transaction_count
+    # Construcción de la query con todos los filtros
+    base_query = filtered_transactions.try(:report)
+
+    base_query.count
+  end
+
   # Obtener las etiquetas según el período
   def labels_for_period
     case period
@@ -99,8 +106,8 @@ end
       self.end_date ||= Date.current.end_of_week
       self.start_date ||= end_date - 4.weeks
     when 'monthly'
-      self.start_date ||= Date.current.beginning_of_year
-      self.end_date ||= Date.current.end_of_year
+      self.start_date ||= 1.year.ago
+      self.end_date ||= Date.current
     end
   end
 

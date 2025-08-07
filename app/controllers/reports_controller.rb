@@ -3,20 +3,25 @@
 # ReportsController
 class ReportsController < ApplicationController
   def index
-    @budget_datasets = Budget.flow_dataset
-    @transaction_types_datasets = Budget.distribution_dataset
     @report_filter = ReportFilter.new(report_filter_params)
 
     # Si hay parámetros de filtro, generar los datos
     if filter_applied?
+      generate_report_data
       generate_flow_chart_data
       generate_distribution_chart_data
+    else
+      # Si no hay filtros, usar los datos por defecto
+      @budget_datasets = Budget.flow_dataset
+      @transaction_types_datasets = Budget.distribution_dataset
+      @report_datasets = Budget.report_dataset
     end
 
     respond_to do |format|
       format.html
       format.json do
         render json: {
+          report_data: @report_data,
           flow_data: @flow_data,
           distribution_data: @distribution_data
         }
@@ -43,6 +48,21 @@ class ReportsController < ApplicationController
     params[:end_date].present? ||
     params[:budgets].present? ||
     params[:transaction_types].present?
+  end
+
+  def generate_report_data
+    income_data = @report_filter.transaction_type_per_frequency(:income)
+    expense_data = @report_filter.transaction_type_per_frequency(:expense)
+    balance_data = income_data.sum - expense_data.sum
+    no_transactions = @report_filter.transaction_count
+
+    @report_data = {
+      incomeData: income_data.sum,
+      expenseData: expense_data.sum,
+      balanceData: balance_data,
+      noTransactions: no_transactions
+    }
+    Rails.logger.info "Report data generated: #{@report_data}"
   end
 
   def generate_flow_chart_data

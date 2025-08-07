@@ -111,16 +111,16 @@
                 <div>
                     <label class="block text-sm font-medium text-bunker-200 mb-2">Período Rápido</label>
                     <div class="flex gap-1">
-                        <button onclick="setLastMonth()" class="flex-1 px-2 py-1 text-xs bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-white border border-bunker-700/50 rounded-md transition-colors">
+                        <button data-charts--main-target="periodButtons" data-action="click->charts--main#setFastPeriod" data-charts--main-period-param="1M" class="flex-1 px-2 py-1 text-xs bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-white border border-bunker-700/50 rounded-md transition-colors">
                             1M
                         </button>
-                        <button onclick="setLast3Months()" class="flex-1 px-2 py-1 text-xs bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-white border border-bunker-700/50 rounded-md transition-colors">
+                        <button data-charts--main-target="periodButtons" data-action="click->charts--main#setFastPeriod" data-charts--main-period-param="3M" class="flex-1 px-2 py-1 text-xs bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-white border border-bunker-700/50 rounded-md transition-colors">
                             3M
                         </button>
-                        <button onclick="setLast6Months()" class="flex-1 px-2 py-1 text-xs bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-white border border-bunker-700/50 rounded-md transition-colors">
+                        <button data-charts--main-target="periodButtons" data-action="click->charts--main#setFastPeriod" data-charts--main-period-param="6M" class="flex-1 px-2 py-1 text-xs bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-white border border-bunker-700/50 rounded-md transition-colors">
                             6M
                         </button>
-                        <button onclick="setLastYear()" class="flex-1 px-2 py-1 text-xs bg-purple-500 text-white border border-purple-500 rounded-md">
+                        <button data-charts--main-target="periodButtons" data-action="click->charts--main#setFastPeriod" data-charts--main-period-param="1Y" class="flex-1 px-2 py-1 text-xs bg-purple-500 text-white border border-purple-500 rounded-md">
                             1A
                         </button>
                     </div>
@@ -140,7 +140,9 @@
                 </div>
                 <span class="text-xs text-bunker-400 font-medium">INGRESOS TOTALES</span>
             </div>
-            <div class="text-3xl font-bold text-emerald-400 mb-1" id="totalIncome">$45,280.00</div>
+            <div class="text-3xl font-bold text-emerald-400 mb-1" data-charts--main-target="incomeData">
+                <%= number_to_currency(@report_datasets[:incomeData], unit: "$", precision: 2) %>
+            </div>
             <div class="text-sm text-bunker-300">+12.5% vs período anterior</div>
         </div>
 
@@ -153,7 +155,9 @@
                 </div>
                 <span class="text-xs text-bunker-400 font-medium">GASTOS TOTALES</span>
             </div>
-            <div class="text-3xl font-bold text-red-400 mb-1" id="totalExpenses">$32,150.00</div>
+            <div class="text-3xl font-bold text-red-400 mb-1" data-charts--main-target="expenseData">
+                <%= number_to_currency(@report_datasets[:expenseData], unit: "$", precision: 2) %>
+            </div>
             <div class="text-sm text-bunker-300">+8.3% vs período anterior</div>
         </div>
 
@@ -166,7 +170,9 @@
                 </div>
                 <span class="text-xs text-bunker-400 font-medium">BALANCE NETO</span>
             </div>
-            <div class="text-3xl font-bold text-purple-400 mb-1" id="netBalance">$13,130.00</div>
+            <div class="text-3xl font-bold text-purple-400 mb-1" data-charts--main-target="balanceData">
+                <%= number_to_currency(@report_datasets[:balanceData], unit: "$", precision: 2) %>
+            </div>
             <div class="text-sm text-bunker-300">+28.9% vs período anterior</div>
         </div>
 
@@ -179,7 +185,9 @@
                 </div>
                 <span class="text-xs text-bunker-400 font-medium">TRANSACCIONES</span>
             </div>
-            <div class="text-3xl font-bold text-blue-400 mb-1" id="totalTransactions">156</div>
+            <div class="text-3xl font-bold text-blue-400 mb-1" data-charts--main-target="noTransactions">
+                <%= @report_datasets[:noTransactions] %>
+            </div>
             <div class="text-sm text-bunker-300">En el período seleccionado</div>
         </div>
     </div>

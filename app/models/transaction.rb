@@ -29,7 +29,7 @@ class Transaction < ApplicationRecord
   scope :expense, -> { by_transaction_type('expense') }
   scope :income, -> { by_transaction_type('income').where( related_transaction_id: nil ) }
   scope :transfer, -> { by_transaction_type('transfer') }
-
+  scope :report, -> { by_transaction_type(['expense', 'income']).where( related_transaction_id: nil ) }
 
   def set_default_values
     self.currency ||= Currency.default

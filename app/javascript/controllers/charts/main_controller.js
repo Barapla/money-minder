@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="charts--main"
 export default class extends Controller {
-    static targets = ["startDate", "endDate", "budgets", "transactionTypes", "periodButtons"]
+    static targets = ["startDate", "endDate", "budgets", "transactionTypes", "periodButtons", "incomeData", "expenseData", "balanceData", "noTransactions"]
     static outlets = ["charts--flow", "charts--distribution"] // Usar el nombre específico del controlador hijo
     static values = {
         url: String // URL for fetching data
@@ -41,6 +41,11 @@ export default class extends Controller {
             .then(response => response.json())
             .then(data => {
                 console.log('Data fetched successfully:', data); // Debug
+                this.incomeDataTarget.textContent = this.formatCurrency(data.report_data.incomeData);
+                this.expenseDataTarget.textContent = this.formatCurrency(data.report_data.expenseData);
+                this.balanceDataTarget.textContent = this.formatCurrency(data.report_data.balanceData);
+                this.noTransactionsTarget.textContent = data.report_data.noTransactions;
+
                 flowChart.data.labels = data.flow_data.labels;
                 flowChart.data.datasets[0].data = data.flow_data.incomeData;
                 flowChart.data.datasets[1].data = data.flow_data.expenseData;
@@ -55,9 +60,66 @@ export default class extends Controller {
                 console.error('Error fetching cash flow data:', error);
             });
         }, 300);
+    }
 
 
+    setFastPeriod({ params: { period } }) {
+        if (period === '1M') {
+            this.setLastMonth();
+        }
+        else if (period === '3M') {
+            this.setLast3Months();
+        }
+        else if (period === '6M') {
+            this.setLast6Months();
+        }
+        else if (period === '1Y') {
+            this.setLastYear();
+        }
+        
+        this.periodButtonsTargets.forEach(button => {
+            button.classList.remove('bg-purple-500', 'text-white', 'border-purple-500');
+            button.classList.add('bg-bunker-800/60', 'text-bunker-300', 'border-bunker-700/50');
+        });
+        const activeButton = this.periodButtonsTargets.find(button => button.dataset['charts-MainPeriodParam'] === period);
+        if (activeButton) {
+            activeButton.classList.add('bg-purple-500', 'text-white', 'border-purple-500');
+            activeButton.classList.remove('bg-bunker-800/60', 'text-bunker-300', 'border-bunker-700/50');
+        }
 
+        this.updateAllCharts();
+    }
+
+    setLastMonth() {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setMonth(startDate.getMonth() - 1);
+        this.startDateTarget.value = startDate.toISOString().split('T')[0];
+        this.endDateTarget.value = endDate.toISOString().split('T')[0];
+    }
+
+    setLast3Months() {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setMonth(startDate.getMonth() - 3);
+        this.startDateTarget.value = startDate.toISOString().split('T')[0];
+        this.endDateTarget.value = endDate.toISOString().split('T')[0];
+    }
+
+    setLast6Months() {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setMonth(startDate.getMonth() - 6);
+        this.startDateTarget.value = startDate.toISOString().split('T')[0];
+        this.endDateTarget.value = endDate.toISOString().split('T')[0];
+    }
+
+    setLastYear() {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        this.startDateTarget.value = startDate.toISOString().split('T')[0];
+        this.endDateTarget.value = endDate.toISOString().split('T')[0];
     }
     
     filterData() {
@@ -77,6 +139,15 @@ export default class extends Controller {
             transaction_types: this.transactionTypesTarget.value ? this.transactionTypesTarget.value.split(',') : []
         };
         return filters;
+    }
+
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
     }
 
 }

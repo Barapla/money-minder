@@ -45,6 +45,20 @@ module Charteable
         }]
       }
     end
+
+    def report_dataset
+      income_data = ReportFilter.new.transaction_type_per_frequency(:income)
+      expense_data = ReportFilter.new.transaction_type_per_frequency(:expense)
+      balance_data = income_data.sum - expense_data.sum
+      no_transactions =  ReportFilter.new.transaction_count
+
+      {
+        incomeData: income_data.sum,
+        expenseData: expense_data.sum,
+        balanceData: balance_data,
+        noTransactions: no_transactions
+      }
+    end
   end
 
 end
