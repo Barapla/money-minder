@@ -6,7 +6,8 @@ export default class extends Controller {
     static targets = ["canvas", "periodButtons"]
     static values = { 
         id: String,  // Unique ID for the chart instance
-        datasets: Array // Data for the chart
+        datasets: Object, // Data for the chart
+        url: String // URL for fetching data if needed
     }
     static outlets = ["charts--main"]
 
@@ -21,10 +22,7 @@ export default class extends Controller {
         const ctx = this.canvasTarget.getContext('2d');
         this.flowChart = new Chart(ctx, {
             type: 'line',
-            data: {
-                labels: ['Ene', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-                datasets: this.datasetsValue
-            },
+            data: this.datasetsValue,
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -73,6 +71,38 @@ export default class extends Controller {
         
         document.getElementById(period + 'Btn').className = 'px-3 py-1 text-sm bg-purple-500 text-white rounded-lg';
         
-        this.chartsMainOutlet.updateAllCharts();
+        this.updateChart();
     }
+
+    updateChart() {
+        let filters = this.chartsMainOutlet.getFilters();
+        filters.period = this.currentFlowPeriod; // Usar el período actual
+        // Remover el return que estaba cortando la ejecución
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(() => {
+            const params = {
+                filters: filters,
+                id: this.idValue
+            };
+
+            fetch(this.urlValue, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    'X-CSRF-Token': document.querySelector("[name='csrf-token']").content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(params)
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.flowChart.data = data.flowData;
+                this.flowChart.update();
+            })
+            .catch(error => {
+                console.error('Error fetching cash flow data:', error);
+            });
+        }, 300);
+    }
+
 }

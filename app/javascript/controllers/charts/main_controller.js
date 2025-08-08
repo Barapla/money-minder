@@ -2,66 +2,60 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="charts--main"
 export default class extends Controller {
-    static targets = ["startDate", "endDate", "budgets", "transactionTypes", "periodButtons", "incomeData", "expenseData", "balanceData", "noTransactions"]
+    static targets = ["startDate", "endDate", "budgets", "periodButtons", "incomeData", "expenseData", "balanceData", "noTransactions"]
     static outlets = ["charts--flow", "charts--distribution"] // Usar el nombre específico del controlador hijo
     static values = {
         url: String // URL for fetching data
     }
 
-    connect() {
-        // Inicializar filtros
-        console.log("Charts Main Controller connected");
-        console.log("Charts Flow Controller Outlet:", this.chartsFlowOutlet);
-        console.log("Charts Distribution Controller Outlet:", this.chartsDistributionOutlet);
+    updateAllCharts() {
+        // Lógica para actualizar todos los gráficos
+        this.chartsDistributionOutlets.forEach(outlet => {
+            if (outlet.distributionChart) {
+                outlet.updateChart();
+            }
+        });
+
+        this.chartsFlowOutlets.forEach(outlet => {
+            if (outlet.flowChart) {
+                outlet.updateChart();
+            }
+        });
+
+        this.updateMainData();
     }
 
-    // Funciones compartidas
-    updateAllCharts() {
-        let filters = null;
-        const flowChart = this.chartsFlowOutlet.flowChart;
-        const distributionChart = this.chartsDistributionOutlet.distributionChart;
-        
-        filters = this.getFilters();
-        filters.period = this.chartsFlowOutlet.currentFlowPeriod; // Usar el período actual
+    updateMainData() {
+        let filters = this.getFilters();
 
         // Remover el return que estaba cortando la ejecución
         clearTimeout(this.timeout);
         this.timeout = setTimeout(() => {
-            const url = this.urlValue + '?' + new URLSearchParams(filters).toString();
-            console.log('Fetching data from URL:', url); // Debug
-
-            fetch(url, {
-                method: 'GET',
+            const params = {
+                filters: filters,
+                id: this.idValue
+            };
+            fetch(this.urlValue, {
+                method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
                     'X-CSRF-Token': document.querySelector("[name='csrf-token']").content,
                     'Accept': 'application/json'
-                }      
+                },
+                body: JSON.stringify(params)
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Data fetched successfully:', data); // Debug
-                this.incomeDataTarget.textContent = this.formatCurrency(data.report_data.incomeData);
-                this.expenseDataTarget.textContent = this.formatCurrency(data.report_data.expenseData);
-                this.balanceDataTarget.textContent = this.formatCurrency(data.report_data.balanceData);
-                this.noTransactionsTarget.textContent = data.report_data.noTransactions;
-
-                flowChart.data.labels = data.flow_data.labels;
-                flowChart.data.datasets[0].data = data.flow_data.incomeData;
-                flowChart.data.datasets[1].data = data.flow_data.expenseData;
-                flowChart.update();
-
-                distributionChart.data.labels = data.distribution_data.labels;
-                distributionChart.data.datasets[0].data = data.distribution_data.data;
-                distributionChart.update();
-
+                this.incomeDataTarget.textContent = this.formatCurrency(data.reportData.incomeData);
+                this.expenseDataTarget.textContent = this.formatCurrency(data.reportData.expenseData);
+                this.balanceDataTarget.textContent = this.formatCurrency(data.reportData.balanceData);
+                this.noTransactionsTarget.textContent = data.reportData.noTransactions;
             })
             .catch(error => {
                 console.error('Error fetching cash flow data:', error);
             });
         }, 300);
     }
-
 
     setFastPeriod({ params: { period } }) {
         if (period === '1M') {
@@ -135,8 +129,7 @@ export default class extends Controller {
         const filters = {
             start_date: this.startDateTarget.value,
             end_date: this.endDateTarget.value,
-            budgets: this.budgetsTarget.value ? this.budgetsTarget.value.split(',') : [],
-            transaction_types: this.transactionTypesTarget.value ? this.transactionTypesTarget.value.split(',') : []
+            budgets: this.budgetsTarget.value ? this.budgetsTarget.value.split(',') : []
         };
         return filters;
     }

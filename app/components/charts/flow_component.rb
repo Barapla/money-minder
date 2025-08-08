@@ -5,9 +5,9 @@ module Charts
   class FlowComponent < Charts::ApplicationComponent
     attr_reader :datasets
 
-    def initialize(datasets:, options: {})
+    def initialize(title:, url:, datasets:, options: {})
       @datasets = datasets
-      super(options:)
+      super(title:, url:, options:)
     end
   end
 end

@@ -3,10 +3,12 @@
 module Charts
   # InputFieldComponent
   class ApplicationComponent < ::ApplicationComponent
-    # attr_reader :form
+    attr_reader :title, :url
 
-    def initialize(options: {})
+    def initialize(title:, url:, options: {})
       @id = options[:id]
+      @title = title
+      @url = url
       super(options:)
     end
 

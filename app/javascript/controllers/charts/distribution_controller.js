@@ -6,7 +6,9 @@ export default class extends Controller {
     static targets = ["canvas"]
     static values = { 
         id: String,  // Unique ID for the chart instance
-        datasets: Object // Data for the chart
+        datasets: Object, // Data for the chart
+        url: String, // URL for fetching data if needed
+        extraFilters: Object // Additional filters for the chart
     }
     static outlets = ["charts--main"]
     distributionChart = null
@@ -36,4 +38,41 @@ export default class extends Controller {
             }
         });
     }
+
+    updateChart() {
+        let filters = this.chartsMainOutlet.getFilters();
+
+        // Merge extra filters with the main filters
+        if (this.extraFiltersValue) {
+            filters = { ...filters, ...this.extraFiltersValue };
+        }
+        // Remover el return que estaba cortando la ejecución
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(() => {
+            const params = {
+                filters: filters,
+                id: this.idValue
+            };
+
+            fetch(this.urlValue, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    'X-CSRF-Token': document.querySelector("[name='csrf-token']").content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(params)
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                this.distributionChart.data = data.distributionData;
+                this.distributionChart.update();
+            })
+            .catch(error => {
+                console.error('Error fetching cash flow data:', error);
+            });
+        }, 300);
+    }
+
 }

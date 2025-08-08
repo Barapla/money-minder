@@ -1,5 +1,5 @@
 <div class="max-w-7xl mx-auto" data-controller="charts--main"
-    data-charts--main-url-value="<%= reports_path %>" 
+    data-charts--main-url-value="<%= main_data_reports_path %>" 
     data-charts--main-charts--flow-outlet="#charts--flow-controller"
     data-charts--main-charts--distribution-outlet="#charts--distribution-controller">
     <!-- Header -->
@@ -91,22 +91,6 @@
                     }
                 ) %>
 
-                <!-- Transaction Type -->
-                <%= render Forms::MultiSelectComponent.new(
-                    name: :transaction_types,
-                    form:,
-                    options_collection: Catalog.get_by_group_pluck('transaction_types', ["refund", "transfer"]),
-                    options: {
-                        placeholder: "Selecciona tipos de transacción...",
-                        size: :small,
-                        help_text: "Puedes seleccionar múltiples tipos de transacción",
-                        data: {
-                            "charts--main-target": "transactionTypes",
-                            action: "change->charts--main#updateAllCharts"
-                        }
-                    }
-                ) %>
-
                 <!-- Quick Filters -->
                 <div>
                     <label class="block text-sm font-medium text-bunker-200 mb-2">Período Rápido</label>
@@ -134,9 +118,7 @@
         <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                    </svg>
+                    <%= render_svg("progress", "text-emerald-400") %>
                 </div>
                 <span class="text-xs text-bunker-400 font-medium">INGRESOS TOTALES</span>
             </div>
@@ -149,9 +131,7 @@
         <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m0 0l7-7m0 0l7 7"></path>
-                    </svg>
+                    <%= render_svg("decrease", "text-red-400") %>
                 </div>
                 <span class="text-xs text-bunker-400 font-medium">GASTOS TOTALES</span>
             </div>
@@ -164,9 +144,7 @@
         <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                    </svg>
+                    <%= render_svg("money", "text-purple-400") %>
                 </div>
                 <span class="text-xs text-bunker-400 font-medium">BALANCE NETO</span>
             </div>
@@ -179,9 +157,7 @@
         <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
+                    <%= render_svg("stats", "text-blue-400") %>
                 </div>
                 <span class="text-xs text-bunker-400 font-medium">TRANSACCIONES</span>
             </div>
@@ -193,10 +169,14 @@
     </div>
 
     <!-- Charts Section -->
-    <div class="grid lg:grid-cols-2 gap-8 mb-8">
-        <%= render Charts::FlowComponent.new(datasets: @budget_datasets) %>
+    <div class="grid gap-8 mb-8">
+        <%= render Charts::FlowComponent.new(title: "Flujo de efectivo", url: flow_chart_reports_path, datasets: @budget_datasets) %>
+    </div>
 
-        <%= render Charts::DistributionComponent.new(datasets: @transaction_types_datasets) %>
+    <div class="grid lg:grid-cols-2 gap-8 mb-8">
+        <%= render Charts::DistributionComponent.new(title: "Distribución de ingresos", url: distribution_chart_reports_path, datasets: @earned_transaction_types_datasets, options: { transaction_type: "income" }) %>
+
+        <%= render Charts::DistributionComponent.new(title: "Distribución de gastos", url: distribution_chart_reports_path, datasets: @spent_transaction_types_datasets, options: { transaction_type: "expense" }) %>
     </div>
 
     <!-- Budget Comparison Chart -->

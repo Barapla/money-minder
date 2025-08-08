@@ -2,28 +2,60 @@
 
 # ReportsController
 class ReportsController < ApplicationController
-  def index
-    @report_filter = ReportFilter.new(report_filter_params)
+  before_action :set_report_filter, only: [:flow_chart, :distribution_chart, :main_data]
 
-    # Si hay parámetros de filtro, generar los datos
-    if filter_applied?
-      generate_report_data
-      generate_flow_chart_data
-      generate_distribution_chart_data
-    else
-      # Si no hay filtros, usar los datos por defecto
-      @budget_datasets = Budget.flow_dataset
-      @transaction_types_datasets = Budget.distribution_dataset
-      @report_datasets = Budget.report_dataset
+  def index
+    @report_filter = ReportFilter.new()
+
+    @budget_datasets = @report_filter.flow_dataset
+    @earned_transaction_types_datasets = @report_filter.distribution_dataset("income")
+    @spent_transaction_types_datasets = @report_filter.distribution_dataset("expense")
+    @report_datasets = @report_filter.report_dataset
+  end
+
+  def flow_chart
+    # Validar el filtro antes de procesar
+    unless @report_filter.valid?
+      Rails.logger.warn "Invalid report filter: #{@report_filter.errors.full_messages}"
+      return
     end
 
     respond_to do |format|
-      format.html
       format.json do
         render json: {
-          report_data: @report_data,
-          flow_data: @flow_data,
-          distribution_data: @distribution_data
+          flowData: @report_filter.flow_dataset
+        }
+      end
+    end
+  end
+
+  def distribution_chart
+    # Validar el filtro antes de procesar
+    unless @report_filter.valid?
+      Rails.logger.warn "Invalid report filter: #{@report_filter.errors.full_messages}"
+      return
+    end
+
+    respond_to do |format|
+      format.json do
+        render json: {
+          distributionData: @report_filter.distribution_dataset(params.dig(:report, :filters, :transaction_type))
+        }
+      end
+    end
+  end
+
+  def main_data
+    # Validar el filtro antes de procesar
+    unless @report_filter.valid?
+      Rails.logger.warn "Invalid report filter: #{@report_filter.errors.full_messages}"
+      return
+    end
+
+    respond_to do |format|
+      format.json do
+        render json: {
+          reportData: @report_filter.report_dataset
         }
       end
     end
@@ -32,78 +64,17 @@ class ReportsController < ApplicationController
   private
 
   def report_filter_params
-    # Los parámetros vienen directamente en el root level
+    params.require(:report).permit(:id, filters: [:start_date, :end_date, :period, :budgets, :transaction_type])
+
     {
-      start_date: params[:start_date],
-      end_date: params[:end_date],
-      period: params[:period],
-      budgets: params[:budgets],
-      transaction_types: params[:transaction_types]
-    }.compact # Remover valores nil
-  end
-
-  def filter_applied?
-    params[:period].present? ||
-    params[:start_date].present? ||
-    params[:end_date].present? ||
-    params[:budgets].present? ||
-    params[:transaction_types].present?
-  end
-
-  def generate_report_data
-    income_data = @report_filter.transaction_type_per_frequency(:income)
-    expense_data = @report_filter.transaction_type_per_frequency(:expense)
-    balance_data = income_data.sum - expense_data.sum
-    no_transactions = @report_filter.transaction_count
-
-    @report_data = {
-      incomeData: income_data.sum,
-      expenseData: expense_data.sum,
-      balanceData: balance_data,
-      noTransactions: no_transactions
+      start_date: params.dig(:report, :filters, :start_date),
+      end_date: params.dig(:report, :filters, :end_date),
+      period: params.dig(:report, :filters, :period) || 'monthly',
+      budgets: params.dig(:report, :filters, :budgets) || []
     }
-    Rails.logger.info "Report data generated: #{@report_data}"
   end
 
-  def generate_flow_chart_data
-    # Validar el filtro antes de procesar
-    unless @report_filter.valid?
-      Rails.logger.warn "Invalid report filter: #{@report_filter.errors.full_messages}"
-      return
-    end
-
-    # Generar datos usando el filtro
-    labels = @report_filter.labels_for_period
-    income_data = @report_filter.transaction_type_per_frequency(:income)
-    expense_data = @report_filter.transaction_type_per_frequency(:expense)
-
-    @flow_data = {
-      labels:,
-      incomeData: income_data,
-      expenseData: expense_data
-    }
-
-    Rails.logger.info "Generated data for period: #{@report_filter.period}, " \
-                      "from #{@report_filter.start_date} to #{@report_filter.end_date}"
-  end
-
-  def generate_distribution_chart_data
-    # Validar el filtro antes de procesar
-    unless @report_filter.valid?
-      Rails.logger.warn "Invalid report filter: #{@report_filter.errors.full_messages}"
-      return
-    end
-
-    # Obtener categorías filtradas
-    categories = @report_filter.categories(8) # Limitar a 10 categorías
-
-    # Generar datos de distribución
-    labels = @report_filter.categories(8).keys
-    data = @report_filter.categories(8).values
-
-    @distribution_data = {
-      labels:,
-      data:
-    }
+  def set_report_filter
+    @report_filter = ReportFilter.new(report_filter_params)
   end
 end

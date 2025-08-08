@@ -2,6 +2,7 @@
 
 # app/models/report_filter.rb
 class ReportFilter
+  include Charteable
   include ActiveModel::Model
   include ActiveModel::Attributes
 
@@ -36,10 +37,16 @@ class ReportFilter
     end
   end
 
-  def categories(limit = nil)
+  def categories(transaction_type, limit = nil)
     # Construcción de la query con todos los filtros
-    base_query = Category.exclude_categories_by_parent(["Ingresos", "Transferencias"])
+
+    base_query = if transaction_type == "income"
+      Category.by_parent_category(["Ingresos"])
                         .joins(:transactions)
+    else
+      Category.exclude_categories_by_parent(["Ingresos", "Transferencias"])
+                        .joins(:transactions)
+    end
 
     # Aplicar filtro de budgets
     budget_ids = budget_ids_from_filter
@@ -95,7 +102,7 @@ class ReportFilter
     else
       query
     end
-end
+  end
 
   def set_default_dates
     case period
@@ -109,6 +116,10 @@ end
       self.start_date ||= 1.year.ago
       self.end_date ||= Date.current
     end
+  end
+
+  def set_default_transaction_types
+    self.transaction_types = ['income', 'expense']
   end
 
   def end_date_after_start_date

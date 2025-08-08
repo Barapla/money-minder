@@ -4,7 +4,6 @@
 class Budget < ApplicationRecord
   include Utils::BudgetAttributes
   include ProgressColorIndicator
-  include Charteable
 
   # Validations
   validates :name, presence: true, length: { maximum: 100 }

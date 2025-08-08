@@ -34,7 +34,13 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :reports, only: [:index]
+  resources :reports, only: [:index] do
+    collection do
+      post :distribution_chart
+      post :flow_chart
+      post :main_data
+    end
+  end
 
   # sidekiq routes
   require 'sidekiq/web'
