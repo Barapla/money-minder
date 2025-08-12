@@ -54,13 +54,30 @@ module Charteable
     balance_data = income_data.sum - expense_data.sum
     no_transactions =  transaction_count
 
-    puts "Income Data: #{income_data}, Expense Data: #{expense_data}, Balance Data: #{balance_data}, No Transactions: #{no_transactions}"
-
     {
       incomeData: income_data.sum,
       expenseData: expense_data.sum,
       balanceData: balance_data,
       noTransactions: no_transactions
+    }
+  end
+
+  def comparison_dataset
+    {
+      labels: budgets_names,
+      datasets: [{
+          label: 'Ingresos',
+          data: budgets_pluck_transaction_type("income"),
+          backgroundColor: 'rgba(139, 92, 246, 0.3)',
+          borderColor: '#8b5cf6',
+          borderWidth: 2
+      }, {
+          label: 'Gastos',
+          data: budgets_pluck_transaction_type("expense"),
+          backgroundColor: 'rgba(239, 68, 68, 0.8)',
+          borderColor: '#ef4444',
+          borderWidth: 2
+      }]
     }
   end
 

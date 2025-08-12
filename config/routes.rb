@@ -39,6 +39,7 @@ Rails.application.routes.draw do
       post :distribution_chart
       post :flow_chart
       post :main_data
+      post :comparison_chart
     end
   end
 

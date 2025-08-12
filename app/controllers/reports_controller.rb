@@ -2,7 +2,7 @@
 
 # ReportsController
 class ReportsController < ApplicationController
-  before_action :set_report_filter, only: [:flow_chart, :distribution_chart, :main_data]
+  before_action :set_report_filter, only: [:flow_chart, :distribution_chart, :main_data, :comparison_chart]
 
   def index
     @report_filter = ReportFilter.new()
@@ -11,6 +11,7 @@ class ReportsController < ApplicationController
     @earned_transaction_types_datasets = @report_filter.distribution_dataset("income")
     @spent_transaction_types_datasets = @report_filter.distribution_dataset("expense")
     @report_datasets = @report_filter.report_dataset
+    @comparison_datasets = @report_filter.comparison_dataset
   end
 
   def flow_chart
@@ -56,6 +57,22 @@ class ReportsController < ApplicationController
       format.json do
         render json: {
           reportData: @report_filter.report_dataset
+        }
+      end
+    end
+  end
+
+  def comparison_chart
+    # Validar el filtro antes de procesar
+    unless @report_filter.valid?
+      Rails.logger.warn "Invalid report filter: #{@report_filter.errors.full_messages}"
+      return
+    end
+
+    respond_to do |format|
+      format.json do
+        render json: {
+          comparisonData: @report_filter.comparison_dataset
         }
       end
     end

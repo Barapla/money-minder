@@ -22,6 +22,32 @@ class ReportFilter
     set_default_dates if start_date.blank? || end_date.blank?
   end
 
+  def budgets_names
+    budget_ids = budget_ids_from_filter
+    Budget.joins(:icon).where(id: budget_ids).order(:name)
+      .pluck(Arel.sql("catalogs.value || ' ' || budgets.name"))
+  end
+
+  def budgets_pluck_transaction_type(transaction_type)
+    budget_ids = budget_ids_from_filter
+
+    # Obtener todos los budget_ids ordenados por nombre
+    all_budgets = Budget.where(id: budget_ids).order(:name).pluck(:id)
+
+    # Obtener las sumas existentes
+    base_query = Budget.joins(:transactions)
+                .where(id: budget_ids, transactions: { transaction_type: Catalog.by_group_and_code('transaction_types', transaction_type),
+                      related_transaction_id: nil })
+
+    base_query = apply_date_filters(base_query)
+
+    sum = base_query.group('budgets.id').sum('transactions.amount')
+
+    # Completar con 0s para los que no tienen transacciones
+    all_budgets.map { |budget_id| sum[budget_id] || 0 }
+
+  end
+
   def transaction_type_per_frequency(transaction_type, frequency = period)
     base_query = filtered_transactions.try(transaction_type)
 

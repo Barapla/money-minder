@@ -3,7 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 // Connects to data-controller="charts--main"
 export default class extends Controller {
     static targets = ["startDate", "endDate", "budgets", "periodButtons", "incomeData", "expenseData", "balanceData", "noTransactions"]
-    static outlets = ["charts--flow", "charts--distribution"] // Usar el nombre específico del controlador hijo
+    static outlets = ["charts--flow", "charts--distribution", "charts--comparison"] // Usar el nombre específico del controlador hijo
     static values = {
         url: String // URL for fetching data
     }
@@ -18,6 +18,12 @@ export default class extends Controller {
 
         this.chartsFlowOutlets.forEach(outlet => {
             if (outlet.flowChart) {
+                outlet.updateChart();
+            }
+        });
+
+        this.chartsComparisonOutlets.forEach(outlet => {
+            if (outlet.comparisonChart) {
                 outlet.updateChart();
             }
         });
