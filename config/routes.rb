@@ -43,6 +43,13 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :financial_insights, only: [] do
+    collection do
+      post :generate
+      get :raw_data  # Para debugging
+    end
+  end
+
   # sidekiq routes
   require 'sidekiq/web'
   mount Sidekiq::Web => '/sidekiq'

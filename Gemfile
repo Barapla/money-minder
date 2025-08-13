@@ -82,6 +82,7 @@ group :test do
 
 end
 
+gem 'httparty', '~> 0.20.0'
 gem 'date'
 gem 'inline_svg'
 gem 'foreman'

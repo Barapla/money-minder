@@ -72,6 +72,7 @@ GEM
     awesome_print (1.9.2)
     base64 (0.2.0)
     bcrypt (3.1.20)
+    bigdecimal (3.2.2)
     bindex (0.8.1)
     bootsnap (1.18.4)
       msgpack (~> 1.2)
@@ -125,6 +126,9 @@ GEM
       raabro (~> 1.4)
     globalid (1.2.1)
       activesupport (>= 6.1)
+    httparty (0.20.0)
+      mime-types (~> 3.0)
+      multi_xml (>= 0.5.2)
     i18n (1.14.5)
       concurrent-ruby (~> 1.0)
     inline_svg (1.9.0)
@@ -153,9 +157,15 @@ GEM
     marcel (1.0.4)
     matrix (0.4.2)
     method_source (1.1.0)
+    mime-types (3.7.0)
+      logger
+      mime-types-data (~> 3.2025, >= 3.2025.0507)
+    mime-types-data (3.2025.0812)
     mini_mime (1.1.5)
     minitest (5.25.1)
     msgpack (1.7.2)
+    multi_xml (0.7.2)
+      bigdecimal (~> 3.1)
     net-imap (0.4.15)
       date
       net-protocol
@@ -323,6 +333,7 @@ DEPENDENCIES
   factory_bot_rails
   faker
   foreman
+  httparty (~> 0.20.0)
   inline_svg
   jbuilder
   jsbundling-rails
