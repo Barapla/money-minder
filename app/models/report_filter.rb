@@ -91,7 +91,7 @@ class ReportFilter
     categories.each_with_object({}) do |category, hash|
       sum = base_query.where(categories: { id: category.id })
                     .sum('transactions.amount').abs
-      hash[category.name] = sum if sum.positive?
+      hash[category.name] = sum.to_f.round(2) if sum.positive?
     end
   end
 

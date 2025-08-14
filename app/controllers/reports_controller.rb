@@ -12,6 +12,9 @@ class ReportsController < ApplicationController
     @spent_transaction_types_datasets = @report_filter.distribution_dataset("expense")
     @report_datasets = @report_filter.report_dataset
     @comparison_datasets = @report_filter.comparison_dataset
+
+    # NUEVO: Obtener o generar reporte de IA financiero
+    @ai_financial_report = get_or_generate_ai_report
   end
 
   def flow_chart
@@ -93,5 +96,33 @@ class ReportsController < ApplicationController
 
   def set_report_filter
     @report_filter = ReportFilter.new(report_filter_params)
+  end
+
+  def get_or_generate_ai_report
+    begin
+      # Obtener el reporte más reciente o generar uno nuevo si está expirado
+      report = AiReport.latest_or_generate(
+        current_user.id,
+        'general',
+        'monthly'
+      )
+
+      # Log para debugging
+      Rails.logger.info "AI Report loaded: #{report.uuid} (created: #{report.created_at})"
+
+      report
+    rescue => e
+      Rails.logger.error "Error loading AI report: #{e.message}"
+
+      # Crear un reporte vacío como fallback para que la vista no explote
+      OpenStruct.new(
+        insights: [],
+        summary: {},
+        processing_success: false,
+        error_message: "Error cargando insights de IA: #{e.message}",
+        created_at: Time.current,
+        uuid: 'error-fallback'
+      )
+    end
   end
 end

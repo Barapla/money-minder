@@ -4,7 +4,25 @@ class FinancialInsightsService
     @claude_service = ClaudeService.new
   end
 
+  # Método público que guarda el reporte (para llamadas directas)
   def generate_insights
+    result = generate_insights_without_saving
+
+    # Solo guardar si fue exitoso y no se está llamando desde AiReportService
+    if result[:success] && !Thread.current[:generating_ai_report]
+      begin
+        Thread.current[:generating_ai_report] = true
+        AiReportService.create_financial_general_report(@user_id)
+      ensure
+        Thread.current[:generating_ai_report] = false
+      end
+    end
+
+    result
+  end
+
+  # Método interno que NO guarda el reporte (evita bucle)
+  def generate_insights_without_saving
     # Obtener datos del mes actual y anterior
     current_month_data = get_current_month_data
     previous_month_data = get_previous_month_data
@@ -18,15 +36,15 @@ class FinancialInsightsService
       budgets: budgets_data,
       analysis_date: Date.current.strftime("%B %Y"),
       data_notes: {
-        expense_filtering: "Only real expenses included (transaction_type = 'expense')",
-        income_filtering: "Only genuine income included (income without related_transaction_id)",
-        transfers_excluded: "Account transfers between user's accounts excluded to prevent double counting"
+        expense_filtering: "Only real expenses included",
+        income_filtering: "Only genuine income included",
+        transfers_excluded: "Account transfers excluded"
       }
     }
 
     prompt = build_analysis_prompt
 
-    # Enviar a Claude
+    # Enviar a Claude SIN guardar reporte
     @claude_service.send_message(
       prompt: prompt,
       context: context,
@@ -37,114 +55,175 @@ class FinancialInsightsService
   private
 
   def get_current_month_data
-    start_date = Date.current.beginning_of_month
-    end_date = Date.current
-
-    transactions = Transaction.joins(:budget)
-                             .where(user_id: @user_id, active: true)
-                             .where(transaction_date: start_date..end_date)
-                             .includes(:budget, :category)
+    filter = ReportFilter.new(
+      start_date: Date.current.beginning_of_month,
+      end_date: Date.current
+    )
 
     {
-      total_spent: transactions.sum(:amount).to_f.round(2),
-      transaction_count: transactions.count,
-      days_elapsed: (Date.current - start_date).to_i + 1,
-      days_in_month: start_date.end_of_month.day,
-      transactions_by_budget: group_transactions_by_budget(transactions),
-      transactions_by_category: group_transactions_by_category(transactions),
-      daily_average: (transactions.sum(:amount) / ((Date.current - start_date).to_i + 1)).to_f.round(2)
+      total_spent: filter.transaction_type_per_frequency('expense', 'monthly').sum.to_f.round(2),
+      total_income: filter.transaction_type_per_frequency('income', 'monthly').sum.to_f.round(2),
+      transaction_count: filter.transaction_count,
+      days_elapsed: (Date.current - Date.current.beginning_of_month).to_i + 1,
+      days_in_month: Date.current.end_of_month.day,
+      transactions_by_budget: get_budget_summary_current_month,
+      transactions_by_category: filter.categories('expense', 10),
+      daily_average: (filter.transaction_type_per_frequency('expense', 'monthly').sum / ((Date.current - Date.current.beginning_of_month).to_i + 1)).to_f.round(2)
     }
   end
 
   def get_previous_month_data
-    start_date = 1.month.ago.beginning_of_month
-    end_date = 1.month.ago.end_of_month
+    filter = ReportFilter.new(
+      start_date: 1.month.ago.beginning_of_month,
+      end_date: 1.month.ago.end_of_month
+    )
 
-    transactions = Transaction.joins(:budget)
-                             .where(user_id: @user_id, active: true)
-                             .where(transaction_date: start_date..end_date)
-                             .includes(:budget, :category)
+    days_in_month = (1.month.ago.end_of_month - 1.month.ago.beginning_of_month).to_i + 1
 
     {
-      total_spent: transactions.sum(:amount).to_f.round(2),
-      transaction_count: transactions.count,
-      transactions_by_budget: group_transactions_by_budget(transactions),
-      transactions_by_category: group_transactions_by_category(transactions),
-      daily_average: (transactions.sum(:amount) / (end_date - start_date).to_i).to_f.round(2)
+      total_spent: filter.transaction_type_per_frequency('expense', 'monthly').sum.to_f.round(2),
+      total_income: filter.transaction_type_per_frequency('income', 'monthly').sum.to_f.round(2),
+      transaction_count: filter.transaction_count,
+      transactions_by_budget: get_budget_summary_previous_month,
+      transactions_by_category: filter.categories('expense', 10),
+      daily_average: (filter.transaction_type_per_frequency('expense', 'monthly').sum / days_in_month).to_f.round(2)
     }
   end
 
   def get_active_budgets
-    Budget.where(user_id: @user_id, active: true).includes(:credit_card, :savings_fund).map do |budget|
-      budget_data = {
+    Budget.where(user_id: @user_id, active: true)
+          .includes(:credit_card, :savings_fund, :budget_type)
+          .map do |budget|
+      {
         id: budget.id,
         name: budget.name,
         current_amount: budget.current_amount.to_f.round(2),
-        budget_type_id: budget.budget_type_id,
-        budget_type_name: get_budget_type_name(budget.budget_type.code),
-        personal: budget.personal
+        budget_type_code: budget.budget_type.code,
+        budget_type_name: budget.budget_type.value,
+        personal: budget.personal,
+        type_info: build_budget_type_info(budget)
       }
+    end
+  end
 
-      # Agregar datos específicos según el tipo de presupuesto
-      case budget.budget_type.code
-      when "credit_card" # Tarjeta de crédito
-        if budget.credit_card.present?
-          budget_data[:type_info] = {
-            type: "credito",
-            limit_amount: budget.credit_card.limit_amount,
-            debt_amount: budget.credit_card.debt_amount,
-            available_credit: (budget.credit_card.limit_amount - budget.credit_card.debt_amount).to_f.round(2),
-            utilization_percentage: budget.credit_card.limit_amount > 0 ?
-              (budget.credit_card.debt_amount / budget.credit_card.limit_amount * 100).to_f.round(2) : 0,
-            payday: budget.credit_card.payday,
-            cutting_day: budget.credit_card.cutting_day
-          }
-        else
-          # Si no hay datos de credit_card, asumir que current_amount es el disponible
-          budget_data[:type_info] = {
-            type: "credito",
-            available_credit: budget.current_amount
-          }
-        end
-      when "cash" # Efectivo
-        budget_data[:type_info] = {
-          type: "efectivo",
-          available_cash: budget.current_amount
-        }
-      when "debit_card" # Tarjeta de débito
-        budget_data[:type_info] = {
-          type: "debito",
-          available_balance: budget.current_amount
-        }
-      when "savings_fund" # Fondo de ahorro
-        if budget.savings_fund.present?
-          budget_data[:type_info] = {
-            type: "ahorro",
-            goal_amount: budget.savings_fund.goal_amount,
-            target_date: budget.savings_fund.target_date,
-            monthly_contribution: budget.savings_fund.monthly_contribution,
-            progress_percentage: budget.savings_fund.goal_amount > 0 ?
-              (budget.current_amount / budget.savings_fund.goal_amount * 100).to_f.round(2) : 0
-          }
-        end
-      else
-        budget_data[:type_info] = {
-          type: "digital",
-          available_balance: budget.current_amount
+  def get_budget_summary_current_month
+    Budget.where(user_id: @user_id, active: true).map do |budget|
+      spent = budget.spent_amount_this_month.to_f.round(2)
+
+      {
+        budget_name: budget.name,
+        budget_id: budget.id,
+        budget_type_code: budget.budget_type.code,
+        total_spent: spent,
+        current_amount: budget.current_amount.to_f.round(2),
+        analysis: build_budget_analysis(budget, spent)
+      }
+    end
+  end
+
+  def get_budget_summary_previous_month
+    start_date = 1.month.ago.beginning_of_month
+    end_date = 1.month.ago.end_of_month
+
+    Budget.where(user_id: @user_id, active: true).map do |budget|
+      spent = budget.transactions
+                  .joins(:transaction_type)
+                  .where(transaction_date: start_date..end_date)
+                  .where(transaction_type: { code: 'expense' })
+                  .sum(:amount).to_f.round(2)
+
+      {
+        budget_name: budget.name,
+        budget_id: budget.id,
+        budget_type_code: budget.budget_type.code,
+        total_spent: spent,
+        current_amount: budget.current_amount.to_f.round(2)
+      }
+    end
+  end
+
+  def build_budget_type_info(budget)
+    case budget.budget_type.code
+    when "credit_card"
+      {
+        type: "credito",
+        limit_amount: budget.limit_amount,
+        debt_amount: budget.debt_amount,
+        available_credit: (budget.limit_amount - budget.debt_amount).to_f.round(2),
+        utilization_percentage: budget.limit_amount > 0 ?
+          (budget.debt_amount / budget.limit_amount * 100).round(2) : 0,
+        payday: budget.payday,
+        cutting_day: budget.cutting_day
+      }
+    when "savings_fund"
+      if budget.savings_fund.present?
+        {
+          type: "ahorro",
+          goal_amount: budget.savings_fund.goal_amount,
+          target_date: budget.savings_fund.target_date,
+          monthly_contribution: budget.savings_fund.monthly_contribution,
+          progress_percentage: budget.savings_fund.goal_amount > 0 ?
+            (budget.current_amount / budget.savings_fund.goal_amount * 100).round(2) : 0
         }
       end
+    when "cash"
+      { type: "efectivo", available_cash: budget.current_amount }
+    when "debit_card"
+      { type: "debito", available_balance: budget.current_amount }
+    else
+      { type: "digital", available_balance: budget.current_amount }
+    end
+  end
 
-      budget_data
+  def build_budget_analysis(budget, spent)
+    case budget.budget_type.code
+    when "credit_card"
+      {
+        credit_utilization: budget.limit_amount > 0 ? (budget.debt_amount / budget.limit_amount * 100).round(2) : 0,
+        available_credit: budget.limit_amount - budget.debt_amount,
+        monthly_spending: spent,
+        next_payday: budget.payday,
+        cutting_day: budget.cutting_day
+      }
+    when "cash"
+      days_remaining = budget.current_amount > 0 && spent > 0 ?
+        (budget.current_amount / budget.average_daily_spent).round(1) : 0
+
+      {
+        spending_vs_available: budget.current_amount > 0 ? (spent / budget.current_amount * 100).round(2) : 0,
+        remaining_cash: (budget.current_amount - spent).round(2),
+        days_remaining: days_remaining
+      }
+    when "debit_card"
+      {
+        spending_vs_budget: budget.current_amount > 0 ? (spent / budget.current_amount * 100).round(2) : 0,
+        remaining_budget: (budget.current_amount - spent).round(2),
+        overdraft_risk: budget.current_amount == 0 && spent > 0
+      }
+    when "savings_fund"
+      if budget.savings_fund.present?
+        sf = budget.savings_fund
+        {
+          goal_progress: sf.goal_amount > 0 ? (budget.current_amount / sf.goal_amount * 100).round(2) : 0,
+          monthly_target: sf.monthly_contribution.to_f.round(2),
+          target_date: sf.target_date,
+          days_to_goal: sf.target_date ? (sf.target_date - Date.current).to_i : nil
+        }
+      end
+    else
+      {
+        spending_vs_available: budget.current_amount > 0 ? (spent / budget.current_amount * 100).round(2) : 0,
+        remaining_balance: (budget.current_amount - spent).round(2)
+      }
     end
   end
 
   def get_budget_type_name(type_code)
-    # Mapeo basado en los IDs reales de tu base de datos
     case type_code
-    when "credit_card" then "Tarjeta de Crédito"    # AMEX, Nu Credito, Plata, BBVA Crédito
-    when "cash" then "Efectivo"              # Efectivo de Bryan
-    when "debit_card" then "Tarjeta de Débito"     # Santander Nómina, BBVA Debito, Nu Debito
-    when "savings_fund" then "Fondo de Ahorro"       # Para cuando tengas fondos de ahorro
+    when "credit_card" then "Tarjeta de Crédito"
+    when "cash" then "Efectivo"
+    when "debit_card" then "Tarjeta de Débito"
+    when "savings_fund" then "Fondo de Ahorro"
     else "Desconocido (Codigo: #{type_code})"
     end
   end
@@ -165,7 +244,7 @@ class FinancialInsightsService
 
       # Análisis específico según tipo de presupuesto
       case budget.budget_type.code
-      when "credit_card" # Tarjeta de crédito
+      when "credit_card"
         if budget.credit_card.present?
           cc = budget.credit_card
           budget_info[:analysis] = {
@@ -176,27 +255,26 @@ class FinancialInsightsService
             cutting_day: cc.cutting_day
           }
         else
-          # Si no hay datos específicos de credit_card, usar current_amount como referencia
           budget_info[:analysis] = {
             available_credit: budget.current_amount,
             monthly_spending: total_spent,
             spending_vs_available: budget.current_amount > 0 ? (total_spent / budget.current_amount * 100).to_f.round(2) : 0
           }
         end
-      when "cash" # Efectivo
+      when "cash"
         budget_info[:analysis] = {
           spending_vs_available: budget.current_amount > 0 ? (total_spent / budget.current_amount * 100).to_f.round(2) : 0,
           remaining_cash: (budget.current_amount - total_spent).to_f.round(2),
           days_remaining: budget.current_amount > 0 && total_spent > 0 ?
             (budget.current_amount / (total_spent / Date.current.day)).round(1) : 0
         }
-      when "debit_card" # Tarjeta de débito
+      when "debit_card"
         budget_info[:analysis] = {
           spending_vs_budget: budget.current_amount > 0 ? (total_spent / budget.current_amount * 100).to_f.round(2) : 0,
           remaining_budget: (budget.current_amount - total_spent).to_f.round(2),
           overdraft_risk: budget.current_amount == 0 && total_spent > 0
         }
-      when "savings_fund" # Fondo de ahorro
+      when "savings_fund"
         if budget.savings_fund.present?
           sf = budget.savings_fund
           budget_info[:analysis] = {
@@ -219,7 +297,6 @@ class FinancialInsightsService
   end
 
   def group_transactions_by_category(transactions)
-    # Agrupar solo gastos reales por categoría
     transactions.joins(:category)
                 .group('categories.name')
                 .sum(:amount)
@@ -288,43 +365,6 @@ class FinancialInsightsService
       }
     }
     ```
-
-    **ANALYSIS RULES BY BUDGET TYPE:**
-
-    **CASH (Efectivo):**
-    - Alert if spending exceeds available cash
-    - Monitor cash flow sustainability
-    - Suggest cash management strategies
-
-    **SAVINGS FUND (Ahorro):**
-    - Track progress toward goal_amount and target_date
-    - Analyze monthly_contribution consistency
-    - Alert on timeline risks or missed contributions
-    - Calculate required monthly savings to meet goals
-
-    **CREDIT CARD (Crédito):**
-    - CRITICAL: Alert if utilization > 70% of limit_amount
-    - Monitor debt_amount trends vs previous month
-    - Consider payday and cutting_day for payment timing
-    - Alert on approaching credit limits
-
-    **DEBIT CARD (Débito):**
-    - Compare spending vs current_amount budget
-    - Identify overspending patterns
-    - Suggest budget reallocation
-
-    **CROSS-ACCOUNT OPTIMIZATION:**
-    - Identify unused credit capacity vs cash shortfalls
-    - Suggest moving spending between account types
-    - Balance risk across different account types
-    - Optimize payment timing across cards
-
-    **INSIGHT EXAMPLES (all in Spanish):**
-    - Credit: 'Tu tarjeta BBVA tiene 85% de utilización - riesgo alto para tu score crediticio'
-    - Savings: 'Vas 23% atrasado en tu meta de ahorro - necesitas $450 extra este mes'
-    - Cash: 'Tu efectivo se agotará en 8 días al ritmo actual de gastos'
-    - Debit: 'Has usado solo 34% de tu presupuesto de débito - puedes redistribuir fondos'
-    - Optimization: 'Tienes $15,000 disponibles en crédito mientras gastas efectivo escaso'
 
     Focus on account-type-specific risks and cross-account optimization opportunities.
     Prioritize: credit alerts > savings timeline risks > cash flow issues > optimization opportunities."

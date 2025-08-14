@@ -258,6 +258,42 @@
           "value": "💸"
         }
       ]
+    },
+    {
+      "name": "Tipos de Reporte",
+      "code": "report_types",
+      "catalogs": [
+        {
+          "value": "Reporte general",
+          "code": "general"
+        },
+        {
+          "value": "Reporte por categoría",
+          "code": "category"
+        },
+        {
+          "value": "Reporte por presupuesto",
+          "code": "budget"
+        }
+      ]
+    },
+    {
+      "name": "Subtipos de Reporte",
+      "code": "report_subtypes",
+      "catalogs": [
+        {
+          "value": "Mensual",
+          "code": "monthly"
+        },
+        {
+          "value": "Anual",
+          "code": "yearly"
+        },
+        {
+          "value": "Personalizado",
+          "code": "custom"
+        }
+      ]
     }
   ]
 }

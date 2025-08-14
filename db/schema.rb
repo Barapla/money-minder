@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_07_22_070105) do
+ActiveRecord::Schema[7.0].define(version: 2025_08_13_213356) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -40,6 +40,40 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_22_070105) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "ai_reports", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.bigint "user_id", null: false
+    t.bigint "report_type_id", null: false
+    t.bigint "report_subtype_id"
+    t.string "reportable_type"
+    t.bigint "reportable_id"
+    t.date "analysis_period_start"
+    t.date "analysis_period_end"
+    t.text "analysis_context"
+    t.jsonb "ai_request_data"
+    t.jsonb "ai_response_data"
+    t.jsonb "parsed_insights"
+    t.string "ai_model_used"
+    t.string "tokens_used"
+    t.decimal "processing_time", precision: 8, scale: 3
+    t.boolean "processing_success", default: true
+    t.text "error_message"
+    t.datetime "expires_at"
+    t.jsonb "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_ai_reports_on_expires_at"
+    t.index ["report_subtype_id"], name: "index_ai_reports_on_report_subtype_id"
+    t.index ["report_type_id", "analysis_period_start", "analysis_period_end"], name: "index_ai_reports_on_type_and_period"
+    t.index ["report_type_id"], name: "index_ai_reports_on_report_type_id"
+    t.index ["reportable_type", "reportable_id"], name: "index_ai_reports_on_reportable"
+    t.index ["user_id", "report_type_id", "created_at"], name: "index_ai_reports_on_user_id_and_report_type_id_and_created_at"
+    t.index ["user_id", "reportable_type", "reportable_id"], name: "index_ai_reports_on_user_and_reportable"
+    t.index ["user_id"], name: "index_ai_reports_on_user_id"
+    t.index ["uuid"], name: "index_ai_reports_on_uuid", unique: true
   end
 
   create_table "budgets", force: :cascade do |t|
@@ -253,6 +287,9 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_22_070105) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ai_reports", "catalogs", column: "report_subtype_id", name: "fk_ai_reports_report_subtype"
+  add_foreign_key "ai_reports", "catalogs", column: "report_type_id", name: "fk_ai_reports_report_type"
+  add_foreign_key "ai_reports", "users", name: "fk_ai_reports_users"
   add_foreign_key "budgets", "catalogs", column: "budget_type_id", name: "fk_budgets_budget_type"
   add_foreign_key "budgets", "catalogs", column: "color_id", name: "fk_budgets_color"
   add_foreign_key "budgets", "catalogs", column: "icon_id", name: "fk_budgets_icon"
