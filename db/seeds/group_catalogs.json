@@ -294,6 +294,24 @@
           "code": "custom"
         }
       ]
+    },
+    {
+      "name": "Estados de ciclo de tarjeta de crédito",
+      "code": "credit_card_cycle_statuses",
+      "statuses": [
+        {
+          "name": "Abierto",
+          "code": "open"
+        },
+        {
+          "name": "Cerrado",
+          "code": "closed"
+        },
+        {
+          "name": "Pagado",
+          "code": "paid"
+        }
+      ]
     }
   ]
 }

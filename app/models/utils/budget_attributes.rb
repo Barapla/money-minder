@@ -8,23 +8,23 @@ module Utils
     end
 
     def debt_amount
-      budget_type&.code == 'credit_card' ? credit_card&.debt_amount : 0.0
-    end
+      return 0.0 unless budget_type&.code == 'credit_card'
 
-    def get_payday
-      if payday < Date.today
-        self.credit_card.update(payday: payday.next_month)
-      end
+      return 0.0 unless credit_card.persisted?
 
-      payday
+      credit_card&.current_cycle&.current_balance || 0.0
     end
 
     def payday
-      budget_type&.code == 'credit_card' ? credit_card&.payday : nil
+      return nil unless budget_type&.code == 'credit_card'
+
+      credit_card&.current_cycle&.payment_due_date
     end
 
     def cutting_day
-      budget_type&.code == 'credit_card' ? credit_card&.cutting_day : nil
+      return nil unless budget_type&.code == 'credit_card'
+
+      credit_card&.current_cycle&.cutting_date
     end
   end
 end

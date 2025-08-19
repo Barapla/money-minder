@@ -63,9 +63,10 @@ es:
         icon_id: "Icono"
         color_id: "Color"
       credit_card:
-        debt_amount: "Presupuesto gastado"
+        initial_debt: "Presupuesto gastado"
         limit_amount: "Presupuesto límite"
         payday: "Siguiente día de pago"
+        payment_due_days: "Días para el pago"
         cutting_day: "Siguiente día de corte"
       recurring_transaction:
         transaction_id: "Transacción"

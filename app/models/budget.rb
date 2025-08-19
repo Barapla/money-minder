@@ -13,8 +13,8 @@ class Budget < ApplicationRecord
 
   # Associations
   has_many :transactions, dependent: :destroy
-  has_one :credit_card
-  has_one :savings_fund
+  has_one :credit_card, dependent: :destroy
+  has_one :savings_fund, dependent: :destroy
 
   belongs_to :user
   belongs_to :budget_type, class_name: 'Catalog', foreign_key: 'budget_type_id'
@@ -31,8 +31,6 @@ class Budget < ApplicationRecord
 
   # Construir credit_card automáticamente
   after_initialize :build_budget_type_if_needed
-
-  after_update :update_debt_amount, if: :saved_change_to_current_amount?
 
   def budget_color
     self.class.progress_color(debt_amount, limit_amount)
@@ -142,9 +140,4 @@ class Budget < ApplicationRecord
     budget_type&.code != 'savings_fund'
   end
 
-  def update_debt_amount
-    return if credit_card.nil?
-
-    credit_card.update(debt_amount: credit_card.limit_amount - current_amount)
-  end
 end

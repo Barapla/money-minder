@@ -1,6 +1,6 @@
 <%= fields_for "budget[credit_card_attributes]", budget.credit_card || budget.build_credit_card do |cc_form| %>
     <%= render Forms::InputComponent.new(
-        name: :debt_amount,
+        name: :initial_debt,
         form: cc_form,
         type: :number,
         options: { 
@@ -36,14 +36,15 @@
     ) %>
 
     <%= render Forms::InputComponent.new(
-        name: :payday,
+        name: :payment_due_days,
         form: cc_form,
-        type: :date,
+        type: :number,
         options: { 
-            help_text: "Día de pago del presupuesto",
+            placeholder: "5",
+            help_text: "Días entre corte y vencimiento de pago",
             required: true,
             data: {
-                required_message: "Por favor, ingresa el día de pago",
+                required_message: "Por favor, ingresa los días para el pago",
             }
         }
     ) %>
@@ -51,12 +52,15 @@
     <%= render Forms::InputComponent.new(
         name: :cutting_day,
         form: cc_form,
-        type: :date,
+        type: :number,
         options: { 
-            help_text: "Fecha de corte del presupuesto",
+            placeholder: "15",
+            min: 1,
+            max: 31,
+            help_text: "Día del mes de corte (1-31)",
             required: true,
             data: {
-                required_message: "Por favor, ingresa la fecha de corte"
+                required_message: "Por favor, ingresa el día de corte"
             }
         }
     ) %>

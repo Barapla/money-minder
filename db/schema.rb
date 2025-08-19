@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_08_13_213356) do
+ActiveRecord::Schema[7.0].define(version: 2025_08_19_021318) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -119,17 +119,41 @@ ActiveRecord::Schema[7.0].define(version: 2025_08_13_213356) do
     t.index ["uuid"], name: "index_categories_on_uuid", unique: true
   end
 
+  create_table "credit_card_cycles", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.bigint "credit_card_id", null: false
+    t.date "cutting_date"
+    t.date "payment_due_date"
+    t.decimal "statement_balance", precision: 10, scale: 2, default: "0.0"
+    t.decimal "current_balance", precision: 10, scale: 2, default: "0.0"
+    t.decimal "minimum_payment", precision: 10, scale: 2, default: "0.0"
+    t.decimal "interest_charges", precision: 10, scale: 2, default: "0.0"
+    t.decimal "fees", precision: 10, scale: 2, default: "0.0"
+    t.decimal "payments_received", precision: 10, scale: 2, default: "0.0"
+    t.decimal "purchases_made", precision: 10, scale: 2, default: "0.0"
+    t.bigint "status_id", null: false
+    t.datetime "statement_generated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["credit_card_id", "cutting_date"], name: "index_credit_card_cycles_on_credit_card_id_and_cutting_date", unique: true
+    t.index ["credit_card_id"], name: "index_credit_card_cycles_on_credit_card_id"
+    t.index ["cutting_date"], name: "index_credit_card_cycles_on_cutting_date"
+    t.index ["payment_due_date"], name: "index_credit_card_cycles_on_payment_due_date"
+    t.index ["status_id"], name: "index_credit_card_cycles_on_status_id"
+    t.index ["uuid"], name: "index_credit_card_cycles_on_uuid", unique: true
+  end
+
   create_table "credit_cards", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
-    t.decimal "current_amount"
     t.decimal "limit_amount"
-    t.decimal "debt_amount"
-    t.date "payday"
-    t.date "cutting_day"
     t.bigint "budget_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "cutting_day"
+    t.integer "payment_due_days", default: 5
+    t.decimal "initial_debt", precision: 10, scale: 2, default: "0.0"
     t.index ["budget_id"], name: "index_credit_cards_on_budget_id"
     t.index ["uuid"], name: "index_credit_cards_on_uuid", unique: true
   end
@@ -216,6 +240,19 @@ ActiveRecord::Schema[7.0].define(version: 2025_08_13_213356) do
     t.index ["uuid"], name: "index_savings_funds_on_uuid", unique: true
   end
 
+  create_table "statuses", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.string "code"
+    t.string "name"
+    t.string "color"
+    t.bigint "group_catalog_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["group_catalog_id"], name: "index_statuses_on_group_catalog_id"
+    t.index ["uuid"], name: "index_statuses_on_uuid", unique: true
+  end
+
   create_table "transaction_histories", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
@@ -296,11 +333,14 @@ ActiveRecord::Schema[7.0].define(version: 2025_08_13_213356) do
   add_foreign_key "budgets", "users", name: "fk_budgets_user"
   add_foreign_key "catalogs", "group_catalogs", name: "fk_catalogs_group_catalog"
   add_foreign_key "categories", "categories", column: "parent_category_id", name: "fk_categories_parent"
+  add_foreign_key "credit_card_cycles", "credit_cards", name: "fk_credit_card_cycles_credit_card"
+  add_foreign_key "credit_card_cycles", "statuses", name: "fk_credit_card_cycles_status"
   add_foreign_key "credit_cards", "budgets", name: "fk_credit_cards_budget"
   add_foreign_key "recurring_transactions", "users", name: "fk_recurring_transactions_user"
   add_foreign_key "savings_funds", "budgets", name: "fk_savings_funds_budget"
   add_foreign_key "savings_funds", "catalogs", column: "account_type_id", name: "fk_savings_funds_account_type"
   add_foreign_key "savings_funds", "catalogs", column: "compound_frequency_id", name: "fk_savings_funds_compound_frequency"
+  add_foreign_key "statuses", "group_catalogs", name: "fk_statuses_group_catalog"
   add_foreign_key "transaction_histories", "transactions", name: "fk_transaction_histories_transactions"
   add_foreign_key "transactions", "budgets", column: "related_budget_id", name: "fk_transactions_related_budget"
   add_foreign_key "transactions", "budgets", name: "fk_transactions_budget"

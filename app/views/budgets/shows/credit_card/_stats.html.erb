@@ -14,6 +14,6 @@
             options: { color: "purple", icon: "progress" }) %>
     <%= render Shared::CardComponent.new(
             title: "DÍAS RESTANTES", subtitle: "este mes", 
-            main_text: (@budget.get_payday.to_date - Time.now.to_date).to_i, 
+            main_text: (@budget.payday.to_date - Time.now.to_date).to_i, 
             options: { color: "blue", icon: "calendar" }) %>
 </div>

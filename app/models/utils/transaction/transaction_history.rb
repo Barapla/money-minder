@@ -36,12 +36,27 @@ module Utils
 
       def update_budget_amount
         budget.update(current_amount: post_amount)
+
+        update_credit_card_cycle if budget.budget_type&.code == 'credit_card'
+      end
+
+      def update_credit_card_cycle
+        credit_card = budget.credit_card
+        return unless credit_card
+
+        # Encontrar el ciclo correspondiente a la fecha de la transacción
+        target_cycle = credit_card.cycle_for_transaction_date(transaction_date)
+
+        # Procesar la transacción en el ciclo
+        target_cycle.process_transaction(self)
       end
 
       def return_budget_amount
         new_current_amount = negative_transaction? ? budget.current_amount + amount : budget.current_amount - amount
-
         budget.update(current_amount: new_current_amount)
+
+        # Revertir cambios en el ciclo de tarjeta de crédito
+        revert_credit_card_cycle if budget.budget_type&.code == 'credit_card'
       end
 
       def update_transaction_history
@@ -53,6 +68,7 @@ module Utils
           post_amount: new_post_amount
         )
         update_budget_difference_amount(post_amount_history, new_post_amount)
+        update_credit_card_cycle_on_change if budget.budget_type&.code == 'credit_card'
       end
 
       def calculate_post_amount(pre_amount)
@@ -62,6 +78,41 @@ module Utils
       def update_budget_difference_amount(old_amount, new_amount)
         difference = old_amount - new_amount
         budget.update(current_amount: budget.current_amount - difference)
+      end
+
+      def revert_credit_card_cycle
+        credit_card = budget.credit_card
+        return unless credit_card
+
+        target_cycle = credit_card.cycle_for_transaction_date(transaction_date)
+
+        if negative_transaction?
+          target_cycle.current_balance += amount
+          target_cycle.purchases_made -= amount
+        else
+          target_cycle.current_balance -= amount  # Revertir pago (quitar la reducción)
+          target_cycle.payments_received -= amount
+        end
+
+        target_cycle.save!
+      end
+
+      def update_credit_card_cycle_on_change
+        credit_card = budget.credit_card
+        target_cycle = credit_card.cycle_for_transaction_date(transaction_date)
+
+        # Revertir monto anterior
+        old_amount = amount_before_last_save
+        if negative_transaction?
+          target_cycle.current_balance += old_amount
+          target_cycle.purchases_made -= old_amount
+        else
+          target_cycle.current_balance += old_amount
+          target_cycle.payments_received -= old_amount
+        end
+
+        # Aplicar nuevo monto
+        target_cycle.process_transaction(self)
       end
     end
   end
