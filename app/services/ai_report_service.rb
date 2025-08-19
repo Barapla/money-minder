@@ -28,7 +28,7 @@ class AiReportService
       },
       ai_response_data: ai_result,
       ai_model_used: 'claude-sonnet-4-20250514',
-      tokens_used: ai_result[:usage]&.dig('total_tokens'),
+      tokens_used: (ai_result[:usage]&.dig('input_tokens') + ai_result[:usage]&.dig('output_tokens')) || 0,
       processing_time: processing_time,
       processing_success: ai_result[:success],
       error_message: ai_result[:success] ? nil : ai_result[:error],

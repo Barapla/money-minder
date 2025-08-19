@@ -17,7 +17,7 @@
     <% end %>
   </h3>
 
-  <div class="space-y-4">
+  <div class="grid lg:grid-cols-2 gap-4">
     <% if @ai_financial_report&.processing_success? && @ai_financial_report.insights.present? %>
       
       <%# Renderizar cada insight dinámicamente %>

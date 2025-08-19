@@ -79,23 +79,23 @@ class AiReport < ApplicationRecord
     else
       raise ArgumentError, "Unknown report type: #{report_type}"
     end
-  # rescue => e
-  #   Rails.logger.error "Error generating new AI report: #{e.message}"
+  rescue => e
+    Rails.logger.error "Error generating new AI report: #{e.message}"
 
-  #   # Crear un reporte de error como fallback
-  #   AiReport.create!(
-  #     user_id: user_id,
-  #     report_type: Catalog.by_group_and_code('report_types', report_type) ,
-  #     report_subtype: Catalog.by_group_and_code('report_subtypes', subtype),
-  #     analysis_period_start: Date.current.beginning_of_month,
-  #     analysis_period_end: Date.current,
-  #     analysis_context: "Error generating #{report_type} report",
-  #     ai_request_data: { error_context: true },
-  #     ai_response_data: { error: e.message },
-  #     processing_success: false,
-  #     error_message: e.message,
-  #     metadata: { auto_generated: true, error_fallback: true }
-  #   )
+    # Crear un reporte de error como fallback
+    AiReport.create!(
+      user_id: user_id,
+      report_type: Catalog.by_group_and_code('report_types', report_type) ,
+      report_subtype: Catalog.by_group_and_code('report_subtypes', subtype),
+      analysis_period_start: Date.current.beginning_of_month,
+      analysis_period_end: Date.current,
+      analysis_context: "Error generating #{report_type} report",
+      ai_request_data: { error_context: true },
+      ai_response_data: { error: e.message },
+      processing_success: false,
+      error_message: e.message,
+      metadata: { auto_generated: true, error_fallback: true }
+    )
   end
 
   def self.cleanup_expired

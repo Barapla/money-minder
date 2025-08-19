@@ -63,12 +63,14 @@ class FinancialInsightsService
     {
       total_spent: filter.transaction_type_per_frequency('expense', 'monthly').sum.to_f.round(2),
       total_income: filter.transaction_type_per_frequency('income', 'monthly').sum.to_f.round(2),
+      total_transfers: get_total_transfers_current_month,  # ← NUEVO
       transaction_count: filter.transaction_count,
       days_elapsed: (Date.current - Date.current.beginning_of_month).to_i + 1,
       days_in_month: Date.current.end_of_month.day,
       transactions_by_budget: get_budget_summary_current_month,
-      transactions_by_category: filter.categories('expense', 10),
-      daily_average: (filter.transaction_type_per_frequency('expense', 'monthly').sum / ((Date.current - Date.current.beginning_of_month).to_i + 1)).to_f.round(2)
+      transactions_by_category: filter.categories('expense', nil),
+      daily_average: (filter.transaction_type_per_frequency('expense', 'monthly').sum / ((Date.current - Date.current.beginning_of_month).to_i + 1)).to_f.round(2),
+      budget_flow_patterns: analyze_budget_flow_patterns
     }
   end
 
@@ -85,7 +87,7 @@ class FinancialInsightsService
       total_income: filter.transaction_type_per_frequency('income', 'monthly').sum.to_f.round(2),
       transaction_count: filter.transaction_count,
       transactions_by_budget: get_budget_summary_previous_month,
-      transactions_by_category: filter.categories('expense', 10),
+      transactions_by_category: filter.categories('expense', nil),
       daily_average: (filter.transaction_type_per_frequency('expense', 'monthly').sum / days_in_month).to_f.round(2)
     }
   end
@@ -108,15 +110,42 @@ class FinancialInsightsService
 
   def get_budget_summary_current_month
     Budget.where(user_id: @user_id, active: true).map do |budget|
-      spent = budget.spent_amount_this_month.to_f.round(2)
+      spent = budget.transactions
+                    .joins(:transaction_type)
+                    .where('transaction_date >= ?', Date.today.at_beginning_of_month)
+                    .where(transaction_type: { code: %w[expense] })
+                    .sum(:amount).to_f.round(2)
+      income = budget.transactions
+                      .joins(:transaction_type)
+                      .where('transaction_date >= ?', Date.today.at_beginning_of_month)
+                      .where(transaction_type: { code: %w[income] }, related_transaction_id: nil)
+                      .sum(:amount).to_f.round(2)
+
+      # NUEVO: Transferencias
+      transfers_out = budget.transactions
+                            .joins(:transaction_type)
+                            .where('transaction_date >= ?', Date.today.at_beginning_of_month)
+                            .where(transaction_type: { code: 'transfer' })
+                            .sum(:amount).to_f.round(2)
+
+      transfers_in = budget.transactions
+                          .joins(:transaction_type)
+                          .where('transaction_date >= ?', Date.today.at_beginning_of_month)
+                          .where(transaction_type: { code: 'income' })
+                          .where.not(related_transaction_id: nil)
+                          .sum(:amount).to_f.round(2)
 
       {
         budget_name: budget.name,
         budget_id: budget.id,
         budget_type_code: budget.budget_type.code,
         total_spent: spent,
+        total_income: income,
+        transfers_out: transfers_out,        # ← NUEVO
+        transfers_in: transfers_in,          # ← NUEVO
+        net_flow: (income + transfers_in) - (spent + transfers_out),  # ← NUEVO
         current_amount: budget.current_amount.to_f.round(2),
-        analysis: build_budget_analysis(budget, spent)
+        analysis: build_budget_analysis(budget, spent, income, transfers_out, transfers_in)
       }
     end
   end
@@ -132,11 +161,17 @@ class FinancialInsightsService
                   .where(transaction_type: { code: 'expense' })
                   .sum(:amount).to_f.round(2)
 
+      income = budget.transactions
+                   .joins(:transaction_type)
+                   .where(transaction_date: start_date..end_date)
+                   .where(transaction_type: { code: 'income' }, related_transaction_id: nil)
+                   .sum(:amount).to_f.round(2)
       {
         budget_name: budget.name,
         budget_id: budget.id,
         budget_type_code: budget.budget_type.code,
         total_spent: spent,
+        total_income: income,
         current_amount: budget.current_amount.to_f.round(2)
       }
     end
@@ -147,11 +182,11 @@ class FinancialInsightsService
     when "credit_card"
       {
         type: "credito",
-        limit_amount: budget.limit_amount,
-        debt_amount: budget.debt_amount,
+        limit_amount: budget.limit_amount.to_f.round(2),
+        debt_amount: budget.debt_amount.to_f.round(2),
         available_credit: (budget.limit_amount - budget.debt_amount).to_f.round(2),
         utilization_percentage: budget.limit_amount > 0 ?
-          (budget.debt_amount / budget.limit_amount * 100).round(2) : 0,
+          (budget.debt_amount / budget.limit_amount * 100).to_f.round(2) : 0,
         payday: budget.payday,
         cutting_day: budget.cutting_day
       }
@@ -159,11 +194,11 @@ class FinancialInsightsService
       if budget.savings_fund.present?
         {
           type: "ahorro",
-          goal_amount: budget.savings_fund.goal_amount,
+          goal_amount: budget.savings_fund.goal_amount.to_f.round(2),
           target_date: budget.savings_fund.target_date,
           monthly_contribution: budget.savings_fund.monthly_contribution,
           progress_percentage: budget.savings_fund.goal_amount > 0 ?
-            (budget.current_amount / budget.savings_fund.goal_amount * 100).round(2) : 0
+            (budget.current_amount / budget.savings_fund.goal_amount * 100).to_f.round(2) : 0
         }
       end
     when "cash"
@@ -175,198 +210,202 @@ class FinancialInsightsService
     end
   end
 
-  def build_budget_analysis(budget, spent)
+  def build_budget_analysis(budget, spent, income, transfers_out = 0, transfers_in = 0)
     case budget.budget_type.code
     when "credit_card"
       {
-        credit_utilization: budget.limit_amount > 0 ? (budget.debt_amount / budget.limit_amount * 100).round(2) : 0,
-        available_credit: budget.limit_amount - budget.debt_amount,
-        monthly_spending: spent,
+        limit_amount: budget.limit_amount.to_f.round(2),                      # 🏦 Límite total
+        debt_amount: budget.debt_amount.to_f.round(2),                        # 💸 Deuda actual
+        available_credit: budget.current_amount.to_f.round(2),                # 💰 DISPONIBLE (limit - debt)
+        credit_utilization: budget.limit_amount > 0 ?
+          (budget.debt_amount / budget.limit_amount * 100).to_f.round(2) : 0,  # 📊 % utilizado
+        monthly_spending: spent,                                # 📈 Gastos este mes
         next_payday: budget.payday,
         cutting_day: budget.cutting_day
       }
     when "cash"
-      days_remaining = budget.current_amount > 0 && spent > 0 ?
-        (budget.current_amount / budget.average_daily_spent).round(1) : 0
-
       {
-        spending_vs_available: budget.current_amount > 0 ? (spent / budget.current_amount * 100).round(2) : 0,
-        remaining_cash: (budget.current_amount - spent).round(2),
-        days_remaining: days_remaining
+        # current_amount YA ES lo que tienes disponible
+        available_cash: budget.current_amount.to_f.round(2),                    # 💰 Lo que TIENES
+        monthly_spending: spent,                                  # 📊 Lo que GASTASTE este mes
+        spending_rate: spent > 0 ? (spent / Date.current.day).to_f.round(2) : 0, # 📈 Gasto diario promedio
+        days_remaining: budget.current_amount > 0 && spent > 0 ?
+          (budget.current_amount / (spent / Date.current.day)).round(1) : 0  # ⏰ Autonomía
       }
     when "debit_card"
       {
-        spending_vs_budget: budget.current_amount > 0 ? (spent / budget.current_amount * 100).round(2) : 0,
-        remaining_budget: (budget.current_amount - spent).round(2),
-        overdraft_risk: budget.current_amount == 0 && spent > 0
+        available_balance: budget.current_amount,
+        monthly_spending: spent,
+        monthly_income: income,
+        transfers_in: transfers_in,        # ← Pasar el parámetro real
+        transfers_out: transfers_out,      # ← Pasar el parámetro real
+        net_flow: (income + transfers_in) - (spent + transfers_out),  # ← Calcular correcto
+        flow_type: determine_flow_type(income, spent, transfers_in, transfers_out),
+        overdraft_risk: budget.current_amount <= 0
       }
     when "savings_fund"
-      if budget.savings_fund.present?
-        sf = budget.savings_fund
-        {
-          goal_progress: sf.goal_amount > 0 ? (budget.current_amount / sf.goal_amount * 100).round(2) : 0,
-          monthly_target: sf.monthly_contribution.to_f.round(2),
-          target_date: sf.target_date,
-          days_to_goal: sf.target_date ? (sf.target_date - Date.current).to_i : nil
-        }
-      end
+      sf = budget.savings_fund
+      total_net = ((income + transfers_in) - (spent + transfers_out)).to_f.round(2)  # ← NUEVO
+
+      {
+      current_saved: budget.current_amount,
+      goal_amount: sf.goal_amount.to_f.round(2),
+      goal_progress: sf.goal_amount > 0 ? (budget.current_amount / sf.goal_amount * 100).to_f.round(2) : 0,
+      monthly_target: sf.monthly_contribution.to_f.round(2),
+      monthly_net: total_net,             # ← ACTUALIZADO
+      is_being_drained: spent > 0,       # ← NUEVO
+      target_date: sf.target_date,
+      months_remaining: sf.target_date ? ((sf.target_date.year - Date.current.year) * 12 + (sf.target_date.month - Date.current.month)) : nil
+    }
     else
       {
-        spending_vs_available: budget.current_amount > 0 ? (spent / budget.current_amount * 100).round(2) : 0,
+        spending_vs_available: budget.current_amount > 0 ? (spent / budget.current_amount * 100).to_f.round(2) : 0,
         remaining_balance: (budget.current_amount - spent).round(2)
       }
     end
   end
 
-  def get_budget_type_name(type_code)
-    case type_code
-    when "credit_card" then "Tarjeta de Crédito"
-    when "cash" then "Efectivo"
-    when "debit_card" then "Tarjeta de Débito"
-    when "savings_fund" then "Fondo de Ahorro"
-    else "Desconocido (Codigo: #{type_code})"
-    end
+  def get_total_transfers_current_month
+    Transaction.joins(:transaction_type, :budget)
+              .where(budgets: { user_id: @user_id })
+              .where('transaction_date >= ?', Date.today.at_beginning_of_month)
+              .where(transaction_type: { code: 'transfer' })
+              .sum(:amount).to_f.round(2)
   end
 
-  def group_transactions_by_budget(transactions)
-    transactions.group_by(&:budget).map do |budget, trans|
-      total_spent = trans.sum(&:amount).to_f.round(2)
+  def analyze_budget_flow_patterns
+    budgets_data = get_budget_summary_current_month
 
-      budget_info = {
-        budget_name: budget.name,
-        budget_id: budget.id,
-        budget_type_id: budget.budget_type_id,
-        budget_type_name: get_budget_type_name(budget.budget_type.code),
-        total_spent: total_spent,
-        transaction_count: trans.count,
-        current_amount: budget.current_amount.to_f.round(2)
-      }
+    {
+      income_concentrators: budgets_data.select { |b| b[:total_income] > 1000 }
+                                      .map { |b| b[:budget_name] },
 
-      # Análisis específico según tipo de presupuesto
-      case budget.budget_type.code
-      when "credit_card"
-        if budget.credit_card.present?
-          cc = budget.credit_card
-          budget_info[:analysis] = {
-            credit_utilization: cc.limit_amount > 0 ? (cc.debt_amount / cc.limit_amount * 100).to_f.round(2) : 0,
-            available_credit: cc.limit_amount - cc.debt_amount,
-            monthly_spending: total_spent,
-            next_payday: cc.payday,
-            cutting_day: cc.cutting_day
-          }
-        else
-          budget_info[:analysis] = {
-            available_credit: budget.current_amount,
-            monthly_spending: total_spent,
-            spending_vs_available: budget.current_amount > 0 ? (total_spent / budget.current_amount * 100).to_f.round(2) : 0
-          }
-        end
-      when "cash"
-        budget_info[:analysis] = {
-          spending_vs_available: budget.current_amount > 0 ? (total_spent / budget.current_amount * 100).to_f.round(2) : 0,
-          remaining_cash: (budget.current_amount - total_spent).to_f.round(2),
-          days_remaining: budget.current_amount > 0 && total_spent > 0 ?
-            (budget.current_amount / (total_spent / Date.current.day)).round(1) : 0
-        }
-      when "debit_card"
-        budget_info[:analysis] = {
-          spending_vs_budget: budget.current_amount > 0 ? (total_spent / budget.current_amount * 100).to_f.round(2) : 0,
-          remaining_budget: (budget.current_amount - total_spent).to_f.round(2),
-          overdraft_risk: budget.current_amount == 0 && total_spent > 0
-        }
-      when "savings_fund"
-        if budget.savings_fund.present?
-          sf = budget.savings_fund
-          budget_info[:analysis] = {
-            goal_progress: sf.goal_amount > 0 ? (budget.current_amount / sf.goal_amount * 100).to_f.round(2) : 0,
-            monthly_target: sf.monthly_contribution.to_f.round(2),
-            target_date: sf.target_date,
-            days_to_goal: sf.target_date ? (sf.target_date - Date.current).to_i : nil
-          }
-        end
-      else
-        budget_info[:analysis] = {
-          spending_vs_available: budget.current_amount > 0 ? (total_spent / budget.current_amount * 100).to_f.round(2) : 0,
-          remaining_balance: budget.current_amount - total_spent,
-          utilization_rate: budget.current_amount > 0 ? (total_spent / budget.current_amount * 100).to_f.round(2) : 0
-        }
-      end
+      spending_hubs: budgets_data.select { |b| b[:total_spent] > 1000 }
+                                .sort_by { |b| -b[:total_spent] }
+                                .map { |b| { name: b[:budget_name], amount: b[:total_spent] } },
 
-      budget_info
-    end
+      transfer_hubs: budgets_data.select { |b| b[:transfers_out] > 1000 }
+                                .map { |b| { name: b[:budget_name], out: b[:transfers_out] } },
+
+      savings_drains: budgets_data.select { |b|
+                        b[:budget_type_code] == 'savings_fund' &&
+                        b[:analysis]&.dig(:is_being_drained) == true
+                      }.map { |b| b[:budget_name] },
+
+      dormant_accounts: budgets_data.select { |b|
+                          b[:total_spent] == 0 &&
+                          b[:total_income] == 0 &&
+                          b[:transfers_in] == 0
+                        }.map { |b| b[:budget_name] }
+    }
   end
 
-  def group_transactions_by_category(transactions)
-    transactions.joins(:category)
-                .group('categories.name')
-                .sum(:amount)
-                .map do |category_name, total|
-      {
-        category: category_name,
-        total: total.to_f.round(2),
-        count: transactions.joins(:category)
-                          .where(categories: { name: category_name })
-                          .count
-      }
+  def determine_flow_type(income, spent, transfers_in, transfers_out)
+    if income > 0 && transfers_out > (spent + income * 0.5)
+      "pass_through"      # Recibe y redistribuye
+    elsif spent > income + transfers_in
+      "deficit"          # Gasta más de lo que recibe
+    elsif transfers_in > transfers_out && spent > 0
+      "spending_hub"     # Recibe transferencias para gastar
+    else
+      "balanced"
     end
   end
 
   def build_context
-    "You are an expert personal financial advisor specializing in comprehensive financial analysis across different account types.
-    Your job is to analyze user financial data considering 4 distinct budget types with different behaviors and rules:
+    "You are an expert personal financial advisor specializing in comprehensive multi-account financial analysis and money flow optimization.
+      Your job is to analyze complex financial data including income, expenses, inter-account transfers, and cross-budget patterns.
 
-    **BUDGET TYPES TO ANALYZE:**
-    1. **Cash (Efectivo)** - Physical money, limited by available amount
-    2. **Savings Fund (Fondo de Ahorro)** - Goal-oriented savings with targets and contributions
-    3. **Credit Card (Tarjeta de Crédito)** - Revolving credit with limits, debt, and payment cycles
-    4. **Debit Card (Tarjeta de Débito)** - Bank account spending within available balance
+      **BUDGET TYPES TO ANALYZE:**
+      1. **Cash (Efectivo)** - Physical money with limited availability and days remaining calculations
+      2. **Savings Fund (Fondo de Ahorro)** - Goal-oriented savings with targets, deadlines, and drain detection
+      3. **Credit Card (Tarjeta de Crédito)** - Revolving credit with utilization rates, payment cycles, and debt management
+      4. **Debit Card (Tarjeta de Débito)** - Bank accounts with overdraft risks and flow patterns
 
-    **ANALYSIS FOCUS BY TYPE:**
-    - **Cash**: Monitor spending vs available cash, cash flow management
-    - **Savings**: Progress toward goals, contribution consistency, timeline adherence
-    - **Credit**: Utilization rates, debt management, payment timing, available credit
-    - **Debit**: Budget adherence, balance management, spending patterns
+      **ADVANCED ANALYSIS CAPABILITIES:**
+      - **Money Flow Tracking**: Analyze transfers between accounts and identify flow patterns
+      - **Account Role Detection**: Identify income concentrators, spending hubs, transfer hubs, and dormant accounts
+      - **Cross-Account Optimization**: Suggest strategic reallocation based on utilization and capacity
+      - **Timeline Management**: Monitor savings deadlines and payment dates for optimal timing
+      - **Behavioral Pattern Recognition**: Detect account usage patterns and efficiency metrics
 
-    **INSIGHT PRIORITIES:**
-    1. **Credit Card Alerts**: High utilization (>70%), debt accumulation, payment dates
-    2. **Savings Progress**: Goal achievement status, contribution gaps, timeline risks
-    3. **Cash Flow Issues**: Insufficient cash, overspending vs available funds
-    4. **Budget Optimization**: Rebalancing across account types, unused capacity
-    5. **Spending Patterns**: Cross-account behavior, seasonal trends
+      **INSIGHT PRIORITIES (Updated):**
+      1. **Critical Alerts**: Credit utilization >70%, savings being drained, cash depletion risks
+      2. **Flow Optimization**: Inefficient money movement, underutilized accounts, overdraft risks
+      3. **Timeline Risks**: Approaching payment dates, missed savings deadlines, cash runout projections
+      4. **Strategic Opportunities**: Account consolidation, utilization rebalancing, flow simplification
+      5. **Behavioral Patterns**: Spending concentration, transfer efficiency, account role optimization
 
-    Generate 4-6 targeted insights prioritizing account-specific concerns and cross-account optimization opportunities.
+      Generate 5-7 targeted insights leveraging the rich transfer data and flow patterns provided.
 
-    IMPORTANT: Your response must be entirely in Spanish, but use your English language processing capabilities for complex financial analysis."
+      IMPORTANT: Your response must be entirely in Spanish, but use your English language processing capabilities for complex financial analysis."
   end
 
   def build_analysis_prompt
-    "Analyze the provided financial data considering the 4 distinct budget types and their specific characteristics. Generate targeted insights following these criteria:
+    "Analyze the comprehensive financial data including income, expenses, transfers, and cross-account flow patterns. Generate insights using this enriched dataset:
 
     **RESPONSE FORMAT (JSON):**
     ```json
     {
       \"insights\": [
         {
-          \"type\": \"success|warning|info|alert|savings|credit\",
+          \"type\": \"success|warning|info|alert|savings|credit|flow\",
           \"title\": \"Insight Title in Spanish\",
-          \"message\": \"Detailed description in Spanish\",
-          \"category\": \"efectivo|ahorro|credito|debito|optimizacion|patron\",
+          \"message\": \"Detailed description in Spanish with specific numbers and percentages\",
+          \"category\": \"efectivo|ahorro|credito|debito|optimizacion|patron|flujo\",
           \"priority\": \"high|medium|low\",
-          \"actionable\": \"Specific action suggestion in Spanish\",
-          \"budget_type\": \"efectivo|ahorro|credito|debito|multiple\"
+          \"actionable\": \"Specific action suggestion with amounts and deadlines in Spanish\",
+          \"budget_type\": \"efectivo|ahorro|credito|debito|multiple\",
+          \"affected_accounts\": [\"account_names\"],
+          \"financial_impact\": \"quantified_benefit_or_risk\"
         }
       ],
       \"summary\": {
-        \"cash_status\": \"Cash flow analysis in Spanish\",
-        \"savings_progress\": \"Savings goals status in Spanish\",
-        \"credit_health\": \"Credit utilization and debt status in Spanish\",
-        \"debit_efficiency\": \"Debit card budget performance in Spanish\",
-        \"overall_recommendation\": \"Main strategic advice in Spanish\"
+        \"cash_status\": \"Cash availability and days remaining analysis in Spanish\",
+        \"savings_progress\": \"Savings goals status and drain detection in Spanish\",
+        \"credit_health\": \"Credit utilization, payment timing, and capacity analysis in Spanish\",
+        \"debit_efficiency\": \"Debit flow patterns and overdraft risks in Spanish\",
+        \"flow_optimization\": \"Money transfer patterns and efficiency recommendations in Spanish\",
+        \"overall_recommendation\": \"Main strategic advice prioritizing highest impact actions in Spanish\"
       }
     }
     ```
 
-    Focus on account-type-specific risks and cross-account optimization opportunities.
-    Prioritize: credit alerts > savings timeline risks > cash flow issues > optimization opportunities."
+    **ENHANCED ANALYSIS INSTRUCTIONS:**
+
+    **MONEY FLOW ANALYSIS:**
+    - Analyze transfer patterns and identify account roles (pass_through, spending_hub, deficit, balanced)
+    - Detect inefficient money movement and suggest consolidation opportunities
+    - Identify accounts receiving transfers but showing overdraft risks
+
+    **UTILIZATION OPTIMIZATION:**
+    - Compare credit utilization across cards and suggest rebalancing
+    - Identify underutilized credit capacity vs cash/debit shortfalls
+    - Recommend strategic spending redistribution based on available limits
+
+    **TIMELINE MANAGEMENT:**
+    - Prioritize insights by payment deadlines and cutting days
+    - Calculate days remaining for cash based on spending rates
+    - Alert on savings goals with missed deadlines or insufficient progress
+
+    **SAVINGS PROTECTION:**
+    - Flag savings funds being used for expenses (is_being_drained: true)
+    - Compare actual monthly net vs target contributions
+    - Suggest protecting savings accounts from expense misuse
+
+    **ACCOUNT EFFICIENCY:**
+    - Identify dormant accounts consuming resources without benefit
+    - Suggest consolidating multiple similar account types
+    - Optimize the number of active accounts for efficiency
+
+    **SPECIFIC METRICS TO REFERENCE:**
+    - Credit utilization percentages and available credit amounts
+    - Transfer volumes and net flows between accounts
+    - Days remaining calculations for cash and savings timelines
+    - Monthly targets vs actual performance
+    - Account role classifications from budget_flow_patterns
+
+    Focus on quantified recommendations with specific amounts, dates, and measurable impacts.
+    Prioritize: critical alerts > flow optimization > timeline management > strategic opportunities."
   end
 end

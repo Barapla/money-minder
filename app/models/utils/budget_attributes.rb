@@ -11,6 +11,14 @@ module Utils
       budget_type&.code == 'credit_card' ? credit_card&.debt_amount : 0.0
     end
 
+    def get_payday
+      if payday < Date.today
+        self.credit_card.update(payday: payday.next_month)
+      end
+
+      payday
+    end
+
     def payday
       budget_type&.code == 'credit_card' ? credit_card&.payday : nil
     end
