@@ -1,21 +1,23 @@
 <%= fields_for "budget[credit_card_attributes]", budget.credit_card || budget.build_credit_card do |cc_form| %>
-    <%= render Forms::InputComponent.new(
-        name: :initial_debt,
-        form: cc_form,
-        type: :number,
-        options: { 
-            step: 0.01,
-            placeholder: "0.00",
-            prefix: "$",
-            help_text: "Cantidad ya gastada en este período",
-            required: true,
-            data: {
-                "budgets--preview-target": "debt",
-                action: "input->budgets--preview#updateCreditPreview",
-                required_message: "Por favor, ingresa la cantidad ya gastada"
+    <% unless budget.persisted? %>
+        <%= render Forms::InputComponent.new(
+            name: :initial_debt,
+            form: cc_form,
+            type: :number,
+            options: { 
+                step: 0.01,
+                placeholder: "0.00",
+                prefix: "$",
+                help_text: "Cantidad ya gastada en este período",
+                required: true,
+                data: {
+                    "budgets--preview-target": "debt",
+                    action: "input->budgets--preview#updateCreditPreview",
+                    required_message: "Por favor, ingresa la cantidad ya gastada"
+                }
             }
-        }
-    ) %>
+        ) %>
+    <% end %>
 
     <%= render Forms::InputComponent.new(
         name: :limit_amount,

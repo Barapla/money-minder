@@ -63,7 +63,7 @@ es:
         icon_id: "Icono"
         color_id: "Color"
       credit_card:
-        initial_debt: "Presupuesto gastado"
+        initial_debt: "Presupuesto inicial de deuda"
         limit_amount: "Presupuesto límite"
         payday: "Siguiente día de pago"
         payment_due_days: "Días para el pago"
