@@ -67,7 +67,7 @@ es:
         limit_amount: "Presupuesto límite"
         payday: "Siguiente día de pago"
         payment_due_days: "Días para el pago"
-        cutting_day: "Siguiente día de corte"
+        cutting_day: "Día de corte"
       recurring_transaction:
         transaction_id: "Transacción"
         frecuency: "Frecuencia"

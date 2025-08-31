@@ -46,7 +46,7 @@ class Budget < ApplicationRecord
 
   def transactions_last_days(days = 30)
     transactions
-      .where('transaction_date >= ?', days.days.ago)
+      # .where('transaction_date >= ?', days.days.ago)
       .order(transaction_date: :desc)
   end
 

@@ -12,7 +12,7 @@ module Utils
 
       return 0.0 unless credit_card.persisted?
 
-      credit_card&.current_cycle&.current_balance || 0.0
+      credit_card.current_debt || 0.0
     end
 
     def payday

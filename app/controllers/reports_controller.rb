@@ -14,7 +14,7 @@ class ReportsController < ApplicationController
     @comparison_datasets = @report_filter.comparison_dataset
 
     # NUEVO: Obtener o generar reporte de IA financiero
-    @ai_financial_report = get_or_generate_ai_report
+    # @ai_financial_report = get_or_generate_ai_report
   end
 
   def flow_chart

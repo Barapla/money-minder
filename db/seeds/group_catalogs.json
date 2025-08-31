@@ -308,8 +308,12 @@
           "code": "closed"
         },
         {
-          "name": "Pagado",
-          "code": "paid"
+          "name": "Pendiente de pago",
+          "code": "pending_payment"
+        },
+        {
+          "name": "Adeudado",
+          "code": "overdue"
         }
       ]
     }

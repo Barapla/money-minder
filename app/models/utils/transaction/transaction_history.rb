@@ -22,6 +22,17 @@ module Utils
         transaction_history&.post_amount
       end
 
+      def update_credit_card_cycle
+        credit_card = budget.credit_card
+        return unless credit_card
+
+        # Encontrar el ciclo correspondiente a la fecha de la transacción
+        target_cycle = credit_card.determine_cycle_for_transaction(self)
+
+        # Procesar la transacción en el ciclo
+        target_cycle.process_transaction(self)
+      end
+
       private
 
       def create_transaction_history
@@ -38,17 +49,6 @@ module Utils
         budget.update(current_amount: post_amount)
 
         update_credit_card_cycle if budget.budget_type&.code == 'credit_card'
-      end
-
-      def update_credit_card_cycle
-        credit_card = budget.credit_card
-        return unless credit_card
-
-        # Encontrar el ciclo correspondiente a la fecha de la transacción
-        target_cycle = credit_card.cycle_for_transaction_date(transaction_date)
-
-        # Procesar la transacción en el ciclo
-        target_cycle.process_transaction(self)
       end
 
       def return_budget_amount
@@ -110,6 +110,8 @@ module Utils
           target_cycle.current_balance += old_amount
           target_cycle.payments_received -= old_amount
         end
+
+        puts "Reverted old amount: #{old_amount} for transaction #{id} in cycle #{target_cycle.id}"
 
         # Aplicar nuevo monto
         target_cycle.process_transaction(self)

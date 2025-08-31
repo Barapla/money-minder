@@ -8,7 +8,7 @@ class TransactionsController < ApplicationController
 
   # GET /transactions or /transactions.json
   def index
-    transactions = Transaction.order(transaction_date: :desc)
+    transactions = Transaction.order(transaction_date: :desc).order(created_at: :desc)
     @total_collections = transactions.count
     @transactions = transactions.limit(10)
   end
@@ -21,7 +21,7 @@ class TransactionsController < ApplicationController
     # select_filters = params[:select_filters] || []
     # checkbox_filters = params[:checkbox_filters] || {}
 
-    transactions = Transaction.order(transaction_date: :desc)
+    transactions = Transaction.order(transaction_date: :desc).order(created_at: :desc)
 
     # tickets = apply_select_filters(tickets, select_filters)
     # users = apply_checkbox_filters(users, checkbox_filters)

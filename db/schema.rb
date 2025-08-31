@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_08_21_025829) do
+ActiveRecord::Schema[7.0].define(version: 2025_08_27_054329) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -125,7 +125,6 @@ ActiveRecord::Schema[7.0].define(version: 2025_08_21_025829) do
     t.bigint "credit_card_id", null: false
     t.date "cutting_date"
     t.date "payment_due_date"
-    t.decimal "statement_balance", precision: 10, scale: 2, default: "0.0"
     t.decimal "current_balance", precision: 10, scale: 2, default: "0.0"
     t.decimal "minimum_payment", precision: 10, scale: 2, default: "0.0"
     t.decimal "interest_charges", precision: 10, scale: 2, default: "0.0"
@@ -136,6 +135,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_08_21_025829) do
     t.datetime "statement_generated_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "historical_balance", precision: 15, scale: 2, default: "0.0", null: false
+    t.decimal "cycle_balance", precision: 15, scale: 2, default: "0.0", null: false
     t.index ["credit_card_id", "cutting_date"], name: "index_credit_card_cycles_on_credit_card_id_and_cutting_date", unique: true
     t.index ["credit_card_id"], name: "index_credit_card_cycles_on_credit_card_id"
     t.index ["cutting_date"], name: "index_credit_card_cycles_on_cutting_date"
