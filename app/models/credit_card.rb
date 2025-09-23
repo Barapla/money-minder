@@ -14,7 +14,6 @@ class CreditCard < ApplicationRecord
   after_update :update_first_cycle_debt, if: :saved_change_to_initial_debt?
   after_save :update_budget_amount, if: :saved_change_to_limit_amount?
 
-
   def update_budget_amount
     # Ejemplo: actualizar current_amount basado en crédito disponible
     available_credit = limit_amount - budget.debt_amount
@@ -40,5 +39,4 @@ class CreditCard < ApplicationRecord
       purchases_made: initial_debt
     )
   end
-
 end

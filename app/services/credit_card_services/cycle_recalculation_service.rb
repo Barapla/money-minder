@@ -19,15 +19,15 @@ module CreditCardServices
         initial_debt = cycle.previous_cycle.present? ? 0.0 : credit_card.initial_debt
 
         cycle.payment_due_date = cutting_date + credit_card.payment_due_days.days
-        cycle.cycle_balance = out_amount.sum(:amount) - in_amount.sum(:amount)
+        cycle.cycle_balance = 0
         cycle.historical_balance = cycle.previous_cycle.present? ? cycle.previous_cycle.current_balance : 0.0
-        cycle.current_balance = cycle.cycle_balance + cycle.historical_balance + initial_debt
-        cycle.purchases_made = out_amount.sum(:amount)
-        cycle.payments_received = in_amount.sum(:amount)
+        cycle.current_balance = cycle.historical_balance + initial_debt
+        cycle.purchases_made = 0
+        cycle.payments_received = 0
         cycle.fees = 0.0
 
         # Cálculo correcto del pago mínimo
-        cycle.minimum_payment = calculate_minimum_payment(cycle.current_balance)
+        cycle.minimum_payment = 0
 
         cycle.interest_charges = 0.0
         cycle.fees = 0.0

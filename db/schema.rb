@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_08_27_054329) do
+ActiveRecord::Schema[7.0].define(version: 2025_09_09_231547) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -117,6 +117,18 @@ ActiveRecord::Schema[7.0].define(version: 2025_08_27_054329) do
     t.datetime "updated_at", null: false
     t.index ["parent_category_id"], name: "index_categories_on_parent_category_id"
     t.index ["uuid"], name: "index_categories_on_uuid", unique: true
+  end
+
+  create_table "credit_card_cycle_transactions", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.bigint "transaction_id", null: false
+    t.bigint "credit_card_cycle_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["credit_card_cycle_id"], name: "index_credit_card_cycle_transactions_on_credit_card_cycle_id"
+    t.index ["transaction_id"], name: "index_credit_card_cycle_transactions_on_transaction_id"
+    t.index ["uuid"], name: "index_credit_card_cycle_transactions_on_uuid", unique: true
   end
 
   create_table "credit_card_cycles", force: :cascade do |t|
@@ -334,6 +346,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_08_27_054329) do
   add_foreign_key "budgets", "users", name: "fk_budgets_user"
   add_foreign_key "catalogs", "group_catalogs", name: "fk_catalogs_group_catalog"
   add_foreign_key "categories", "categories", column: "parent_category_id", name: "fk_categories_parent"
+  add_foreign_key "credit_card_cycle_transactions", "credit_card_cycles", name: "fk_ccct_credit_card_cycles"
+  add_foreign_key "credit_card_cycle_transactions", "transactions", name: "fk_ccct_transactions"
   add_foreign_key "credit_card_cycles", "credit_cards", name: "fk_credit_card_cycles_credit_card"
   add_foreign_key "credit_card_cycles", "statuses", name: "fk_credit_card_cycles_status"
   add_foreign_key "credit_cards", "budgets", name: "fk_credit_cards_budget"

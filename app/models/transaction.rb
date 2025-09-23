@@ -17,6 +17,7 @@ class Transaction < ApplicationRecord
   belongs_to :recurring_transaction, optional: true
 
   has_one :transaction_history, dependent: :destroy
+  has_one :credit_card_cycle_transaction, dependent: :destroy
 
   before_validation :set_default_values
 
@@ -27,9 +28,9 @@ class Transaction < ApplicationRecord
     joins(:transaction_type).where(transaction_type: { code: type_code })
   }
   scope :expense, -> { by_transaction_type('expense') }
-  scope :income, -> { by_transaction_type('income').where( related_transaction_id: nil ) }
+  scope :income, -> { by_transaction_type('income').where(related_transaction_id: nil) }
   scope :transfer, -> { by_transaction_type('transfer') }
-  scope :report, -> { by_transaction_type(['expense', 'income']).where( related_transaction_id: nil ) }
+  scope :report, -> { by_transaction_type(%w[expense income]).where(related_transaction_id: nil) }
 
   def set_default_values
     self.currency ||= Currency.default

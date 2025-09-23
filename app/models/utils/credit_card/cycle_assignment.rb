@@ -11,20 +11,6 @@ module Utils
         ::CreditCardServices::CycleRecalculationService.new(self).find_or_create_cycle_for_date(cutting_date)
       end
 
-      def debug_cycle_assignment(transaction)
-        date = transaction.transaction_date
-        type = transaction.transaction_type.code
-        result = determine_cycle_cutting_date_for_transaction(transaction)
-
-        puts "Transaction: #{type} on #{date}"
-        puts "Assigned to cycle: #{result}"
-        puts "Cutting day: #{cutting_day}"
-        puts "Payment due days: #{payment_due_days}"
-        puts '---'
-
-        result
-      end
-
       def determine_cycle_cutting_date_for_transaction(transaction)
         date = transaction.transaction_date
         transaction_type = transaction.transaction_type.code

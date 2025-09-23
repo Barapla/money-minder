@@ -47,11 +47,9 @@ class RecurringTransaction < ApplicationRecord
   end
 
   def should_process_transaction?
-    return false unless self.can_execute?
+    return false unless can_execute?
     return false if next_execution_date > Date.current
-    if max_executions.present? && execution_count >= max_executions
-      return false
-    end
+    return false if max_executions.present? && execution_count >= max_executions
 
     true
   end

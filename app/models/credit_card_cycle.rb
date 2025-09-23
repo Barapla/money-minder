@@ -1,13 +1,16 @@
+# frozen_string_literal: true
+
+# CreditCardCycle model
 class CreditCardCycle < ApplicationRecord
   belongs_to :credit_card
   belongs_to :status
-  # has_many :credit_card_histories, dependent: :destroy
-  # has_many :transactions, through: :credit_card_histories
+  has_many :credit_card_cycle_transactions, dependent: :destroy
+  has_many :transactions, through: :credit_card_histories
 
   validates :cutting_date, presence: true
   validates :payment_due_date, presence: true
 
-  scope :by_status, ->(code) { joins(:status).where(statuses: { code: } ) }
+  scope :by_status, ->(code) { joins(:status).where(statuses: { code: }) }
   scope :open, -> { by_status('open') }
   scope :closed, -> { by_status('closed') }
   scope :active, -> { where(active: true) }
@@ -25,7 +28,7 @@ class CreditCardCycle < ApplicationRecord
   end
 
   def update_credit_card_current_balance
-    self.update(current_balance: cycle_balance + historical_balance)
+    update(current_balance: cycle_balance + historical_balance)
   end
 
   # **MÉTODOS DEL CICLO**
@@ -36,6 +39,8 @@ class CreditCardCycle < ApplicationRecord
     when 'expense'
       process_purchase(transaction)
     end
+
+    credit_card_cycle_transactions.create!(transaction_record: transaction)
   end
 
   def process_payment(transaction)
@@ -46,23 +51,23 @@ class CreditCardCycle < ApplicationRecord
   end
 
   def process_purchase(transaction)
-    puts "Processing purchase of amount: #{transaction.amount} on #{transaction.transaction_date}"
     amount = transaction.amount
     self.purchases_made += amount
     self.cycle_balance += amount
     save!
   end
 
-  def is_current_cycle?
+  def current_cycle?
     Date.current.between?(cutting_date, next_cutting_date - 1.day)
   end
 
-  def is_closed?
+  def closed?
     status.code == 'closed'
   end
 
   def days_until_due
     return 0 if payment_due_date < Date.current
+
     (payment_due_date - Date.current).to_i
   end
 
@@ -83,6 +88,7 @@ class CreditCardCycle < ApplicationRecord
 
   def utilization_at_closing
     return 0 if credit_card.limit_amount.zero?
+
     (current_balance / credit_card.limit_amount * 100).round(2)
   end
 
@@ -95,7 +101,8 @@ class CreditCardCycle < ApplicationRecord
     return 'no_activity' if cycle_balance.zero?
     return 'full_payment' if payments_received >= current_balance
     return 'minimum_payment' if payments_received >= minimum_payment
-    return 'partial_payment' if payments_received > 0
+    return 'partial_payment' if payments_received.positive?
+
     'no_payment'
   end
 
@@ -110,22 +117,6 @@ class CreditCardCycle < ApplicationRecord
   private
 
   def handle_balance_updates
-    puts "Handling balance updates for CreditCardCycle ID: #{id}"
-    puts "Changed attributes: #{changes.keys}" if changes.any?
-    puts "Was new record: #{previously_new_record?}"
-
-    # Ver cambios específicos
-    if saved_change_to_cycle_balance?
-      puts "cycle_balance changed from #{saved_change_to_cycle_balance[0]} to #{saved_change_to_cycle_balance[1]}"
-    end
-
-    if saved_change_to_historical_balance?
-      puts "historical_balance changed from #{saved_change_to_historical_balance[0]} to #{saved_change_to_historical_balance[1]}"
-    end
-
-    if saved_change_to_current_balance?
-      puts "current_balance changed from #{saved_change_to_current_balance[0]} to #{saved_change_to_current_balance[1]}"
-    end
     if balance_changed_or_new_record?
       update_credit_card_current_balance
       push_credit_card_current_balance if should_push_balance?
@@ -153,6 +144,6 @@ class CreditCardCycle < ApplicationRecord
       self.minimum_payment += interest
     end
 
-    self.minimum_payment = [minimum_payment, 25.0].max if current_balance > 0
+    self.minimum_payment = [minimum_payment, 25.0].max if current_balance.positive?
   end
 end

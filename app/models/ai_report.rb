@@ -37,7 +37,7 @@ class AiReport < ApplicationRecord
   scope :failed, -> { where(processing_success: false) }
   scope :by_type, ->(type) { where(report_type: type) }
   scope :recent, -> { order(created_at: :desc) }
-  scope :for_period, ->(start_date, end_date) {
+  scope :for_period, lambda { |start_date, end_date|
     where(analysis_period_start: start_date..end_date)
   }
   scope :not_expired, -> { where('expires_at IS NULL OR expires_at > ?', Time.current) }
@@ -48,7 +48,7 @@ class AiReport < ApplicationRecord
     report_subtype_catalog = Catalog.by_group_and_code('report_subtypes', subtype) if subtype.present?
     return nil unless report_type_catalog
 
-    query = active.successful.where(user_id: user_id, report_type: report_type_catalog)
+    query = active.successful.where(user_id:, report_type: report_type_catalog)
     query = query.where(report_subtype: report_subtype_catalog) if subtype.present?
     latest_report = query.recent.first
 
@@ -72,20 +72,20 @@ class AiReport < ApplicationRecord
     when 'budget_specific'
       # Para futuros reportes específicos por presupuesto
       # Necesitarías pasar el budget_id como parámetro adicional
-      raise NotImplementedError, "Budget specific reports not implemented yet"
+      raise NotImplementedError, 'Budget specific reports not implemented yet'
     when 'spending_analysis'
       # Para futuros análisis de gastos
-      raise NotImplementedError, "Spending analysis reports not implemented yet"
+      raise NotImplementedError, 'Spending analysis reports not implemented yet'
     else
       raise ArgumentError, "Unknown report type: #{report_type}"
     end
-  rescue => e
+  rescue StandardError => e
     Rails.logger.error "Error generating new AI report: #{e.message}"
 
     # Crear un reporte de error como fallback
     AiReport.create!(
-      user_id: user_id,
-      report_type: Catalog.by_group_and_code('report_types', report_type) ,
+      user_id:,
+      report_type: Catalog.by_group_and_code('report_types', report_type),
       report_subtype: Catalog.by_group_and_code('report_subtypes', subtype),
       analysis_period_start: Date.current.beginning_of_month,
       analysis_period_end: Date.current,
@@ -108,12 +108,45 @@ class AiReport < ApplicationRecord
   end
 
   def insights
-    return [] unless parsed_insights.present? && parsed_insights['insights'].present?
-    parsed_insights['insights']
+    return [] unless parsed_insights.present?
+
+    # Nuevo formato de Credit Score Coach
+    return parsed_insights['critical_credit_actions'] if parsed_insights['critical_credit_actions'].present?
+
+    # Formato anterior (fallback)
+    return parsed_insights['insights'] if parsed_insights['insights'].present?
+
+    []
+  end
+
+  # Método adicional para acceder a información específica del nuevo formato
+  def critical_credit_actions
+    return [] unless parsed_insights.present? && parsed_insights['critical_credit_actions'].present?
+
+    parsed_insights['critical_credit_actions']
+  end
+
+  def payment_calendar
+    return [] unless parsed_insights.present? && parsed_insights['payment_calendar'].present?
+
+    parsed_insights['payment_calendar']
+  end
+
+  def utilization_analysis
+    return {} unless parsed_insights.present? && parsed_insights['utilization_analysis'].present?
+
+    parsed_insights['utilization_analysis']
+  end
+
+  def fund_reallocation_strategy
+    return {} unless parsed_insights.present? && parsed_insights['fund_reallocation_strategy'].present?
+
+    parsed_insights['fund_reallocation_strategy']
   end
 
   def summary
     return {} unless parsed_insights.present? && parsed_insights['summary'].present?
+
     parsed_insights['summary']
   end
 
@@ -127,6 +160,7 @@ class AiReport < ApplicationRecord
 
   def processing_duration
     return nil unless processing_time.present?
+
     "#{processing_time}s"
   end
 
@@ -136,6 +170,7 @@ class AiReport < ApplicationRecord
 
   def report_subtype_name
     return nil unless report_subtype.present?
+
     REPORT_SUBTYPES[report_subtype] || report_subtype.humanize
   end
 
@@ -179,28 +214,37 @@ class AiReport < ApplicationRecord
     return unless ai_response_data.present? && processing_success?
 
     begin
-      if ai_response_data.is_a?(Hash) && ai_response_data['content'].present?
-        content = ai_response_data['content']
-
-        # NUEVO: Extraer JSON de markdown code blocks
-        if content.include?('```json')
-          json_match = content.match(/```json\n(.*?)\n```/m)
-          content = json_match[1] if json_match
-        elsif content.include?('```')
-          json_match = content.match(/```\n(.*?)\n```/m)
-          content = json_match[1] if json_match
+      # NUEVO: Manejar la estructura que viene de FinancialInsightsService
+      if ai_response_data.is_a?(Hash)
+        # Si ya está parseado como JSON en 'insights'
+        if ai_response_data['insights'].present?
+          self.parsed_insights = ai_response_data['insights']
+          return
         end
 
-        # Intentar parsear como JSON
-        if content.strip.start_with?('{') || content.strip.start_with?('[')
-          self.parsed_insights = JSON.parse(content.strip)
-        else
-          # Si no es JSON, crear estructura básica
-          self.parsed_insights = {
-            'insights' => [],
-            'summary' => { 'raw_content' => content },
-            'parsing_error' => 'Content is not valid JSON'
-          }
+        # Si viene en 'content' (formato original)
+        if ai_response_data['content'].present?
+          content = ai_response_data['content']
+
+          # Extraer JSON de markdown code blocks
+          if content.include?('```json')
+            json_match = content.match(/```json\n(.*?)\n```/m)
+            content = json_match[1] if json_match
+          elsif content.include?('```')
+            json_match = content.match(/```\n(.*?)\n```/m)
+            content = json_match[1] if json_match
+          end
+
+          # Parsear JSON
+          self.parsed_insights = if content.strip.start_with?('{') || content.strip.start_with?('[')
+                                   JSON.parse(content.strip)
+                                 else
+                                   {
+                                     'insights' => [],
+                                     'summary' => { 'raw_content' => content },
+                                     'parsing_error' => 'Content is not valid JSON'
+                                   }
+                                 end
         end
       end
     rescue JSON::ParserError => e

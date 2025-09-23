@@ -5,9 +5,7 @@ namespace :credit_cards do
   desc 'Migrar datos existentes de credit_cards a credit_card_cycles'
   task migrate_to_cycles: :environment do
     puts '🚀 Iniciando migración de datos de tarjetas de crédito...'
-
-    card = CreditCard.last
-    begin
+    CreditCard.all.each do |card|
       update_cycles_for_each_transaction(card)
       puts "✅ Tarjeta #{card.id} migrada correctamente"
     rescue StandardError => e
@@ -32,6 +30,9 @@ namespace :credit_cards do
         c.payments_received = 0
         c.status = Status.find_by(code: 'open')
       end
+      previous_cycle = cycle.previous_cycle
+      cycle.historical_balance = previous_cycle ? previous_cycle.current_balance : card.initial_debt
+      cycle.save!
 
       # Procesar la transacción individual
       cycle.process_transaction(tx)

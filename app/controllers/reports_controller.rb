@@ -2,14 +2,14 @@
 
 # ReportsController
 class ReportsController < ApplicationController
-  before_action :set_report_filter, only: [:flow_chart, :distribution_chart, :main_data, :comparison_chart]
+  before_action :set_report_filter, only: %i[flow_chart distribution_chart main_data comparison_chart]
 
   def index
-    @report_filter = ReportFilter.new()
+    @report_filter = ReportFilter.new
 
     @budget_datasets = @report_filter.flow_dataset
-    @earned_transaction_types_datasets = @report_filter.distribution_dataset("income")
-    @spent_transaction_types_datasets = @report_filter.distribution_dataset("expense")
+    @earned_transaction_types_datasets = @report_filter.distribution_dataset('income')
+    @spent_transaction_types_datasets = @report_filter.distribution_dataset('expense')
     @report_datasets = @report_filter.report_dataset
     @comparison_datasets = @report_filter.comparison_dataset
 
@@ -84,7 +84,7 @@ class ReportsController < ApplicationController
   private
 
   def report_filter_params
-    params.require(:report).permit(:id, filters: [:start_date, :end_date, :period, :budgets, :transaction_type])
+    params.require(:report).permit(:id, filters: %i[start_date end_date period budgets transaction_type])
 
     {
       start_date: params.dig(:report, :filters, :start_date),
@@ -99,30 +99,28 @@ class ReportsController < ApplicationController
   end
 
   def get_or_generate_ai_report
-    begin
-      # Obtener el reporte más reciente o generar uno nuevo si está expirado
-      report = AiReport.latest_or_generate(
-        current_user.id,
-        'general',
-        'monthly'
-      )
+    # Obtener el reporte más reciente o generar uno nuevo si está expirado
+    report = AiReport.latest_or_generate(
+      current_user.id,
+      'general',
+      'monthly'
+    )
 
-      # Log para debugging
-      Rails.logger.info "AI Report loaded: #{report.uuid} (created: #{report.created_at})"
+    # Log para debugging
+    Rails.logger.info "AI Report loaded: #{report.uuid} (created: #{report.created_at})"
 
-      report
-    rescue => e
-      Rails.logger.error "Error loading AI report: #{e.message}"
+    report
+  rescue StandardError => e
+    Rails.logger.error "Error loading AI report: #{e.message}"
 
-      # Crear un reporte vacío como fallback para que la vista no explote
-      OpenStruct.new(
-        insights: [],
-        summary: {},
-        processing_success: false,
-        error_message: "Error cargando insights de IA: #{e.message}",
-        created_at: Time.current,
-        uuid: 'error-fallback'
-      )
-    end
+    # Crear un reporte vacío como fallback para que la vista no explote
+    OpenStruct.new(
+      insights: [],
+      summary: {},
+      processing_success: false,
+      error_message: "Error cargando insights de IA: #{e.message}",
+      created_at: Time.current,
+      uuid: 'error-fallback'
+    )
   end
 end

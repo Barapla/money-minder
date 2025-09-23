@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# ClaudeService
 class ClaudeService
   include HTTParty
 
@@ -14,9 +17,9 @@ class ClaudeService
 
     response = self.class.post(
       '/v1/messages',
-      headers: headers,
+      headers:,
       body: {
-        model: model,
+        model:,
         max_tokens: 4000,
         messages: [
           {
@@ -44,9 +47,7 @@ class ClaudeService
     message_parts = []
 
     # Agregar contexto si existe
-    if context.present?
-      message_parts << "Contexto: #{context}"
-    end
+    message_parts << "Contexto: #{context}" if context.present?
 
     # Agregar datos en formato JSON si existen
     if data.present?
@@ -63,9 +64,12 @@ class ClaudeService
   def handle_response(response)
     case response.code
     when 200
+      content = response.parsed_response.dig('content', 0, 'text')
+
       {
         success: true,
-        content: response.parsed_response.dig('content', 0, 'text'),
+        content:,
+        parsed_json: extract_and_parse_json(content),
         usage: response.parsed_response['usage']
       }
     when 400
@@ -92,5 +96,33 @@ class ClaudeService
         details: response.parsed_response
       }
     end
+  end
+
+  def extract_and_parse_json(content)
+    # Estrategia 1: Buscar JSON directo
+    return parse_json_safely(content.strip) if content.strip.start_with?('{')
+
+    # Estrategia 2: Extraer de markdown
+    json_match = content.match(/```json\s*(\{.*\})\s*```/m)
+    return parse_json_safely(json_match[1]) if json_match
+
+    # Estrategia 3: Buscar primer { hasta último }
+    start_idx = content.index('{')
+    end_idx = content.rindex('}')
+
+    if start_idx && end_idx && start_idx < end_idx
+      json_content = content[start_idx..end_idx]
+      return parse_json_safely(json_content)
+    end
+
+    nil
+  end
+
+  def parse_json_safely(content)
+    JSON.parse(content)
+  rescue JSON::ParserError => e
+    Rails.logger.error "JSON Parse Error: #{e.message}"
+    Rails.logger.error "Content: #{content[0..500]}..."
+    nil
   end
 end
