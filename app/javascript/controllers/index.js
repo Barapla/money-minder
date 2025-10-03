@@ -7,6 +7,12 @@ import { application } from "./application"
 import Budgets__PreviewController from "./budgets/preview_controller"
 application.register("budgets--preview", Budgets__PreviewController)
 
+// import CalendarController from "./calendar_controller"
+// application.register("calendar", CalendarController)
+
+import CalendarLoaderController from "./calendar_loader_controller"
+application.register("calendar-loader", CalendarLoaderController)
+
 import Charts__ComparisonController from "./charts/comparison_controller"
 application.register("charts--comparison", Charts__ComparisonController)
 

@@ -316,6 +316,38 @@
           "code": "overdue"
         }
       ]
+    },
+    {
+      "name": "Tipos de frecuencia",
+      "code": "frequency_types",
+      "catalogs": [
+        {
+          "value": "Diaria",
+          "code": "daily"
+        },
+        {
+          "value": "Semanal",
+          "code": "weekly"
+        },
+        {
+          "value": "Mensual",
+          "code": "monthly"
+        },
+        {
+          "value": "Anual",
+          "code": "yearly"
+        }
+      ]
+    },
+    {
+      "name": "Tipos de recurrencia",
+      "code": "recurrenceable_types",
+      "catalogs": [
+        {
+          "value": "Pago obligatorio",
+          "code": "obligatory_payment"
+        }
+      ]
     }
   ]
 }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_09_09_231547) do
+ActiveRecord::Schema[7.0].define(version: 2025_09_25_021635) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -193,6 +193,46 @@ ActiveRecord::Schema[7.0].define(version: 2025_09_09_231547) do
     t.index ["uuid"], name: "index_group_catalogs_on_uuid", unique: true
   end
 
+  create_table "obligatory_payments", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.bigint "user_id", null: false
+    t.string "name"
+    t.decimal "amount"
+    t.bigint "category_id", null: false
+    t.text "description"
+    t.bigint "color_id", null: false
+    t.bigint "icon_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_obligatory_payments_on_category_id"
+    t.index ["color_id"], name: "index_obligatory_payments_on_color_id"
+    t.index ["icon_id"], name: "index_obligatory_payments_on_icon_id"
+    t.index ["user_id"], name: "index_obligatory_payments_on_user_id"
+    t.index ["uuid"], name: "index_obligatory_payments_on_uuid", unique: true
+  end
+
+  create_table "recurrences", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.bigint "recurrenceable_type_id", null: false
+    t.string "recurrenceable_type"
+    t.bigint "recurrenceable_id"
+    t.bigint "frequency_type_id", null: false
+    t.integer "frequency_value"
+    t.integer "day_of_week"
+    t.integer "day_of_month"
+    t.integer "month_of_year"
+    t.date "start_date"
+    t.date "end_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["frequency_type_id"], name: "index_recurrences_on_frequency_type_id"
+    t.index ["recurrenceable_type", "recurrenceable_id"], name: "index_recurrences_on_recurrenceable"
+    t.index ["recurrenceable_type_id"], name: "index_recurrences_on_recurrenceable_type_id"
+    t.index ["uuid"], name: "index_recurrences_on_uuid", unique: true
+  end
+
   create_table "recurring_transactions", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
@@ -351,6 +391,12 @@ ActiveRecord::Schema[7.0].define(version: 2025_09_09_231547) do
   add_foreign_key "credit_card_cycles", "credit_cards", name: "fk_credit_card_cycles_credit_card"
   add_foreign_key "credit_card_cycles", "statuses", name: "fk_credit_card_cycles_status"
   add_foreign_key "credit_cards", "budgets", name: "fk_credit_cards_budget"
+  add_foreign_key "obligatory_payments", "catalogs", column: "category_id", name: "fk_obligatory_payments_category"
+  add_foreign_key "obligatory_payments", "catalogs", column: "color_id", name: "fk_obligatory_payments_color"
+  add_foreign_key "obligatory_payments", "catalogs", column: "icon_id", name: "fk_obligatory_payments_icon"
+  add_foreign_key "obligatory_payments", "users", name: "fk_obligatory_payments_user"
+  add_foreign_key "recurrences", "catalogs", column: "frequency_type_id", name: "fk_recurrences_frequency_type"
+  add_foreign_key "recurrences", "catalogs", column: "recurrenceable_type_id", name: "fk_recurrences_recurrenceable_type"
   add_foreign_key "recurring_transactions", "users", name: "fk_recurring_transactions_user"
   add_foreign_key "savings_funds", "budgets", name: "fk_savings_funds_budget"
   add_foreign_key "savings_funds", "catalogs", column: "account_type_id", name: "fk_savings_funds_account_type"

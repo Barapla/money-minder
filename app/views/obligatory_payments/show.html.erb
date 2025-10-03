@@ -1,0 +1,10 @@
+<p style="color: green"><%= notice %></p>
+
+<%= render @obligatory_payment %>
+
+<div>
+  <%= link_to "Edit this obligatory payment", edit_obligatory_payment_path(@obligatory_payment) %> |
+  <%= link_to "Back to obligatory payments", obligatory_payments_path %>
+
+  <%= button_to "Destroy this obligatory payment", @obligatory_payment, method: :delete %>
+</div>

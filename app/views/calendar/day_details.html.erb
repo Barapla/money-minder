@@ -1,0 +1,83 @@
+<%= turbo_frame_tag "day_details" do %>
+    <% if params[:date] %>
+        <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+            <!-- Panel de Transacciones del Día Seleccionado -->
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-white flex items-center gap-2">
+                    <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v8a2 2 0 002 2h2l8-8-8-8z"></path>
+                    </svg>
+                    Transacciones del <span id="selectedDate"><%= I18n.l(@date, format: '%d de %B') %></span>
+                    <span id="dayBalance" class="ml-4 px-3 py-1 text-sm rounded-lg"></span>
+                </h3>
+                <%= render Buttons::LinkComponent.new(content: '
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>  
+                    ', href: day_details_calendar_index_path, 
+                    options: { 
+                        class: "text-bunker-400 hover:text-white", 
+                        data: { 
+                            turbo_frame: "day_details"
+                        } 
+                    })
+                %>
+            </div>
+
+            <!-- Estadísticas del día -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="bg-bunker-800/40 border border-bunker-700/50 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-emerald-400" id="dayIncome"><%= @earned_total > 0 ? '+' : '' %>$<%= @earned_total.round(2) %></div>
+                    <div class="text-sm text-bunker-300">Ingresos</div>
+                </div>
+                <div class="bg-bunker-800/40 border border-bunker-700/50 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-red-400" id="dayExpenses"><%= @expensed_total > 0 ? '-' : '' %>$<%= @expensed_total.round(2) %></div>
+                    <div class="text-sm text-bunker-300">Gastos</div>
+                </div>
+                <div class="bg-bunker-800/40 border border-bunker-700/50 rounded-xl p-4 text-center">
+                    <div class="text-lg font-bold text-white" id="dayTransactionCount"><%= @transactions.count %></div>
+                    <div class="text-sm text-bunker-300">Transacciones</div>
+                </div>
+            </div>
+
+            <div id="daytransactions" class="space-y-4">
+                <% if @transactions.any? %>
+                    <% @transactions.each do |transaction| %>
+                        <div class="bg-bunker-800/40 border border-bunker-700/50 rounded-xl p-4 flex items-center justify-between hover:bg-bunker-800/60 transition-colors">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl 
+                                <%= 
+                                    transaction.color.code == 'emerald' ? 'bg-emerald-500/20' : 
+                                    transaction.color.code == 'red' ? 'bg-red-500/20' : 
+                                    transaction.color.code == 'yellow' ? 'bg-yellow-500/20' : 
+                                    transaction.color.code == 'blue' ? 'bg-blue-500/20' : 'bg-pink-500/20'%>
+                                ">
+                                    <%= transaction.icon.value %>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-white"><%= transaction.description %></h4>
+                                    <p class="text-sm text-bunker-300"><%= transaction.budget.name %> - <%= transaction.category.name %></p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-lg <%= transaction.transaction_type.code == "income" ? 'text-emerald-400' : 'text-red-400' %>">
+                                    <%= transaction.transaction_type.code == "income" ? '+' : '-' %>$<%= transaction.amount.round(2) %>
+                                </div>
+                                <div class="text-xs text-bunker-400">
+                                    <%= transaction.transaction_type.code == 'income' ? 'Ingreso' : 'Gasto' %>
+                                </div>
+                            </div>
+                        </div>
+                    <% end %>
+                <% else %>
+                    <div class="text-center py-8 text-bunker-400">
+                        <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v8a2 2 0 002 2h2l8-8-8-8z"></path>
+                        </svg>
+                        No hay transacciones para este día
+                    </div>
+                <% end %>
+            </div>
+        </div>
+    <% end %>
+<% end %>

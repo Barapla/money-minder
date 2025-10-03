@@ -1,0 +1,346 @@
+<div class="max-w-6xl mx-auto">
+  <!-- Header del Calendario -->
+    <div class="bg-gradient-to-r from-bunker-900/80 to-purple-900/80 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold text-white mb-2">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">📅 Calendario Financiero</span>
+                </h1>
+                <p class="text-bunker-300">Gestiona tus recordatorios de pagos y finanzas</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="addReminder()" class="px-4 py-2 bg-bunker-800/60 hover:bg-bunker-700/60 text-white border border-bunker-700/50 hover:border-bunker-600/50 rounded-xl font-medium transition-all duration-200 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Nuevo Recordatorio
+                </button>
+                <button onclick="exportCalendar()" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-6 py-2 rounded-xl font-medium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Exportar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegación del Calendario -->
+    <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 mb-8">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-4">
+                <button onclick="previousMonth()" class="p-2 bg-bunker-800/60 hover:bg-bunker-700/60 text-white border border-bunker-700/50 rounded-xl transition-all duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <h2 id="currentMonth" class="text-2xl font-bold text-white">Octubre 2024</h2>
+                <button onclick="nextMonth()" class="p-2 bg-bunker-800/60 hover:bg-bunker-700/60 text-white border border-bunker-700/50 rounded-xl transition-all duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="todayView()" class="px-4 py-2 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-xl font-medium transition-all duration-200">
+                    Hoy
+                </button>
+                <button onclick="monthView()" class="px-4 py-2 bg-bunker-800/60 hover:bg-purple-500/20 text-white border border-bunker-700/50 rounded-xl font-medium transition-all duration-200">
+                    Mes
+                </button>
+            </div>
+        </div>
+
+        <!-- Grid del Calendario -->
+        <div class="grid grid-cols-7 gap-1 mb-4">
+            <!-- Headers de días -->
+            <div class="p-3 text-center text-sm font-medium text-bunker-300">Dom</div>
+            <div class="p-3 text-center text-sm font-medium text-bunker-300">Lun</div>
+            <div class="p-3 text-center text-sm font-medium text-bunker-300">Mar</div>
+            <div class="p-3 text-center text-sm font-medium text-bunker-300">Mié</div>
+            <div class="p-3 text-center text-sm font-medium text-bunker-300">Jue</div>
+            <div class="p-3 text-center text-sm font-medium text-bunker-300">Vie</div>
+            <div class="p-3 text-center text-sm font-medium text-bunker-300">Sáb</div>
+        </div>
+
+        <!-- Días del calendario -->
+        <div id="calendarGrid" class="grid grid-cols-7 gap-1">
+            <!-- Los días se generarán dinámicamente -->
+        </div>
+    </div>
+
+    <!-- Panel de Recordatorios del Día Seleccionado -->
+    <div id="dayDetails" class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 hidden">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-semibold text-white flex items-center gap-2">
+                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
+                </svg>
+                Recordatorios para <span id="selectedDate">15 de Octubre</span>
+            </h3>
+            <button onclick="closeDayDetails()" class="text-bunker-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div id="dayReminders" class="space-y-4">
+            <!-- Los recordatorios se cargarán aquí -->
+        </div>
+        <button onclick="addReminderForDay()" class="mt-6 w-full py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Agregar Recordatorio
+        </button>
+    </div>
+
+    <!-- Resumen de Próximos Pagos -->
+    <div class="grid md:grid-cols-3 gap-6 mt-8">
+        <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <span class="text-xs text-bunker-400 font-medium">VENCEN HOY</span>
+            </div>
+            <div class="text-3xl font-bold text-red-400 mb-1">3</div>
+            <div class="text-sm text-bunker-300">Pagos pendientes</div>
+        </div>
+
+        <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <span class="text-xs text-bunker-400 font-medium">PRÓXIMOS 7 DÍAS</span>
+            </div>
+            <div class="text-3xl font-bold text-yellow-400 mb-1">8</div>
+            <div class="text-sm text-bunker-300">Recordatorios activos</div>
+        </div>
+
+        <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <span class="text-xs text-bunker-400 font-medium">COMPLETADOS</span>
+            </div>
+            <div class="text-3xl font-bold text-emerald-400 mb-1">12</div>
+            <div class="text-sm text-bunker-300">Este mes</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Datos de ejemplo de recordatorios
+    const reminders = {
+        '2025-09-15': [
+            { id: 1, title: 'Pago de Tarjeta de Crédito', amount: '$1,200', type: 'expense', priority: 'high', completed: false },
+            { id: 2, title: 'Cobro de Freelance', amount: '$800', type: 'income', priority: 'medium', completed: true },
+            { id: 3, title: 'Pago de Servicios', amount: '$300', type: 'expense', priority: 'low', completed: false },
+            { id: 4, title: 'Pago de Suscripción', amount: '$15', type: 'expense', priority: 'low', completed: false },
+            { id: 5, title: 'Cobro de Venta', amount: '$150', type: 'income', priority: 'medium', completed: false }
+        ],
+        '2025-09-20': [
+            { id: 3, title: 'Pago de Renta', amount: '$2,500', type: 'expense', priority: 'high', completed: false },
+            { id: 4, title: 'Factura de Internet', amount: '$45', type: 'expense', priority: 'low', completed: false }
+        ],
+        '2025-09-25': [
+            { id: 5, title: 'Pago de Seguros', amount: '$350', type: 'expense', priority: 'medium', completed: false }
+        ],
+        '2025-09-28': [
+            { id: 6, title: 'Salario', amount: '$4,000', type: 'income', priority: 'high', completed: false }
+        ]
+    };
+
+    let currentDate = new Date();
+    let selectedDate = null;
+
+    // Función para generar el calendario
+    function generateCalendar() {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        
+        // Actualizar título del mes
+        const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+        
+        // Calcular primer día del mes y número de días
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        const calendarGrid = document.getElementById('calendarGrid');
+        calendarGrid.innerHTML = '';
+        
+        // Días vacíos del mes anterior
+        for (let i = 0; i < firstDay; i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.className = 'h-24 p-2 border border-bunker-800/30 rounded-lg';
+            calendarGrid.appendChild(emptyDay);
+        }
+        
+        // Días del mes actual
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dayElement = document.createElement('div');
+            const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+            const hasReminders = reminders[dateStr];
+            
+            console.log(dateStr, hasReminders);
+
+            dayElement.className = `h-24 p-2 border border-bunker-800/30 rounded-lg cursor-pointer transition-all duration-200 hover:bg-bunker-800/40 ${
+                isToday ? 'bg-purple-500/20 border-purple-500/30' : 'bg-bunker-800/20'
+            }`;
+            
+            dayElement.innerHTML = `
+                <div class="flex justify-between items-start mb-1">
+                    <span class="text-sm font-medium ${isToday ? 'text-purple-300' : 'text-white'}">${day}</span>
+                    ${hasReminders ? `<span class="w-2 h-2 bg-purple-400 rounded-full"></span>` : ''}
+                </div>
+                <div class="space-y-1">
+                    ${hasReminders ? hasReminders.slice(0, 2).map(reminder => `
+                        <div class="text-xs px-2 py-1 rounded ${
+                            reminder.type === 'income' ? 'bg-emerald-500/20 text-emerald-300' : 
+                            reminder.priority === 'high' ? 'bg-red-500/20 text-red-300' : 
+                            reminder.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-300' : 
+                            'bg-blue-500/20 text-blue-300'
+                        } truncate">
+                            ${reminder.title}
+                        </div>
+                    `).join('') : ''}
+                    ${hasReminders && hasReminders.length > 2 ? `
+                        <div class="text-xs text-bunker-400">+${hasReminders.length - 2} más</div>
+                    ` : ''}
+                </div>
+            `;
+            
+            dayElement.addEventListener('click', () => showDayDetails(dateStr, day));
+            calendarGrid.appendChild(dayElement);
+        }
+    }
+
+    // Mostrar detalles del día
+    function showDayDetails(dateStr, day) {
+        selectedDate = dateStr;
+        const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        
+        document.getElementById('selectedDate').textContent = 
+            `${day} de ${monthNames[currentDate.getMonth()]}`;
+        
+        const dayReminders = document.getElementById('dayReminders');
+        const dayRemindersList = reminders[dateStr] || [];
+        
+        if (dayRemindersList.length === 0) {
+            dayReminders.innerHTML = `
+                <div class="text-center py-8 text-bunker-400">
+                    <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    No hay recordatorios para este día
+                </div>
+            `;
+        } else {
+            dayReminders.innerHTML = dayRemindersList.map(reminder => `
+                <div class="bg-bunker-800/40 border border-bunker-700/50 rounded-xl p-4 flex items-center justify-between ${reminder.completed ? 'opacity-60' : ''}">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center ${
+                            reminder.type === 'income' ? 'bg-emerald-500/20' : 
+                            reminder.priority === 'high' ? 'bg-red-500/20' : 
+                            reminder.priority === 'medium' ? 'bg-yellow-500/20' : 
+                            'bg-blue-500/20'
+                        }">
+                            ${reminder.type === 'income' ? 
+                                '<svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>' : 
+                                '<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>'
+                            }
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-white ${reminder.completed ? 'line-through' : ''}">${reminder.title}</h4>
+                            <p class="text-sm text-bunker-300">${reminder.amount}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-1 text-xs rounded-lg ${
+                            reminder.priority === 'high' ? 'bg-red-500/20 text-red-300' : 
+                            reminder.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-300' : 
+                            'bg-blue-500/20 text-blue-300'
+                        }">
+                            ${reminder.priority === 'high' ? 'Alta' : reminder.priority === 'medium' ? 'Media' : 'Baja'}
+                        </span>
+                        <button onclick="toggleReminder(${reminder.id})" class="p-2 rounded-lg ${reminder.completed ? 'bg-emerald-500/20 text-emerald-400' : 'bg-bunker-700/50 text-bunker-400'} hover:bg-emerald-500/30 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        document.getElementById('dayDetails').classList.remove('hidden');
+        document.getElementById('dayDetails').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Funciones de navegación
+    function previousMonth() {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        generateCalendar();
+    }
+
+    function nextMonth() {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        generateCalendar();
+    }
+
+    function todayView() {
+        currentDate = new Date();
+        generateCalendar();
+    }
+
+    function closeDayDetails() {
+        document.getElementById('dayDetails').classList.add('hidden');
+    }
+
+    function toggleReminder(id) {
+        // Buscar y actualizar el recordatorio
+        for (const dateStr in reminders) {
+            const reminder = reminders[dateStr].find(r => r.id === id);
+            if (reminder) {
+                reminder.completed = !reminder.completed;
+                break;
+            }
+        }
+        
+        // Regenerar vista si hay un día seleccionado
+        if (selectedDate) {
+            const day = parseInt(selectedDate.split('-')[2]);
+            showDayDetails(selectedDate, day);
+        }
+        generateCalendar();
+    }
+
+    function addReminder() {
+        alert('Función para agregar recordatorio - aquí se abriría un modal');
+    }
+
+    function addReminderForDay() {
+        alert(`Agregar recordatorio para ${selectedDate}`);
+    }
+
+    function exportCalendar() {
+        alert('Función para exportar calendario');
+    }
+
+    // Inicializar calendario
+    generateCalendar();
+</script>

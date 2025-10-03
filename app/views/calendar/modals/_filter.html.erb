@@ -1,0 +1,217 @@
+<!-- Tipos de Transacciones -->
+<div class="bg-bunker-800/30 rounded-2xl p-6">
+    <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+        </svg>
+        Tipos de Transacciones
+    </h3>
+    
+    <div class="grid grid-cols-3 gap-4">
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only" checked>
+            <div class="px-4 py-3 bg-bunker-800/60 border border-bunker-700 rounded-xl cursor-pointer transition-all peer-checked:bg-emerald-500/20 peer-checked:border-emerald-500/50 peer-checked:text-emerald-300 hover:border-bunker-600">
+                <div class="flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                    </svg>
+                    <span class="font-medium">Ingresos</span>
+                </div>
+                <p class="text-xs text-center mt-1 text-bunker-400 peer-checked:text-emerald-400">Entradas de dinero</p>
+            </div>
+        </label>
+        
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only" checked>
+            <div class="px-4 py-3 bg-bunker-800/60 border border-bunker-700 rounded-xl cursor-pointer transition-all peer-checked:bg-red-500/20 peer-checked:border-red-500/50 peer-checked:text-red-300 hover:border-bunker-600">
+                <div class="flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path>
+                    </svg>
+                    <span class="font-medium">Gastos</span>
+                </div>
+                <p class="text-xs text-center mt-1 text-bunker-400 peer-checked:text-red-400">Salidas de dinero</p>
+            </div>
+        </label>
+        
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only">
+            <div class="px-4 py-3 bg-bunker-800/60 border border-bunker-700 rounded-xl cursor-pointer transition-all peer-checked:bg-blue-500/20 peer-checked:border-blue-500/50 peer-checked:text-blue-300 hover:border-bunker-600">
+                <div class="flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                    </svg>
+                    <span class="font-medium">Transferencias</span>
+                </div>
+                <p class="text-xs text-center mt-1 text-bunker-400 peer-checked:text-blue-400">Entre cuentas</p>
+            </div>
+        </label>
+    </div>
+</div>
+
+<!-- Categorías de Transacciones -->
+<div class="bg-bunker-800/30 rounded-2xl p-6">
+    <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+        </svg>
+        Categorías de Transacciones
+    </h3>
+    
+    <div class="grid grid-cols-4 lg:grid-cols-6 gap-3">
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only" checked>
+            <div class="px-3 py-2 bg-bunker-800/60 border border-bunker-700 rounded-lg cursor-pointer transition-all peer-checked:bg-purple-500/20 peer-checked:border-purple-500/50 peer-checked:text-purple-300 hover:border-bunker-600 text-center">
+                <div class="text-2xl mb-1">🍔</div>
+                <span class="text-xs font-medium">Comida</span>
+            </div>
+        </label>
+        
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only" checked>
+            <div class="px-3 py-2 bg-bunker-800/60 border border-bunker-700 rounded-lg cursor-pointer transition-all peer-checked:bg-purple-500/20 peer-checked:border-purple-500/50 peer-checked:text-purple-300 hover:border-bunker-600 text-center">
+                <div class="text-2xl mb-1">🚗</div>
+                <span class="text-xs font-medium">Transporte</span>
+            </div>
+        </label>
+        
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only" checked>
+            <div class="px-3 py-2 bg-bunker-800/60 border border-bunker-700 rounded-lg cursor-pointer transition-all peer-checked:bg-purple-500/20 peer-checked:border-purple-500/50 peer-checked:text-purple-300 hover:border-bunker-600 text-center">
+                <div class="text-2xl mb-1">🎮</div>
+                <span class="text-xs font-medium">Entretenimiento</span>
+            </div>
+        </label>
+        
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only" checked>
+            <div class="px-3 py-2 bg-bunker-800/60 border border-bunker-700 rounded-lg cursor-pointer transition-all peer-checked:bg-purple-500/20 peer-checked:border-purple-500/50 peer-checked:text-purple-300 hover:border-bunker-600 text-center">
+                <div class="text-2xl mb-1">🏠</div>
+                <span class="text-xs font-medium">Hogar</span>
+            </div>
+        </label>
+        
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only" checked>
+            <div class="px-3 py-2 bg-bunker-800/60 border border-bunker-700 rounded-lg cursor-pointer transition-all peer-checked:bg-purple-500/20 peer-checked:border-purple-500/50 peer-checked:text-purple-300 hover:border-bunker-600 text-center">
+                <div class="text-2xl mb-1">💊</div>
+                <span class="text-xs font-medium">Salud</span>
+            </div>
+        </label>
+        
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only" checked>
+            <div class="px-3 py-2 bg-bunker-800/60 border border-bunker-700 rounded-lg cursor-pointer transition-all peer-checked:bg-purple-500/20 peer-checked:border-purple-500/50 peer-checked:text-purple-300 hover:border-bunker-600 text-center">
+                <div class="text-2xl mb-1">🎓</div>
+                <span class="text-xs font-medium">Educación</span>
+            </div>
+        </label>
+        
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only" checked>
+            <div class="px-3 py-2 bg-bunker-800/60 border border-bunker-700 rounded-lg cursor-pointer transition-all peer-checked:bg-purple-500/20 peer-checked:border-purple-500/50 peer-checked:text-purple-300 hover:border-bunker-600 text-center">
+                <div class="text-2xl mb-1">🛍️</div>
+                <span class="text-xs font-medium">Compras</span>
+            </div>
+        </label>
+        
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only" checked>
+            <div class="px-3 py-2 bg-bunker-800/60 border border-bunker-700 rounded-lg cursor-pointer transition-all peer-checked:bg-purple-500/20 peer-checked:border-purple-500/50 peer-checked:text-purple-300 hover:border-bunker-600 text-center">
+                <div class="text-2xl mb-1">💼</div>
+                <span class="text-xs font-medium">Trabajo</span>
+            </div>
+        </label>
+        
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only" checked>
+            <div class="px-3 py-2 bg-bunker-800/60 border border-bunker-700 rounded-lg cursor-pointer transition-all peer-checked:bg-purple-500/20 peer-checked:border-purple-500/50 peer-checked:text-purple-300 hover:border-bunker-600 text-center">
+                <div class="text-2xl mb-1">📱</div>
+                <span class="text-xs font-medium">Servicios</span>
+            </div>
+        </label>
+        
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only" checked>
+            <div class="px-3 py-2 bg-bunker-800/60 border border-bunker-700 rounded-lg cursor-pointer transition-all peer-checked:bg-purple-500/20 peer-checked:border-purple-500/50 peer-checked:text-purple-300 hover:border-bunker-600 text-center">
+                <div class="text-2xl mb-1">✈️</div>
+                <span class="text-xs font-medium">Viajes</span>
+            </div>
+        </label>
+        
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only" checked>
+            <div class="px-3 py-2 bg-bunker-800/60 border border-bunker-700 rounded-lg cursor-pointer transition-all peer-checked:bg-purple-500/20 peer-checked:border-purple-500/50 peer-checked:text-purple-300 hover:border-bunker-600 text-center">
+                <div class="text-2xl mb-1">💰</div>
+                <span class="text-xs font-medium">Inversiones</span>
+            </div>
+        </label>
+        
+        <label class="relative">
+            <input type="checkbox" class="peer sr-only" checked>
+            <div class="px-3 py-2 bg-bunker-800/60 border border-bunker-700 rounded-lg cursor-pointer transition-all peer-checked:bg-purple-500/20 peer-checked:border-purple-500/50 peer-checked:text-purple-300 hover:border-bunker-600 text-center">
+                <div class="text-2xl mb-1">🎁</div>
+                <span class="text-xs font-medium">Otros</span>
+            </div>
+        </label>
+    </div>
+    
+    <div class="mt-3 flex gap-3">
+        <button type="button" class="text-xs text-purple-400 hover:text-purple-300">Seleccionar todas</button>
+        <span class="text-bunker-600">•</span>
+        <button type="button" class="text-xs text-purple-400 hover:text-purple-300">Deseleccionar todas</button>
+    </div>
+</div>
+
+<!-- Rango de Montos -->
+<div class="bg-bunker-800/30 rounded-2xl p-6">
+    <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        Rango de Montos
+    </h3>
+    
+    <div class="grid lg:grid-cols-2 gap-6">
+        <div>
+            <label class="block text-sm font-medium text-bunker-200 mb-2">
+                Monto mínimo
+            </label>
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-bunker-400">$</span>
+                <input type="number" placeholder="0.00" step="0.01" 
+                        class="w-full pl-8 pr-4 py-2 bg-bunker-800/60 border border-bunker-700 rounded-xl text-white placeholder-bunker-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all">
+            </div>
+            <p class="text-xs text-bunker-400 mt-1">Transacciones mayores o iguales a este monto</p>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-medium text-bunker-200 mb-2">
+                Monto máximo
+            </label>
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-bunker-400">$</span>
+                <input type="number" placeholder="Sin límite" step="0.01" 
+                        class="w-full pl-8 pr-4 py-2 bg-bunker-800/60 border border-bunker-700 rounded-xl text-white placeholder-bunker-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all">
+            </div>
+            <p class="text-xs text-bunker-400 mt-1">Transacciones menores o iguales a este monto</p>
+        </div>
+    </div>
+    
+    <!-- Botones rápidos de montos -->
+    <div class="mt-4 flex flex-wrap gap-2">
+        <button type="button" class="px-3 py-1.5 bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-purple-300 border border-bunker-700/50 hover:border-purple-500/30 rounded-lg text-sm transition-all duration-200">
+            Menos de $100
+        </button>
+        <button type="button" class="px-3 py-1.5 bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-purple-300 border border-bunker-700/50 hover:border-purple-500/30 rounded-lg text-sm transition-all duration-200">
+            $100 - $500
+        </button>
+        <button type="button" class="px-3 py-1.5 bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-purple-300 border border-bunker-700/50 hover:border-purple-500/30 rounded-lg text-sm transition-all duration-200">
+            $500 - $1,000
+        </button>
+        <button type="button" class="px-3 py-1.5 bg-bunker-800/60 hover:bg-purple-500/20 text-bunker-300 hover:text-purple-300 border border-bunker-700/50 hover:border-purple-500/30 rounded-lg text-sm transition-all duration-200">
+            Más de $1,000
+        </button>
+    </div>
+</div>
+            

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
+  resources :obligatory_payments
   devise_for :users, controllers: {
     sessions: 'users/sessions',
     registrations: 'users/registrations',
@@ -31,6 +32,14 @@ Rails.application.routes.draw do
   resources :recurring_transactions, only: %i[create] do
     collection do
       get :new_modal
+    end
+  end
+
+  resources :calendar, only: [:index] do
+    collection do
+      post :set_month
+      get :day_details
+      get :advanced_search
     end
   end
 

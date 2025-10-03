@@ -1,0 +1,53 @@
+<div class="grid md:grid-cols-4 gap-6 mt-8">
+    <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+            </div>
+            <span class="text-xs text-bunker-400 font-medium">INGRESOS DEL MES</span>
+        </div>
+        <div class="text-3xl font-bold text-emerald-400 mb-1" id="monthlyIncome"><%= number_to_currency(income_transactions.sum(&:amount), unit: "$", precision: 2) %></div>
+        <div class="text-sm text-bunker-300"><%= income_transactions.count %> transacciones</div>
+    </div>
+
+    <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                </svg>
+            </div>
+            <span class="text-xs text-bunker-400 font-medium">GASTOS DEL MES</span>
+        </div>
+        <div class="text-3xl font-bold text-red-400 mb-1" id="monthlyExpenses"><%= number_to_currency(expense_transactions.sum(&:amount), unit: "$", precision: 2) %></div>
+        <div class="text-sm text-bunker-300"><%= expense_transactions.count %> transacciones</div>
+    </div>
+
+    <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+            </div>
+            <span class="text-xs text-bunker-400 font-medium">BALANCE NETO</span>
+        </div>
+        <div class="text-3xl font-bold text-purple-400 mb-1" id="monthlyBalance"><%= number_to_currency(income_transactions.sum(&:amount) - expense_transactions.sum(&:amount), unit: "$", precision: 2) %></div>
+        <div class="text-sm text-bunker-300">+29.6% vs mes anterior</div>
+    </div>
+
+    <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+            </div>
+            <span class="text-xs text-bunker-400 font-medium">TOTAL TRANSACCIONES</span>
+        </div>
+        <div class="text-3xl font-bold text-blue-400 mb-1" id="totalTransactions"><%= transactions.count %></div>
+        <div class="text-sm text-bunker-300">Este mes</div>
+    </div>
+</div>

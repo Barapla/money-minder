@@ -1,0 +1,46 @@
+<%  
+    date = component.date
+    has_income = component.has_income
+    has_expenses = component.has_expenses
+    objects = component.objects
+    day_balance = component.day_balance 
+    is_today = date == Date.today 
+%>
+
+<%= link_to day_details_calendar_index_path(date:), 
+                    class: "h-40 p-2 border border-bunker-800/30 rounded-lg cursor-pointer transition-all duration-200 hover:bg-bunker-800/40 #{is_today ? 'bg-purple-500/20 border-purple-500/30' : 'bg-bunker-800/20'}", 
+                    data: { 
+                        turbo_frame: "day_details"
+                    } do %>
+    <div class="flex justify-between items-start mb-2">
+        <span class="text-sm font-medium <%= is_today ? 'text-purple-300' : 'text-white' %>"><%= date.day %></span>
+        <% if objects.length > 0 %>
+            <div class="flex gap-1">
+                <%= has_income ? '<div class="w-2 h-2 bg-emerald-400 rounded-full"></div>'.html_safe : '' %>
+                <%= has_expenses ? '<div class="w-2 h-2 bg-red-400 rounded-full"></div>'.html_safe : '' %>
+            </div>
+        <% end %>
+    </div>
+    <div class="space-y-1">
+        <div class="text-xs font-medium <%= day_balance >= 0 ? 'text-emerald-300' : 'text-red-300' %>">
+            <%= day_balance >= 0 ? '+' : '' %>$<%= day_balance.round(2) %>
+        </div>
+        <div class="text-xs text-bunker-400">
+            <%= objects.length %> transacci<%= objects.length != 1 ? 'ones' : 'ón' %>
+        </div>
+        <% objects.slice(0,2).each do |object| %>
+            <div class="text-xs px-2 py-1 rounded 
+            <%= object.color.code == 'emerald' ? 'bg-emerald-500/20 text-emerald-300' : 
+                object.color.code == 'red' ? 'bg-red-500/20 text-red-300' : 
+                object.color.code == 'yellow' ? 'bg-yellow-500/20 text-yellow-300' : 
+                object.color.code == 'blue' ? 'bg-blue-500/20 text-blue-300' : 'bg-pink-500/20 text-pink-300'%> 
+                truncate flex items-center gap-1">
+                <span><%= object.icon.value %></span>
+                <span class="truncate"><%= object.description %></span>
+            </div>
+        <% end %>
+        <% if objects.length > 2 %>
+            <div class="text-xs text-bunker-400">+<%= objects.length - 2 %> más</div>
+        <% end %>
+    </div>
+<% end %>
