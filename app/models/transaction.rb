@@ -30,6 +30,7 @@ class Transaction < ApplicationRecord
   scope :expense, -> { by_transaction_type('expense') }
   scope :income, -> { by_transaction_type('income').where(related_transaction_id: nil) }
   scope :transfer, -> { by_transaction_type('transfer') }
+  scope :transfers_and_income, -> { where.not(related_transaction_id: nil) }
   scope :report, -> { by_transaction_type(%w[expense income]).where(related_transaction_id: nil) }
 
   def set_default_values

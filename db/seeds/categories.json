@@ -4,278 +4,341 @@
     {
       "name": "Vivienda",
       "description": "Gastos relacionados con el hogar y la propiedad. Incluye costos fijos y variables de mantenimiento de la vivienda.",
+      "code": "housing",
       "subcategories": [
         {
+          "code": "rent_mortgage",
           "name": "Alquiler/Hipoteca",
           "description": "Pagos mensuales por el lugar de residencia, ya sea alquiler o cuota hipotecaria."
         },
         {
+          "code": "utilities",
           "name": "Servicios (agua, luz, gas)",
           "description": "Gastos en servicios básicos del hogar, incluyendo agua, electricidad y gas."
         },
         {
+          "code": "internet_phone",
           "name": "Internet y teléfono",
           "description": "Costos de conectividad, incluyendo servicio de internet y telefonía fija o móvil."
         },
         {
+          "code": "home_maintenance",
           "name": "Mantenimiento del hogar",
           "description": "Gastos en reparaciones, mejoras y mantenimiento general de la vivienda."
         },
         {
+          "code": "property_taxes",
           "name": "Impuestos sobre la propiedad",
           "description": "Pagos de impuestos relacionados con la propiedad inmobiliaria."
         }
       ]
     },
     {
+      "code": "food",
       "name": "Alimentación",
       "description": "Todos los gastos relacionados con la compra de alimentos y bebidas, tanto en casa como fuera.",
       "subcategories": [
         {
+          "code": "supermarket",
           "name": "Supermercado",
           "description": "Compras de alimentos y artículos de primera necesidad en supermercados o tiendas."
         },
         {
+          "code": "restaurants",
           "name": "Restaurantes",
           "description": "Gastos en comidas en restaurantes, incluyendo propinas y servicios adicionales."
         },
         {
+          "code": "fast_food",
           "name": "Comida rápida",
           "description": "Gastos en establecimientos de comida rápida o para llevar."
         },
         {
+          "code": "coffee_snacks",
           "name": "Café y snacks",
           "description": "Pequeños gastos en cafeterías, máquinas expendedoras o snacks entre comidas."
         }
       ]
     },
     {
+      "code": "transport",
       "name": "Transporte",
       "description": "Gastos relacionados con la movilidad y el transporte, incluyendo vehículos propios y transporte público.",
       "subcategories": [
         {
+          "code": "fuel",
           "name": "Combustible",
           "description": "Gastos en gasolina, diesel u otros combustibles para vehículos."
         },
         {
+          "code": "public_transport",
           "name": "Transporte público",
           "description": "Costos de uso de autobuses, trenes, metro u otros medios de transporte público."
         },
         {
+          "code": "vehicle_maintenance",
           "name": "Mantenimiento del vehículo",
           "description": "Gastos en reparaciones, revisiones y mantenimiento general de vehículos propios."
         },
         {
+          "code": "car_insurance",
           "name": "Seguro del automóvil",
           "description": "Pagos de pólizas de seguro para vehículos."
         },
         {
+          "code": "parking",
           "name": "Estacionamiento",
           "description": "Costos de aparcamiento, ya sean regulares o esporádicos."
         }
       ]
     },
     {
+      "code": "health",
       "name": "Salud",
       "description": "Gastos relacionados con el cuidado de la salud física y mental.",
       "subcategories": [
         {
+          "code": "health_insurance",
           "name": "Seguro médico",
           "description": "Pagos de primas de seguro de salud, ya sea privado o copagos de seguro público."
         },
         {
+          "code": "medications",
           "name": "Medicamentos",
           "description": "Gastos en medicinas recetadas y de venta libre."
         },
         {
+          "code": "medical_consultations",
           "name": "Consultas médicas",
           "description": "Pagos por visitas a médicos generales o especialistas."
         },
         {
+          "code": "dental_expenses",
           "name": "Gastos dentales",
           "description": "Costos de tratamientos dentales y cuidado bucal."
         },
         {
+          "code": "gym_fitness",
           "name": "Gimnasio/Actividades físicas",
           "description": "Gastos en membresías de gimnasio, clases de fitness o equipamiento deportivo."
         }
       ]
     },
     {
+      "code": "education",
       "name": "Educación",
       "description": "Inversiones en formación académica y desarrollo personal.",
       "subcategories": [
         {
+          "code": "tuition_fees",
           "name": "Matrícula escolar/universitaria",
           "description": "Pagos de matrículas y tasas académicas para educación formal."
         },
         {
+          "code": "books_materials",
           "name": "Libros y materiales",
           "description": "Gastos en libros de texto, material escolar y recursos educativos."
         },
         {
+          "code": "courses_workshops",
           "name": "Cursos y talleres",
           "description": "Costos de formación adicional, cursos en línea o presenciales, y talleres."
         }
       ]
     },
     {
+      "code": "entertainment",
       "name": "Entretenimiento",
       "description": "Gastos destinados al ocio, diversión y tiempo libre.",
       "subcategories": [
         {
+          "code": "streaming",
           "name": "Streaming (Netflix, Spotify, etc.)",
           "description": "Suscripciones a servicios de streaming de video, música o podcasts."
         },
         {
+          "code": "cinema_events",
           "name": "Cine y eventos",
           "description": "Gastos en entradas para cine, conciertos, teatro u otros eventos culturales."
         },
         {
+          "code": "hobbies",
           "name": "Hobbies",
           "description": "Costos relacionados con pasatiempos personales y actividades recreativas."
         },
         {
+          "code": "travel_vacation",
           "name": "Viajes y vacaciones",
           "description": "Gastos en viajes, alojamiento y actividades durante vacaciones o escapadas."
         }
       ]
     },
     {
+      "code": "personal_shopping",
       "name": "Compras personales",
       "description": "Gastos en artículos para uso personal no esenciales.",
       "subcategories": [
         {
+          "code": "clothing_footwear",
           "name": "Ropa y calzado",
           "description": "Compras de prendas de vestir, zapatos y accesorios de moda."
         },
         {
+          "code": "personal_care",
           "name": "Artículos de cuidado personal",
           "description": "Gastos en productos de higiene, cosmética y cuidado personal."
         },
         {
+          "code": "electronics_gadgets",
           "name": "Electrónicos y gadgets",
           "description": "Compras de dispositivos electrónicos, accesorios tecnológicos y gadgets."
         }
       ]
     },
     {
+      "code": "debt_savings",
       "name": "Deudas y ahorros",
       "description": "Pagos de deudas y asignaciones para ahorro e inversión.",
       "subcategories": [
         {
+          "code": "credit_card_payments",
           "name": "Pago de tarjetas de crédito",
           "description": "Pagos mensuales de saldos de tarjetas de crédito."
         },
         {
+          "code": "personal_loans",
           "name": "Préstamos personales",
           "description": "Cuotas de préstamos personales, estudiantiles u otros tipos de créditos."
         },
         {
+          "code": "savings_investments",
           "name": "Ahorros e inversiones",
           "description": "Fondos destinados a cuentas de ahorro, inversiones o fondos de emergencia."
         }
       ]
     },
     {
+      "code": "pets",
       "name": "Mascotas",
       "description": "Gastos relacionados con el cuidado y mantenimiento de animales domésticos.",
       "subcategories": [
         {
+          "code": "pet_food",
           "name": "Alimentos",
           "description": "Compras de alimentos y snacks para mascotas."
         },
         {
+          "code": "veterinary_care",
           "name": "Cuidados veterinarios",
           "description": "Gastos en consultas veterinarias, vacunas y tratamientos médicos para mascotas."
         },
         {
+          "code": "accessories_toys",
           "name": "Accesorios y juguetes",
           "description": "Compras de juguetes, camas, correas y otros accesorios para mascotas."
         }
       ]
     },
     {
+      "code": "gifts_donations",
       "name": "Regalos y donaciones",
       "description": "Gastos en obsequios para otros y contribuciones caritativas.",
       "subcategories": [
         {
+          "code": "gifts_family_friends",
           "name": "Regalos para familiares y amigos",
           "description": "Compras de regalos para cumpleaños, festividades u otras ocasiones especiales."
         },
         {
+          "code": "charity_donations",
           "name": "Donaciones a organizaciones benéficas",
           "description": "Contribuciones monetarias a organizaciones sin fines de lucro o causas benéficas."
         }
       ]
     },
     {
+      "code": "professional_services",
       "name": "Servicios profesionales",
       "description": "Gastos en servicios especializados para necesidades personales o profesionales.",
       "subcategories": [
         {
+          "code": "legal_services",
           "name": "Servicios legales",
           "description": "Pagos por asesoría legal, trámites notariales u otros servicios jurídicos."
         },
         {
+          "code": "accounting",
           "name": "Contabilidad",
           "description": "Gastos en servicios de contabilidad, asesoría fiscal o gestión financiera."
         },
         {
+          "code": "professional_subscriptions",
           "name": "Suscripciones profesionales",
           "description": "Cuotas de membresía a organizaciones profesionales o suscripciones a publicaciones especializadas."
         }
       ]
     },
     {
+      "code": "miscellaneous",
       "name": "Misceláneos",
       "description": "Gastos variados que no encajan en otras categorías específicas.",
       "subcategories": [
         {
+          "code": "unexpected_expenses",
           "name": "Gastos imprevistos",
           "description": "Costos inesperados o emergencias no planificadas."
         },
         {
+          "code": "other_uncategorized",
           "name": "Otros gastos no categorizados",
           "description": "Gastos que no encajan en ninguna otra categoría específica."
         }
       ]
     },
     {
+      "code": "income",
       "name": "Ingresos",
       "description": "Todas las fuentes de ingresos, tanto regulares como irregulares.",
       "subcategories": [
         {
+          "code": "salary",
           "name": "Salario",
           "description": "Ingresos provenientes del trabajo o empleo regular."
         },
         {
+          "code": "investment_income",
           "name": "Ingresos por inversiones",
           "description": "Ganancias obtenidas de inversiones financieras, acciones o bienes raíces."
         },
         {
+          "code": "freelance_income",
           "name": "Ingresos por freelance",
           "description": "Pagos recibidos por trabajos independientes o proyectos freelance."
         },
         {
+          "code": "other_income",
           "name": "Otros ingresos",
           "description": "Cualquier otra fuente de ingresos no especificada, como regalos monetarios o premios."
         }
       ]
     },
     {
+      "code": "transfers",
       "name": "Transferencias",
       "description": "Movimientos de dinero entre cuentas o a otras personas.",
       "subcategories": [
         {
+          "code": "account_transfers",
           "name": "Transferencias entre cuentas",
           "description": "Movimientos de fondos entre cuentas bancarias propias."
         },
         {
+          "code": "family_friends_transfers",
           "name": "Transferencias a familiares/amigos",
           "description": "Envíos de dinero a familiares o amigos, ya sea como ayuda o regalo."
         },
         {
+          "code": "cash_withdrawals",
           "name": "Retiros de efectivo",
           "description": "Extracciones de efectivo de cajeros automáticos o bancos."
         }

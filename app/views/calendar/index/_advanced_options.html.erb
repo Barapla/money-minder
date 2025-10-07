@@ -1,0 +1,20 @@
+<!-- Botón para abrir el modal (agrégalo donde prefieras en tu vista) -->
+<%= render Buttons::LinkComponent.new(content: '
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+    </svg>
+    Filtros Avanzados
+    ', href: advanced_search_calendar_index_path(date: date.strftime('%Y-%m-%d')), 
+    options: { 
+        class: "px-4 py-2 bg-bunker-800/60 hover:bg-bunker-700/60 text-white border border-bunker-700/50 hover:border-bunker-600/50 rounded-xl font-medium transition-all duration-200 flex items-center gap-2", 
+        data: { 
+            turbo_frame: "modal_frame"
+        } 
+    })
+%>
+<button onclick="exportTransactions()" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-6 py-2 rounded-xl font-medium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg flex items-center gap-2">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+    </svg>
+    Exportar
+</button>

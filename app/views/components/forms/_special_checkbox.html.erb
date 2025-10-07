@@ -1,0 +1,27 @@
+<% 
+    name = component.name
+    form = component.form
+    div_color = component.div_color
+    text_color = component.text_color
+    options = component.options || {}
+    title = options.delete(:title) || "Title"
+    description = options.delete(:description) || "Description"
+    svg_icon = options.delete(:svg_icon) 
+    checked = options.delete(:checked) || false
+    value = options.delete(:value) || "1"
+%>
+
+<%= tag.label(class: "relative") do %>
+    <% if form %>
+        <%= form.check_box(name, value, checked, class: "peer sr-only", **options) %>
+    <% else %>
+        <%= check_box_tag(name, value, checked, class: "peer sr-only", **options) %>
+    <% end %>
+    <div class="px-4 py-3 bg-bunker-800/60 border border-bunker-700 rounded-xl cursor-pointer transition-all <%= div_color %> hover:border-bunker-600">
+        <div class="flex items-center justify-center gap-2">
+            <%= svg_icon.html_safe %>
+            <span class="font-medium"><%= title %></span>
+        </div>
+        <p class="text-xs text-center mt-1 text-bunker-400 <%= text_color %>"><%= description %></p>
+    </div>
+<% end %>

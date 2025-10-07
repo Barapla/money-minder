@@ -1,5 +1,5 @@
 <%= turbo_frame_tag "modal_frame" do %>
     <%= render Shared::ModalComponent.new(title: "Filtros Avanzados", subtitle: "Personaliza la vista de tus transacciones", size: :small) do |component| %>
-        <%= render partial: "calendar/modals/filter" %>
+        <%= render partial: "calendar/modals/filter", locals: { date: @date } %>
     <% end %>
 <% end %>

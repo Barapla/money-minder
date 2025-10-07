@@ -12,4 +12,11 @@ namespace :seed do
       Seeds::DynamicSeeder.seed_from_json(filename)
     end
   end
+
+  desc 'Carga datos de categorías desde categories.json'
+  task categories: :environment do
+    puts "\n=== Iniciando seed de categorías ===".cyan
+    Seeds::CategoriesSeeder.create_categories
+    puts "=== Seed de categorías completado ===\n".cyan
+  end
 end

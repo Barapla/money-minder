@@ -7,8 +7,11 @@ import { application } from "./application"
 import Budgets__PreviewController from "./budgets/preview_controller"
 application.register("budgets--preview", Budgets__PreviewController)
 
-// import CalendarController from "./calendar_controller"
-// application.register("calendar", CalendarController)
+import Calendar__MainController from "./calendar/main_controller"
+application.register("calendar--main", Calendar__MainController)
+
+import CalendarFilterController from "./calendar_filter_controller"
+application.register("calendar-filter", CalendarFilterController)
 
 import CalendarLoaderController from "./calendar_loader_controller"
 application.register("calendar-loader", CalendarLoaderController)
