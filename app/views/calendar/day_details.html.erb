@@ -64,7 +64,7 @@
                                     <%= transaction.transaction_type.code == "income" ? '+' : '-' %>$<%= transaction.amount.round(2) %>
                                 </div>
                                 <div class="text-xs text-bunker-400">
-                                    <%= transaction.transaction_type.code == 'income' ? 'Ingreso' : 'Gasto' %>
+                                    <%= transaction_type_label(transaction) %>
                                 </div>
                             </div>
                         </div>

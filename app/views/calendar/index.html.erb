@@ -9,7 +9,7 @@
                 <p class="text-bunker-300">Visualiza tu historial financiero por fecha</p>
             </div>
             <%= turbo_frame_tag "advanced_options", class: "flex gap-3" do %>
-                <%= render partial: "calendar/index/advanced_options", locals: { date: Date.today } %>
+                <%= render partial: "calendar/index/advanced_options", locals: { date: Date.today, filter: params[:filter] } %>
             <% end %>
         </div>
     </div>

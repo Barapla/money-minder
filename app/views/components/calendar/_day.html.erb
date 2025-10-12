@@ -5,9 +5,10 @@
     objects = component.objects
     day_balance = component.day_balance 
     is_today = date == Date.today 
+    filter = component.options[:filter]
 %>
 
-<%= link_to day_details_calendar_index_path(date:), 
+<%= link_to day_details_calendar_index_path(date:, filter: filter), 
                     class: "h-40 p-2 border border-bunker-800/30 rounded-lg cursor-pointer transition-all duration-200 hover:bg-bunker-800/40 #{is_today ? 'bg-purple-500/20 border-purple-500/30' : 'bg-bunker-800/20'}", 
                     data: { 
                         turbo_frame: "day_details"

@@ -22,8 +22,11 @@ module Seeds
       def create_category_group(category_data)
         subcategories = category_data.delete("subcategories")
 
+        icon = category_data.delete("icon")
+
         category = Category.find_or_initialize_by(name: category_data["name"])
         category.assign_attributes(category_data)
+        category.icon = Catalog.joins(:group_catalog).find_by(group_catalogs: { code: 'transaction_icons' }, code: icon)
         category.save!
 
         log_progress("Creado/Actualizado grupo de categoría: #{category.name}")
@@ -33,6 +36,8 @@ module Seeds
 
       def create_subcategories(category, subcategories)
         subcategories.each do |subcategory|
+          icon = subcategory.delete("icon")
+          subcategory["icon"] = Catalog.joins(:group_catalog).find_by(group_catalogs: { code: 'transaction_icons' }, code: icon)
           s = category.subcategories.find_or_initialize_by(name: subcategory["name"])
           s.update! subcategory
         end

@@ -158,100 +158,188 @@
       "code": "transaction_icons",  
       "catalogs": [
         {
-          "value": "🏠",
-          "code": "home"
+          "code": "rent_mortgage",
+          "value": "🏘️"
         },
         {
-          "value": "🍔",
-          "code": "food"
+          "code": "internet_phone",
+          "value": "📡"
         },
         {
-          "value": "🚗",
-          "code": "transport"
+          "code": "home_maintenance",
+          "value": "🔧"
         },
         {
-          "value": "💊",
-          "code": "health"
+          "code": "property_taxes",
+          "value": "🏛️"
         },
         {
-          "value": "🎓",
-          "code": "education"
+          "code": "restaurants",
+          "value": "🍽️"
         },
         {
-          "value": "🎉",
-          "code": "entertainment"
+          "code": "fast_food",
+          "value": "🍕"
         },
         {
-          "value": "👗",
-          "code": "clothing"
+          "code": "coffee_snacks",
+          "value": "☕"
         },
         {
-          "value": "🐾",
-          "code": "pets"
+          "code": "fuel",
+          "value": "⛽"
         },
         {
-          "value": "🎁",
-          "code": "gifts"
+          "code": "public_transport",
+          "value": "🚌"
         },
         {
-          "value": "💼",
-          "code": "professional_services"
+          "code": "vehicle_maintenance",
+          "value": "🔩"
         },
         {
-          "value": "💰",
-          "code": "savings"
+          "code": "car_insurance",
+          "value": "🛡️"
         },
         {
-          "value": "📦",
-          "code": "miscellaneous"
+          "code": "parking",
+          "value": "🅿️"
         },
         {
-          "value": "🚀",
-          "code": "investments"
+          "code": "health_insurance",
+          "value": "🏥"
         },
         {
-          "value": "💪",
-          "code": "exercise"
+          "code": "medications",
+          "value": "💉"
         },
         {
-          "value": "🛍️",
-          "code": "shopping"
+          "code": "medical_consultations",
+          "value": "🩺"
         },
         {
-          "value": "📚",
-          "code": "books"
+          "code": "dental_expenses",
+          "value": "🦷"
         },
         {
-          "value": "🎨",
-          "code": "hobbies"
+          "code": "exercise",
+          "value": "💪"
         },
         {
-          "value": "🌍",
-          "code": "travel"
+          "code": "tuition_fees",
+          "value": "🏫"
         },
         {
-          "value": "🧹",
-          "code": "cleaning"
+          "code": "books",
+          "value": "📚"
         },
         {
-          "value": "🛠️",
-          "code": "home_improvement"
+          "code": "courses_workshops",
+          "value": "👨‍🏫"
         },
         {
-          "code": "supermarket",
-          "value": "🛒"
+          "code": "streaming",
+          "value": "📺"
         },
         {
-          "code": "utilities",
-          "value": "💡"
+          "code": "cinema_events",
+          "value": "🎬"
         },
         {
-          "code": "subscriptions",
-          "value": "📅"
+          "code": "travel_vacation",
+          "value": "✈️"
+        },
+        {
+          "code": "personal_care",
+          "value": "🧴"
+        },
+        {
+          "code": "electronics_gadgets",
+          "value": "📱"
+        },
+        {
+          "code": "credit_card_payments",
+          "value": "💳"
+        },
+        {
+          "code": "personal_loans",
+          "value": "🏦"
+        },
+        {
+          "code": "savings_investments",
+          "value": "📊"
+        },
+        {
+          "code": "pet_food",
+          "value": "🦴"
+        },
+        {
+          "code": "veterinary_care",
+          "value": "🐕‍🦺"
+        },
+        {
+          "code": "accessories_toys",
+          "value": "🎾"
+        },
+        {
+          "code": "gifts_family_friends",
+          "value": "🎀"
         },
         {
           "code": "donations",
           "value": "🤝"
+        },
+        {
+          "code": "legal_services",
+          "value": "⚖️"
+        },
+        {
+          "code": "accounting",
+          "value": "🧮"
+        },
+        {
+          "code": "professional_subscriptions",
+          "value": "📋"
+        },
+        {
+          "code": "unexpected_expenses",
+          "value": "⚠️"
+        },
+        {
+          "code": "other_uncategorized",
+          "value": "❓"
+        },
+        {
+          "code": "income_general",
+          "value": "💵"
+        },
+        {
+          "code": "professional_services",
+          "value": "💼"
+        },
+        {
+          "code": "investment_income",
+          "value": "📈"
+        },
+        {
+          "code": "freelance_income",
+          "value": "💻"
+        },
+        {
+          "code": "other_income",
+          "value": "🎯"
+        },
+        {
+          "code": "transfers",
+          "value": "🔄"
+        },
+        {
+          "code": "account_transfers",
+          "value": "🏧"
+        },
+        {
+          "code": "family_friends_transfers",
+          "value": "👥"
         },
         {
           "code": "taxes",

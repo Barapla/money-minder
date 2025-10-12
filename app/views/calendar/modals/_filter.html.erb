@@ -12,19 +12,19 @@
             <% income_icon = render_svg("vector-up") %>
             <%= render Forms::SpecialCheckboxComponent.new(name: "income", options:
                                                                             { title: "Ingresos", description: "Entradas de dinero", svg_icon: income_icon, 
-                                                                                checked: true, value: "income", color: "emerald",
+                                                                                checked: @income_check, value: "income", color: "emerald",
                                                                                 data: { calendar_filter_target: "special_radio" } }) %>
 
             <% expense_icon = render_svg("vector-down") %>
             <%= render Forms::SpecialCheckboxComponent.new(name: "expense", options:
                                                                             { title: "Gastos", description: "Salidas de dinero", svg_icon: expense_icon, 
-                                                                                checked: true, value: "expense", color: "red",
+                                                                                checked: @expense_check, value: "expense", color: "red",
                                                                                 data: { calendar_filter_target: "special_radio" } }) %>
             
             <% transfer_icon = render_svg("transfer") %>
-            <%= render Forms::SpecialCheckboxComponent.new(name: "transfer", options:
+            <%= render Forms::SpecialCheckboxComponent.new(name: "transfer_and_income", options:
                                                                             { title: "Transferencias", description: "Entre cuentas", svg_icon: transfer_icon, 
-                                                                                checked: false, value: "transfer", color: "blue",
+                                                                                checked: @transfer_check, value: "transfer_and_income", color: "blue",
                                                                                 data: { calendar_filter_target: "special_radio" } }) %>
         </div>
     </div>

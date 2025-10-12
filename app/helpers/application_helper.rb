@@ -4,6 +4,7 @@
 module ApplicationHelper
   include ColorHelper
   include SvgHelper
+  include DayDetailsHelper
 
   def ai_report_status_badge(report)
     if report.processing_success?

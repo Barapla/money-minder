@@ -20,6 +20,10 @@ module Utils
         transaction_type&.code == 'income'
       end
 
+      def income_transfer?
+        income? && related_transaction.present?
+      end
+
       def expense?
         transaction_type&.code == 'expense'
       end

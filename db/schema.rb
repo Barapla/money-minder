@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_10_06_022850) do
+ActiveRecord::Schema[7.0].define(version: 2025_10_08_001658) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -116,7 +116,11 @@ ActiveRecord::Schema[7.0].define(version: 2025_10_06_022850) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "code"
+    t.bigint "icon_id"
+    t.bigint "color_id"
     t.index ["code"], name: "index_categories_on_code", unique: true
+    t.index ["color_id"], name: "index_categories_on_color_id"
+    t.index ["icon_id"], name: "index_categories_on_icon_id"
     t.index ["parent_category_id"], name: "index_categories_on_parent_category_id"
     t.index ["uuid"], name: "index_categories_on_uuid", unique: true
   end
@@ -387,6 +391,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_10_06_022850) do
   add_foreign_key "budgets", "catalogs", column: "icon_id", name: "fk_budgets_icon"
   add_foreign_key "budgets", "users", name: "fk_budgets_user"
   add_foreign_key "catalogs", "group_catalogs", name: "fk_catalogs_group_catalog"
+  add_foreign_key "categories", "catalogs", column: "color_id", name: "fk_categories_color"
+  add_foreign_key "categories", "catalogs", column: "icon_id", name: "fk_categories_icon"
   add_foreign_key "categories", "categories", column: "parent_category_id", name: "fk_categories_parent"
   add_foreign_key "credit_card_cycle_transactions", "credit_card_cycles", name: "fk_ccct_credit_card_cycles"
   add_foreign_key "credit_card_cycle_transactions", "transactions", name: "fk_ccct_transactions"

@@ -4,7 +4,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
     </svg>
     Filtros Avanzados
-    ', href: advanced_search_calendar_index_path(date: date.strftime('%Y-%m-%d')), 
+    ', href: advanced_search_calendar_index_path(date: date.strftime('%Y-%m-%d'), filter: filter&.to_unsafe_h), 
     options: { 
         class: "px-4 py-2 bg-bunker-800/60 hover:bg-bunker-700/60 text-white border border-bunker-700/50 hover:border-bunker-600/50 rounded-xl font-medium transition-all duration-200 flex items-center gap-2", 
         data: { 
