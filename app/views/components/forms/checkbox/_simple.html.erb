@@ -9,6 +9,7 @@
     svg_icon = options.delete(:svg_icon) 
     checked = options.delete(:checked) || false
     value = options.delete(:value) || "1"
+    svg_class = options.delete(:svg_class) || ""
 %>
 
 <%= tag.label(class: "relative") do %>
@@ -19,7 +20,7 @@
     <% end %>
     <div class="px-4 py-3 bg-bunker-800/60 border border-bunker-700 rounded-xl cursor-pointer transition-all <%= div_color %> hover:border-bunker-600">
         <div class="flex items-center justify-center gap-2">
-            <%= svg_icon.html_safe %>
+            <div class="<%= svg_class %>"><%= svg_icon.html_safe %></div>
             <span class="font-medium"><%= title %></span>
         </div>
         <p class="text-xs text-center mt-1 text-bunker-400 <%= text_color %>"><%= description %></p>

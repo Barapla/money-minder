@@ -5,7 +5,7 @@ module Forms
   class SelectComponent < Forms::ApplicationComponent
     attr_reader :name, :options_collection, :prompt, :selected, :size, :help_text, :required, :icon
 
-    def initialize(name:, form:, options_collection: [], options: {})
+    def initialize(name:, form: nil, options_collection: [], options: {})
       @name = name
       @options_collection = options_collection
       @prompt = options.delete(:prompt)

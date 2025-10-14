@@ -28,6 +28,9 @@ application.register("charts--flow", Charts__FlowController)
 import Charts__MainController from "./charts/main_controller"
 application.register("charts--main", Charts__MainController)
 
+import CheckboxIconGroupController from "./checkbox_icon_group_controller"
+application.register("checkbox-icon-group", CheckboxIconGroupController)
+
 import DatatableFiltersController from "./datatable_filters_controller"
 application.register("datatable-filters", DatatableFiltersController)
 

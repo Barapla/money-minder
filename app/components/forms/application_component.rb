@@ -5,7 +5,7 @@ module Forms
   class ApplicationComponent < ::ApplicationComponent
     attr_reader :form
 
-    def initialize(form:, options: {})
+    def initialize(form: nil, options: {})
       @form = form
       super(options:)
     end

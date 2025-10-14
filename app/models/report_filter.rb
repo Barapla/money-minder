@@ -11,6 +11,8 @@ class ReportFilter
   attribute :budgets
   attribute :transaction_types
   attribute :period, :string, default: 'monthly'
+  attribute :min_amount, :decimal
+  attribute :max_amount, :decimal
 
   # Validaciones opcionales
   validates :start_date, presence: true

@@ -48,6 +48,8 @@ es:
         end_date: "Fecha de finalización"
         budgets: "Presupuestos"
         transaction_types: "Tipos de transacciones"
+        min_amount: "Monto mínimo"
+        max_amount: "Monto máximo"
 
   activerecord:
     attributes:

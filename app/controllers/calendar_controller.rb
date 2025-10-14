@@ -60,32 +60,50 @@ class CalendarController < ApplicationController
   private
 
   def filter_transactions(transactions, filter)
-    if filter.present? && filter[:special].present?
-      filter_types = filter[:special]
+    if filter.present?
+      if filter[:special].present?
+        filter_types = filter[:special]
 
-      # Aplicar scopes dinámicamente
-      if filter_types.is_a?(Array) && filter_types.any?
-        # Construir la query con OR para múltiples tipos
-        scope_queries = filter_types.map do |type|
-          case type
-          when 'expense'
-            Transaction.expense
-          when 'income'
-            Transaction.income
-          when 'transfer_and_income'
-            Transaction.transfers_and_income
+        # Aplicar scopes dinámicamente
+        if filter_types.is_a?(Array) && filter_types.any?
+          # Construir la query con OR para múltiples tipos
+          scope_queries = filter_types.map do |type|
+            case type
+            when 'expense'
+              Transaction.expense
+            when 'income'
+              Transaction.income
+            when 'transfer_and_income'
+              Transaction.transfers_and_income
+            end
+          end.compact
+
+          # Combinar las queries con OR
+          if scope_queries.any?
+            combined_query = scope_queries.reduce do |combined, query|
+              combined.or(query)
+            end
+
+            transactions = transactions.merge(combined_query)
           end
-        end.compact
-
-        # Combinar las queries con OR
-        if scope_queries.any?
-          combined_query = scope_queries.reduce do |combined, query|
-            combined.or(query)
-          end
-
-          transactions = transactions.merge(combined_query)
         end
       end
+      if filter[:budgets].present? && filter[:budgets].is_a?(Array)
+        transactions = transactions.joins(:budget).where(budgets: { id: filter[:budgets] })
+      end
+      if filter[:icons].present? && filter[:icons].is_a?(Array)
+        transactions = transactions.joins(:category).where(categories: { code: filter[:icons] })
+      end
+      if filter[:min_amount].present?
+        min_amount = filter[:min_amount].to_f
+        transactions = transactions.where('amount >= ?', min_amount)
+      end
+      if filter[:max_amount].present?
+        max_amount = filter[:max_amount].to_f
+        transactions = transactions.where('amount <= ?', max_amount)
+      end
+    else
+      transactions = transactions.report
     end
     transactions
   end

@@ -14,41 +14,6 @@
         </div>
     </div>
 
-    <!-- Filtros Rápidos -->
-    <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 mb-8">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-semibold text-white flex items-center gap-2">
-                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"></path>
-                </svg>
-                Filtros Rápidos
-            </h2>
-            <button onclick="clearFilters()" class="text-bunker-400 hover:text-white text-sm">
-                Limpiar filtros
-            </button>
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            <button onclick="filterByType('all')" class="filter-btn active px-4 py-2 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-xl text-sm font-medium transition-all duration-200">
-                Todas
-            </button>
-            <button onclick="filterByType('income')" class="filter-btn px-4 py-2 bg-bunker-800/60 hover:bg-emerald-500/20 text-bunker-300 hover:text-emerald-300 border border-bunker-700/50 hover:border-emerald-500/30 rounded-xl text-sm font-medium transition-all duration-200">
-                Ingresos
-            </button>
-            <button onclick="filterByType('expense')" class="filter-btn px-4 py-2 bg-bunker-800/60 hover:bg-red-500/20 text-bunker-300 hover:text-red-300 border border-bunker-700/50 hover:border-red-500/30 rounded-xl text-sm font-medium transition-all duration-200">
-                Gastos
-            </button>
-            <button onclick="filterByCategory('food')" class="filter-btn px-4 py-2 bg-bunker-800/60 hover:bg-yellow-500/20 text-bunker-300 hover:text-yellow-300 border border-bunker-700/50 hover:border-yellow-500/30 rounded-xl text-sm font-medium transition-all duration-200">
-                Comida
-            </button>
-            <button onclick="filterByCategory('transport')" class="filter-btn px-4 py-2 bg-bunker-800/60 hover:bg-blue-500/20 text-bunker-300 hover:text-blue-300 border border-bunker-700/50 hover:border-blue-500/30 rounded-xl text-sm font-medium transition-all duration-200">
-                Transporte
-            </button>
-            <button onclick="filterByCategory('entertainment')" class="filter-btn px-4 py-2 bg-bunker-800/60 hover:bg-pink-500/20 text-bunker-300 hover:text-pink-300 border border-bunker-700/50 hover:border-pink-500/30 rounded-xl text-sm font-medium transition-all duration-200">
-                Entretenimiento
-            </button>
-        </div>
-    </div>
     <%= turbo_frame_tag "calendar", data: { controller: "calendar-loader" } do %>
         <%= render partial: "calendar/index/month", locals: { date: Date.today, transactions: @transactions } %>
     <% end %>
