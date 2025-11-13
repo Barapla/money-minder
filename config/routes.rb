@@ -43,6 +43,13 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :obligatory_payments_calendar, only: [:index], path: 'obligatory-payments-calendar' do
+    collection do
+      post :set_month
+      get :day_details
+    end
+  end
+
   resources :reports, only: [:index] do
     collection do
       post :distribution_chart

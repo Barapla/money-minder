@@ -1,0 +1,4 @@
+<%= turbo_stream.update "calendar_payments" do %>
+    <%= render ObligatoryPaymentsCalendar::MainComponent.new(title: "Pagos Obligatorios", date: @date, payment_occurrences: @payment_occurrences, options: {}) %>
+<% end %>
+<%= turbo_stream.update "summary_payments", partial: "obligatory_payments_calendar/summary", locals: { payment_occurrences: @payment_occurrences, date: @date } %>

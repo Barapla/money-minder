@@ -15,6 +15,7 @@ class User < ApplicationRecord
   has_many :budgets, dependent: :destroy
   has_many :transactions, dependent: :destroy
   has_many :recurring_transactions, dependent: :destroy
+  has_many :obligatory_payments, dependent: :destroy
 
   attr_accessor :name
 

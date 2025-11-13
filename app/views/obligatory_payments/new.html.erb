@@ -1,9 +1,32 @@
-<h1>New obligatory payment</h1>
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-bunker-900/80 to-orange-900/80 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8">
+        <div class="flex items-center gap-4 mb-4">
+            <%= render Buttons::LinkComponent.new(content: '
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+            ', href: obligatory_payments_path, options: { class: "btn-icon" }) %>
+            <div>
+                <h1 class="text-4xl font-bold text-white">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-300">💳 Nuevo Pago Obligatorio</span>
+                </h1>
+                <p class="text-bunker-300">Crea un nuevo pago recurrente para mantener control de tus obligaciones financieras</p>
+            </div>
+        </div>
+    </div>
 
-<%= render "form", obligatory_payment: @obligatory_payment %>
-
-<br>
-
-<div>
-  <%= link_to "Back to obligatory payments", obligatory_payments_path %>
+    <!-- Form Container -->
+    <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl overflow-hidden">
+        <!-- Form Header -->
+        <div class="px-8 py-6 border-b border-bunker-800/50">
+            <h2 class="text-xl font-semibold text-white flex items-center gap-2">
+                <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Información del Pago Obligatorio
+            </h2>
+        </div>
+        <%= render "form", obligatory_payment: @obligatory_payment %>
+    </div>
 </div>

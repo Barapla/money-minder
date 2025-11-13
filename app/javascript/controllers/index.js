@@ -7,6 +7,9 @@ import { application } from "./application"
 import Budgets__PreviewController from "./budgets/preview_controller"
 application.register("budgets--preview", Budgets__PreviewController)
 
+import Previews__ObligatoryPaymentsController from "./previews/obligatory_payments_controller"
+application.register("previews--obligatory-payments", Previews__ObligatoryPaymentsController)
+
 import Calendar__MainController from "./calendar/main_controller"
 application.register("calendar--main", Calendar__MainController)
 
@@ -51,6 +54,9 @@ application.register("multiselect", MultiselectController)
 
 import PaginationController from "./pagination_controller"
 application.register("pagination", PaginationController)
+
+import RecurrenceFormController from "./recurrence_form_controller"
+application.register("recurrence-form", RecurrenceFormController)
 
 import RecurringTransactionFormController from "./recurring_transaction_form_controller"
 application.register("recurring-transaction-form", RecurringTransactionFormController)

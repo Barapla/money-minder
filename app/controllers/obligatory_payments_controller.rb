@@ -3,7 +3,7 @@ class ObligatoryPaymentsController < ApplicationController
 
   # GET /obligatory_payments or /obligatory_payments.json
   def index
-    @obligatory_payments = ObligatoryPayment.all
+    @obligatory_payments = ObligatoryPayment.includes(:category, :color, :icon, :recurrence).all
   end
 
   # GET /obligatory_payments/1 or /obligatory_payments/1.json
@@ -13,19 +13,21 @@ class ObligatoryPaymentsController < ApplicationController
   # GET /obligatory_payments/new
   def new
     @obligatory_payment = ObligatoryPayment.new
+    @obligatory_payment.build_recurrence
   end
 
   # GET /obligatory_payments/1/edit
   def edit
+    @obligatory_payment.build_recurrence unless @obligatory_payment.get_recurrence
   end
 
   # POST /obligatory_payments or /obligatory_payments.json
   def create
-    @obligatory_payment = ObligatoryPayment.new(obligatory_payment_params)
+    @obligatory_payment = current_user.obligatory_payments.build(obligatory_payment_params)
 
     respond_to do |format|
       if @obligatory_payment.save
-        format.html { redirect_to obligatory_payment_url(@obligatory_payment), notice: "Obligatory payment was successfully created." }
+        format.html { redirect_to obligatory_payments_url, notice: "Pago obligatorio creado exitosamente." }
         format.json { render :show, status: :created, location: @obligatory_payment }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -38,7 +40,7 @@ class ObligatoryPaymentsController < ApplicationController
   def update
     respond_to do |format|
       if @obligatory_payment.update(obligatory_payment_params)
-        format.html { redirect_to obligatory_payment_url(@obligatory_payment), notice: "Obligatory payment was successfully updated." }
+        format.html { redirect_to obligatory_payments_url, notice: "Pago obligatorio actualizado exitosamente." }
         format.json { render :show, status: :ok, location: @obligatory_payment }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -52,7 +54,7 @@ class ObligatoryPaymentsController < ApplicationController
     @obligatory_payment.destroy
 
     respond_to do |format|
-      format.html { redirect_to obligatory_payments_url, notice: "Obligatory payment was successfully destroyed." }
+      format.html { redirect_to obligatory_payments_url, notice: "Pago obligatorio eliminado exitosamente." }
       format.json { head :no_content }
     end
   end
@@ -65,6 +67,12 @@ class ObligatoryPaymentsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def obligatory_payment_params
-      params.require(:obligatory_payment).permit(:user_id, :name, :amount, :category_id, :description, :color_id, :icon_id)
+      params.require(:obligatory_payment).permit(
+        :name, :amount, :category_id, :description, :color_id, :icon_id,
+        recurrence_attributes: [
+          :id, :frequency_type_id, :recurrenceable_type_id, :frequency_value,
+          :day_of_month, :day_of_week, :month_of_year, :start_date, :end_date, :_destroy
+        ]
+      )
     end
 end

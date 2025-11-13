@@ -1,0 +1,87 @@
+<%= turbo_frame_tag "day_details_payments" do %>
+    <% if params[:date] %>
+        <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+            <!-- Panel de Pagos Obligatorios del Día Seleccionado -->
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-white flex items-center gap-2">
+                    <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v8a2 2 0 002 2h2l8-8-8-8z"></path>
+                    </svg>
+                    Pagos del <span id="selectedDate"><%= I18n.l(@date, format: '%d de %B') %></span>
+                </h3>
+                <%= render Buttons::LinkComponent.new(content: '
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    ', href: day_details_obligatory_payments_calendar_index_path,
+                    options: {
+                        class: "text-bunker-400 hover:text-white",
+                        data: {
+                            turbo_frame: "day_details_payments"
+                        }
+                    })
+                %>
+            </div>
+
+            <!-- Estadísticas del día -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-bunker-800/40 border border-bunker-700/50 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-orange-400">$<%= @total_amount.round(2) %></div>
+                    <div class="text-sm text-bunker-300">Total a Pagar</div>
+                </div>
+                <div class="bg-bunker-800/40 border border-bunker-700/50 rounded-xl p-4 text-center">
+                    <div class="text-lg font-bold text-white"><%= @day_payments.count %></div>
+                    <div class="text-sm text-bunker-300">Pagos Programados</div>
+                </div>
+            </div>
+
+            <div id="daypayments" class="space-y-4">
+                <% if @day_payments.any? %>
+                    <% @day_payments.each do |payment| %>
+                        <div class="bg-bunker-800/40 border border-bunker-700/50 rounded-xl p-4 flex items-center justify-between hover:bg-bunker-800/60 transition-colors">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl
+                                <%=
+                                    payment.color.code == 'emerald' ? 'bg-emerald-500/20' :
+                                    payment.color.code == 'red' ? 'bg-red-500/20' :
+                                    payment.color.code == 'yellow' ? 'bg-yellow-500/20' :
+                                    payment.color.code == 'blue' ? 'bg-blue-500/20' :
+                                    payment.color.code == 'orange' ? 'bg-orange-500/20' : 'bg-pink-500/20'%>
+                                ">
+                                    <%= payment.icon.value %>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-white"><%= payment.name %></h4>
+                                    <p class="text-sm text-bunker-300"><%= payment.category.name %></p>
+                                    <% if payment.recurrence %>
+                                        <p class="text-xs text-bunker-400">
+                                            Frecuencia: <%= payment.recurrence.frequency_type.name %>
+                                            <% if payment.recurrence.frequency_value > 1 %>
+                                                (cada <%= payment.recurrence.frequency_value %>)
+                                            <% end %>
+                                        </p>
+                                    <% end %>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-lg text-orange-400">
+                                    $<%= payment.amount.round(2) %>
+                                </div>
+                                <div class="text-xs text-bunker-400">
+                                    Pago Obligatorio
+                                </div>
+                            </div>
+                        </div>
+                    <% end %>
+                <% else %>
+                    <div class="text-center py-8 text-bunker-400">
+                        <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v8a2 2 0 002 2h2l8-8-8-8z"></path>
+                        </svg>
+                        No hay pagos programados para este día
+                    </div>
+                <% end %>
+            </div>
+        </div>
+    <% end %>
+<% end %>

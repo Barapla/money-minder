@@ -1,52 +1,229 @@
-<%= form_with(model: obligatory_payment) do |form| %>
-  <% if obligatory_payment.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(obligatory_payment.errors.count, "error") %> prohibited this obligatory_payment from being saved:</h2>
+<!-- Form -->
+<%= form_with(model: obligatory_payment, local: true, html: { class: "px-8 py-6" }) do |form| %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Left Column -->
+        <div>
+            <%= render Forms::InputComponent.new(
+                name: :name,
+                form:,
+                type: :text,
+                options: {
+                    placeholder: "Nombre del pago obligatorio",
+                    help_text: "Ej: Renta, Netflix, Seguro de Auto",
+                    required: true
+                }
+            ) %>
 
-      <ul>
-        <% obligatory_payment.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
+            <%= render Forms::InputComponent.new(
+                name: :amount,
+                form:,
+                type: :number,
+                options: {
+                    step: 0.01,
+                    placeholder: "0.00",
+                    prefix: "$",
+                    help_text: "Monto del pago",
+                    required: true
+                }
+            ) %>
+
+            <%= render Forms::SelectComponent.new(
+                name: :category_id,
+                form:,
+                options_collection: Category.where.not(parent_category_id: nil).pluck(:name, :id),
+                options: {
+                    help_text: "Categoría del pago",
+                    required: true
+                }
+            ) %>
+
+            <%= render Forms::InputComponent.new(
+                name: :description,
+                form:,
+                type: :text_area,
+                options: {
+                    placeholder: "Descripción (opcional)",
+                    help_text: "Detalles adicionales sobre el pago",
+                    required: false
+                }
+            ) %>
+
+            <!-- Recurrence fields -->
+            <%= form.fields_for :recurrence do |recurrence_form| %>
+                <%
+                  daily_id = Catalog.by_group_and_code('frequency_types', 'daily')&.id
+                  weekly_id = Catalog.by_group_and_code('frequency_types', 'weekly')&.id
+                  monthly_id = Catalog.by_group_and_code('frequency_types', 'monthly')&.id
+                  yearly_id = Catalog.by_group_and_code('frequency_types', 'yearly')&.id
+                %>
+                <%= recurrence_form.hidden_field :recurrenceable_type_id,
+                    value: Catalog.by_group_and_code('recurrenceable_types', 'obligatory_payment')&.id %>
+
+                <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6"
+                     data-controller="recurrence-form"
+                     data-recurrence-form-daily-value="<%= daily_id %>"
+                     data-recurrence-form-weekly-value="<%= weekly_id %>"
+                     data-recurrence-form-monthly-value="<%= monthly_id %>"
+                     data-recurrence-form-yearly-value="<%= yearly_id %>">
+                    <h3 class="text-lg font-semibold text-white mb-4">Frecuencia de Pago</h3>
+
+                    <%= render Forms::InputComponent.new(
+                        name: :start_date,
+                        form: recurrence_form,
+                        type: :date,
+                        options: {
+                            help_text: "Fecha de inicio del pago recurrente",
+                            required: true,
+                            value: recurrence_form.object.start_date || Date.current
+                        }
+                    ) %>
+
+                    <div class="form-group">
+                        <%= render Forms::LabelComponent.new(form: recurrence_form, name: :frequency_type_id, required: true) %>
+                        <div class="relative">
+                            <%= recurrence_form.select :frequency_type_id,
+                                Catalog.get_by_group_pluck('frequency_types'),
+                                { prompt: 'Selecciona una frecuencia' },
+                                {
+                                    class: 'form-control',
+                                    required: true,
+                                    data: {
+                                        recurrence_form_target: 'frequencySelect',
+                                        action: 'change->recurrence-form#updateFields'
+                                    }
+                                }
+                            %>
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                                <svg class="w-5 h-5 text-bunker-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <p class="text-xs text-bunker-400 mt-1">¿Cada cuánto se realiza el pago?</p>
+                    </div>
+
+                    <%= render Forms::InputComponent.new(
+                        name: :frequency_value,
+                        form: recurrence_form,
+                        type: :number,
+                        options: {
+                            placeholder: "1",
+                            help_text: "Cada cuántas unidades (ej: 1 = cada mes, 3 = cada 3 meses)",
+                            required: true,
+                            value: recurrence_form.object.frequency_value || 1
+                        }
+                    ) %>
+
+                    <!-- Day of Week (for weekly) -->
+                    <div data-recurrence-form-target="dayOfWeek" class="hidden">
+                        <%= render Forms::SelectComponent.new(
+                            name: :day_of_week,
+                            form: recurrence_form,
+                            options_collection: [
+                                ['Domingo', 0],
+                                ['Lunes', 1],
+                                ['Martes', 2],
+                                ['Miércoles', 3],
+                                ['Jueves', 4],
+                                ['Viernes', 5],
+                                ['Sábado', 6]
+                            ],
+                            options: {
+                                help_text: "Día de la semana en que vence el pago",
+                                required: false
+                            }
+                        ) %>
+                    </div>
+
+                    <!-- Day of Month (for monthly and yearly) -->
+                    <div data-recurrence-form-target="dayOfMonth" class="hidden">
+                        <%= render Forms::InputComponent.new(
+                            name: :day_of_month,
+                            form: recurrence_form,
+                            type: :number,
+                            options: {
+                                placeholder: "1-31",
+                                help_text: "Día del mes en que vence el pago",
+                                required: false,
+                                min: 1,
+                                max: 31
+                            }
+                        ) %>
+                    </div>
+                </div>
+            <% end %>
+        </div>
+
+        <!-- Right Column -->
+        <div class="space-y-6">
+            <!-- Icon Selection -->
+            <%= render Forms::SpecialRadioComponent.new(
+                name: :icon_id,
+                form:,
+                collection: Catalog.by_group('transaction_icons'),
+                options: { 
+                    default_object_label: 'value',
+                    help_text: "Selecciona un icono para identificar tu transacción",
+                    value: obligatory_payment.icon&.id,
+                    collection_options: {
+                        data: {
+                            "budgets--preview-target": "icons",
+                            action: "click->budgets--preview#selectIcon"
+                        }
+                    }
+                }
+            ) %>
+
+            <!-- Color Selection -->
+            <%= render Forms::SpecialRadioComponent.new(
+                name: :color_id,
+                form:,
+                collection: Catalog.by_group('colors'),
+                options: { 
+                    is_colors: true,
+                    default_object_label: 'value',
+                    help_text: "Elige un color para personalizar tu transacción",
+                    value: obligatory_payment.color&.id,
+                    collection_options: {
+                        data: {
+                            "budgets--preview-target": "colors",
+                            action: "click->budgets--preview#selectColor"
+                        }
+                    }
+                }
+            ) %>
+
+            <!-- Preview Section -->
+            <div class="form-group">
+                <label class="block text-sm font-medium text-bunker-200 mb-2">
+                    Vista previa
+                </label>
+                <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div data-budgets--preview-target="preview" class="w-10 h-10 bg-<%= transaction.color&.value || 'blue-500' %> rounded-lg flex items-center justify-center">
+                            <span class="text-lg"><%= transaction.icon&.value || Catalog.by_group('transaction_icons').first.value %></span>
+                        </div>
+                        <div>
+                            <div data-budgets--preview-target="previewBudgetType" class="text-sm font-medium text-white"><%= transaction.category&.name || "Tarjeta de débito" %></div>
+                            <div data-budgets--preview-target="previewName" class="text-xs text-bunker-400"><%= transaction.transaction_type&.value || "Nuevo Presupuesto" %></div>
+                        </div>
+                    </div>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between items-center">
+                            <span class="text-bunker-300">Cantidad de Transacción</span>
+                            <span data-budgets--preview-target="previewCurrent" class="text-emerald-400 text-lg font-semibold">$<%= transaction.amount || "0.00" %></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  <% end %>
 
-  <div>
-    <%= form.label :user_id, style: "display: block" %>
-    <%= form.text_field :user_id %>
-  </div>
-
-  <div>
-    <%= form.label :name, style: "display: block" %>
-    <%= form.text_field :name %>
-  </div>
-
-  <div>
-    <%= form.label :amount, style: "display: block" %>
-    <%= form.text_field :amount %>
-  </div>
-
-  <div>
-    <%= form.label :category_id, style: "display: block" %>
-    <%= form.text_field :category_id %>
-  </div>
-
-  <div>
-    <%= form.label :description, style: "display: block" %>
-    <%= form.text_area :description %>
-  </div>
-
-  <div>
-    <%= form.label :color_id, style: "display: block" %>
-    <%= form.text_field :color_id %>
-  </div>
-
-  <div>
-    <%= form.label :icon_id, style: "display: block" %>
-    <%= form.text_field :icon_id %>
-  </div>
-
-  <div>
-    <%= form.submit %>
-  </div>
+    <!-- Actions -->
+    <div class="flex items-center justify-end gap-4 mt-8">
+        <%= link_to "Cancelar", obligatory_payments_path,
+            class: "px-6 py-3 bg-bunker-800/60 text-white border border-bunker-700/50 rounded-xl font-medium hover:bg-bunker-700/60 transition-all duration-200" %>
+        <%= form.submit obligatory_payment.persisted? ? "Actualizar Pago" : "Crear Pago",
+            class: "px-6 py-3 bg-purple-500 text-white rounded-xl font-medium hover:bg-purple-600 transition-all duration-200" %>
+    </div>
 <% end %>

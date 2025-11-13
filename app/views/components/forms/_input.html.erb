@@ -1,6 +1,6 @@
 <%  name = component.name
     form = component.form 
-    type = component.type 
+    field_type = component.field_type
     options = component.options || {}
     placeholder = component.placeholder
     icon = component.icon
@@ -31,7 +31,7 @@
             </span>
         <% end %>
         
-        <%= form.send("#{type}_field", name, 
+        <%= form.send(field_type, name, 
             class: component.send(:input_classes),
             placeholder:,
             id: field_id,
