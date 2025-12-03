@@ -1,5 +1,9 @@
 <!-- Form -->
-<%= form_with(model: obligatory_payment, local: true, html: { class: "px-8 py-6" }) do |form| %>
+<%= form_with(model: obligatory_payment, local: true, html: { class: "px-8 py-6",
+                data: { controller: "previews--obligatory-payments form-validator", 
+                        form_validator_validate_on_blur_value: true,
+                        form_validator_validate_on_input_value: false}
+         }) do |form| %>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Left Column -->
         <div>
@@ -10,7 +14,11 @@
                 options: {
                     placeholder: "Nombre del pago obligatorio",
                     help_text: "Ej: Renta, Netflix, Seguro de Auto",
-                    required: true
+                    required: true,
+                    data: {
+                        "previews--obligatory-payments-target": "title",
+                        action: "input->previews--obligatory-payments#updatePreview",
+                    }
                 }
             ) %>
 
@@ -20,10 +28,16 @@
                 type: :number,
                 options: {
                     step: 0.01,
+                    min: 0,
                     placeholder: "0.00",
                     prefix: "$",
                     help_text: "Monto del pago",
-                    required: true
+                    required: true,
+                    data: {
+                        "previews--obligatory-payments-target": "amount",
+                        action: "input->previews--obligatory-payments#updateAmount",
+                        required_message: "Por favor, ingresa un monto para el pago",
+                    }
                 }
             ) %>
 
@@ -33,7 +47,11 @@
                 options_collection: Category.where.not(parent_category_id: nil).pluck(:name, :id),
                 options: {
                     help_text: "Categoría del pago",
-                    required: true
+                    required: true,
+                    data: {
+                        "previews--obligatory-payments-target": "subtitle",
+                        action: "change->previews--obligatory-payments#updatePreview",
+                    }
                 }
             ) %>
 
@@ -50,21 +68,10 @@
 
             <!-- Recurrence fields -->
             <%= form.fields_for :recurrence do |recurrence_form| %>
-                <%
-                  daily_id = Catalog.by_group_and_code('frequency_types', 'daily')&.id
-                  weekly_id = Catalog.by_group_and_code('frequency_types', 'weekly')&.id
-                  monthly_id = Catalog.by_group_and_code('frequency_types', 'monthly')&.id
-                  yearly_id = Catalog.by_group_and_code('frequency_types', 'yearly')&.id
-                %>
                 <%= recurrence_form.hidden_field :recurrenceable_type_id,
                     value: Catalog.by_group_and_code('recurrenceable_types', 'obligatory_payment')&.id %>
 
-                <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6"
-                     data-controller="recurrence-form"
-                     data-recurrence-form-daily-value="<%= daily_id %>"
-                     data-recurrence-form-weekly-value="<%= weekly_id %>"
-                     data-recurrence-form-monthly-value="<%= monthly_id %>"
-                     data-recurrence-form-yearly-value="<%= yearly_id %>">
+                <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
                     <h3 class="text-lg font-semibold text-white mb-4">Frecuencia de Pago</h3>
 
                     <%= render Forms::InputComponent.new(
@@ -74,33 +81,27 @@
                         options: {
                             help_text: "Fecha de inicio del pago recurrente",
                             required: true,
-                            value: recurrence_form.object.start_date || Date.current
+                            value: recurrence_form.object.start_date || Date.current,
+                            data: {
+                                "previews--obligatory-payments-target": "startDate",
+                                action: "change->previews--obligatory-payments#updateNextDate",
+                            }
                         }
                     ) %>
 
-                    <div class="form-group">
-                        <%= render Forms::LabelComponent.new(form: recurrence_form, name: :frequency_type_id, required: true) %>
-                        <div class="relative">
-                            <%= recurrence_form.select :frequency_type_id,
-                                Catalog.get_by_group_pluck('frequency_types'),
-                                { prompt: 'Selecciona una frecuencia' },
-                                {
-                                    class: 'form-control',
-                                    required: true,
-                                    data: {
-                                        recurrence_form_target: 'frequencySelect',
-                                        action: 'change->recurrence-form#updateFields'
-                                    }
-                                }
-                            %>
-                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                                <svg class="w-5 h-5 text-bunker-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        <p class="text-xs text-bunker-400 mt-1">¿Cada cuánto se realiza el pago?</p>
-                    </div>
+                    <%= render Forms::SelectComponent.new(
+                        name: :frequency_type_id,
+                        form: recurrence_form,
+                        options_collection: Catalog.get_by_group_pluck('frequency_types'),
+                        options: {
+                            help_text: "¿Cada cuánto se realiza el pago?",
+                            required: true,
+                            data: {
+                                "previews--obligatory-payments-target": "frequency",
+                                action: "change->previews--obligatory-payments#updateFrequency",
+                            }
+                        }
+                    ) %>
 
                     <%= render Forms::InputComponent.new(
                         name: :frequency_value,
@@ -110,46 +111,14 @@
                             placeholder: "1",
                             help_text: "Cada cuántas unidades (ej: 1 = cada mes, 3 = cada 3 meses)",
                             required: true,
-                            value: recurrence_form.object.frequency_value || 1
+                            value: recurrence_form.object.frequency_value || 1,
+                            data: {
+                                "previews--obligatory-payments-target": "frequencyValue",
+                                action: "input->previews--obligatory-payments#updateNextDate",
+                            }
                         }
                     ) %>
 
-                    <!-- Day of Week (for weekly) -->
-                    <div data-recurrence-form-target="dayOfWeek" class="hidden">
-                        <%= render Forms::SelectComponent.new(
-                            name: :day_of_week,
-                            form: recurrence_form,
-                            options_collection: [
-                                ['Domingo', 0],
-                                ['Lunes', 1],
-                                ['Martes', 2],
-                                ['Miércoles', 3],
-                                ['Jueves', 4],
-                                ['Viernes', 5],
-                                ['Sábado', 6]
-                            ],
-                            options: {
-                                help_text: "Día de la semana en que vence el pago",
-                                required: false
-                            }
-                        ) %>
-                    </div>
-
-                    <!-- Day of Month (for monthly and yearly) -->
-                    <div data-recurrence-form-target="dayOfMonth" class="hidden">
-                        <%= render Forms::InputComponent.new(
-                            name: :day_of_month,
-                            form: recurrence_form,
-                            type: :number,
-                            options: {
-                                placeholder: "1-31",
-                                help_text: "Día del mes en que vence el pago",
-                                required: false,
-                                min: 1,
-                                max: 31
-                            }
-                        ) %>
-                    </div>
                 </div>
             <% end %>
         </div>
@@ -167,8 +136,8 @@
                     value: obligatory_payment.icon&.id,
                     collection_options: {
                         data: {
-                            "budgets--preview-target": "icons",
-                            action: "click->budgets--preview#selectIcon"
+                            "previews--obligatory-payments-target": "icons",
+                            action: "click->previews--obligatory-payments#selectIcon"
                         }
                     }
                 }
@@ -186,8 +155,8 @@
                     value: obligatory_payment.color&.id,
                     collection_options: {
                         data: {
-                            "budgets--preview-target": "colors",
-                            action: "click->budgets--preview#selectColor"
+                            "previews--obligatory-payments-target": "colors",
+                            action: "click->previews--obligatory-payments#selectColor"
                         }
                     }
                 }
@@ -199,19 +168,64 @@
                     Vista previa
                 </label>
                 <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-4">
-                    <div class="flex items-center gap-3 mb-3">
-                        <div data-budgets--preview-target="preview" class="w-10 h-10 bg-<%= transaction.color&.value || 'blue-500' %> rounded-lg flex items-center justify-center">
-                            <span class="text-lg"><%= transaction.icon&.value || Catalog.by_group('transaction_icons').first.value %></span>
+                    <!-- Header del pago -->
+                    <div class="flex items-center gap-3 mb-4">
+                        <div data-previews--obligatory-payments-target="preview" 
+                            class="w-12 h-12 bg-<%= obligatory_payment.color&.value || 'blue-500' %> rounded-lg flex items-center justify-center">
+                            <span class="text-lg"><%= obligatory_payment.icon&.value || '💳' %></span>
                         </div>
-                        <div>
-                            <div data-budgets--preview-target="previewBudgetType" class="text-sm font-medium text-white"><%= transaction.category&.name || "Tarjeta de débito" %></div>
-                            <div data-budgets--preview-target="previewName" class="text-xs text-bunker-400"><%= transaction.transaction_type&.value || "Nuevo Presupuesto" %></div>
+                        <div class="flex-1">
+                            <div data-previews--obligatory-payments-target="previewTitle" 
+                                class="text-base font-semibold text-white">
+                                <%= obligatory_payment.name.presence || "Nombre del pago" %>
+                            </div>
+                            <div data-previews--obligatory-payments-target="previewSubtitle" 
+                                class="text-sm text-bunker-400">
+                                <%= obligatory_payment.category&.name || "Categoría" %>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs text-bunker-400">Monto mensual</div>
+                            <div data-previews--obligatory-payments-target="previewAmount" 
+                                class="text-xl font-bold text-red-400">
+                                -$<%= number_with_precision(obligatory_payment.amount || 0, precision: 2) %>
+                            </div>
                         </div>
                     </div>
-                    <div class="space-y-2 text-xs">
-                        <div class="flex justify-between items-center">
-                            <span class="text-bunker-300">Cantidad de Transacción</span>
-                            <span data-budgets--preview-target="previewCurrent" class="text-emerald-400 text-lg font-semibold">$<%= transaction.amount || "0.00" %></span>
+
+                    <!-- Información de recurrencia -->
+                    <div class="border-t border-bunker-700/50 pt-3 space-y-2">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-bunker-300">
+                                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                                Frecuencia
+                            </span>
+                            <span data-previews--obligatory-payments-target="previewFrequency" 
+                                class="text-white font-medium">
+                                Diaria
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-bunker-300">
+                                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                Próximo pago
+                            </span>
+                            <span data-previews--obligatory-payments-target="previewNextDate" 
+                                class="text-white font-medium">
+                                <%= (obligatory_payment.recurrence&.start_date || Date.current + 1.day).strftime("%m/%d/%Y") %>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Badge de estado -->
+                    <div class="mt-3 pt-3 border-t border-bunker-700/50">
+                        <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                            <div class="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                            <span class="text-xs font-medium text-purple-300">Pago Obligatorio Recurrente</span>
                         </div>
                     </div>
                 </div>
@@ -219,11 +233,24 @@
         </div>
     </div>
 
-    <!-- Actions -->
-    <div class="flex items-center justify-end gap-4 mt-8">
-        <%= link_to "Cancelar", obligatory_payments_path,
-            class: "px-6 py-3 bg-bunker-800/60 text-white border border-bunker-700/50 rounded-xl font-medium hover:bg-bunker-700/60 transition-all duration-200" %>
-        <%= form.submit obligatory_payment.persisted? ? "Actualizar Pago" : "Crear Pago",
-            class: "px-6 py-3 bg-purple-500 text-white rounded-xl font-medium hover:bg-purple-600 transition-all duration-200" %>
+    <!-- Form Actions -->
+    <div class="flex items-center justify-between pt-8 mt-8 border-t border-bunker-800/50">
+        <% href_button = obligatory_payment.persisted? ? obligatory_payment : obligatory_payments_path %>
+        <%= render Buttons::LinkComponent.new(content: '
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            Cancelar
+            ', href: href_button, 
+            options: { 
+                class: "btn-cancel" 
+            })
+        %>
+        <button type="submit" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Guardar Pago Obligatorio
+        </button>
     </div>
 <% end %>
