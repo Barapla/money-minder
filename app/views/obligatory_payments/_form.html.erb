@@ -32,11 +32,9 @@
                     placeholder: "0.00",
                     prefix: "$",
                     help_text: "Monto del pago",
-                    required: true,
                     data: {
                         "previews--obligatory-payments-target": "amount",
                         action: "input->previews--obligatory-payments#updateAmount",
-                        required_message: "Por favor, ingresa un monto para el pago",
                     }
                 }
             ) %>
@@ -86,6 +84,16 @@
                                 "previews--obligatory-payments-target": "startDate",
                                 action: "change->previews--obligatory-payments#updateNextDate",
                             }
+                        }
+                    ) %>
+
+                    <%= render Forms::InputComponent.new(
+                        name: :end_date,
+                        form: recurrence_form,
+                        type: :date,
+                        options: {
+                            help_text: "Fecha de fin del pago recurrente",
+                            value: recurrence_form.object.end_date || nil
                         }
                     ) %>
 

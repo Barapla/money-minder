@@ -80,6 +80,7 @@ es:
       recurrence:
         frequency_type_id: "Tipo de frecuencia"
         start_date: "Fecha de inicio"
+        end_date: "Fecha de finalización"
         frequency_value: "Intervalo"
       recurring_transaction:
         transaction_id: "Transacción"

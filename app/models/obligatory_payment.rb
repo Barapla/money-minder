@@ -10,8 +10,8 @@ class ObligatoryPayment < ApplicationRecord
   accepts_nested_attributes_for :recurrence, allow_destroy: true
 
   # Quitas due_day de este modelo
-  validates :name, :amount, presence: true
-  validates :amount, numericality: { greater_than: 0 }
+  validates :name, presence: true
+  validates :amount, numericality: { greater_than: 0 }, if: -> { amount.present? }
 
   def next_occurrence_from(date = Date.current)
     rec = get_recurrence

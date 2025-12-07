@@ -1,6 +1,7 @@
 <%
     all_payments = payment_occurrences.values.flatten
-    total_amount = all_payments.sum(&:amount)
+    payments_with_amount = all_payments.select { |payment| payment.amount.present? }
+    total_amount = payments_with_amount.sum(&:amount)
     unique_payments = all_payments.uniq.count
     days_with_payments = payment_occurrences.keys.count
 %>

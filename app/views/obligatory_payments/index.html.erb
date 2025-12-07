@@ -42,7 +42,7 @@
 
                     <!-- Amount -->
                     <div class="mb-4">
-                        <div class="text-3xl font-bold text-orange-400">$<%= number_with_delimiter(payment.amount, delimiter: ',') %></div>
+                        <div class="text-3xl font-bold text-orange-400"><%= payment.amount.present? ? number_to_currency(number_with_delimiter(payment.amount, delimiter: ',')) : 'N/A' %></div>
                     </div>
 
                     <!-- Recurrence Info -->

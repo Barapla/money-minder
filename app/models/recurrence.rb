@@ -14,8 +14,8 @@ class Recurrence < ApplicationRecord
   validates :start_date, presence: true
 
   # Validaciones condicionales
-  validates :day_of_week, presence: true, if: -> { frequency_type&.code == 'weekly' }
-  validates :day_of_month, presence: true, if: -> { frequency_type&.code == 'monthly' || frequency_type&.code == 'yearly' }
+  # validates :day_of_week, presence: true, if: -> { frequency_type&.code == 'weekly' }
+  # validates :day_of_month, presence: true, if: -> { frequency_type&.code == 'monthly' || frequency_type&.code == 'yearly' }
 
   def next_occurrence_from(date = Date.current)
     case frequency_type.code
@@ -70,7 +70,7 @@ class Recurrence < ApplicationRecord
   private
 
   def calculate_next_monthly_occurrence(from_date)
-    target_day = day_of_month
+    target_day = start_date.day
 
     # First try current month
     current_month_occurrence = begin
@@ -81,18 +81,25 @@ class Recurrence < ApplicationRecord
 
     # If the target day in current month is today or in the future, use it
     if current_month_occurrence >= from_date
+      # Validar que no exceda el end_date (si existe)
+      return nil if end_date.present? && current_month_occurrence > end_date
       return current_month_occurrence
     end
 
     # Otherwise, calculate for next occurrence based on frequency
     next_month = from_date.beginning_of_month + frequency_value.months
 
-    # Manejar casos especiales (días 29-31 en meses cortos)
-    if target_day > next_month.end_of_month.day
+    # Calcular la próxima ocurrencia
+    next_occurrence = if target_day > next_month.end_of_month.day
       next_month.end_of_month
     else
       Date.new(next_month.year, next_month.month, target_day)
     end
+
+    # Validar que no exceda el end_date (si existe)
+    return nil if end_date.present? && next_occurrence > end_date
+    
+    next_occurrence
   end
 
   def calculate_next_daily_occurrence(from_date)
