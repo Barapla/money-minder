@@ -1,0 +1,22 @@
+<div class="max-w-6xl mx-auto">
+    <!-- Header del Calendario -->
+    <div class="bg-gradient-to-r from-bunker-900/80 to-orange-900/80 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold text-white mb-2">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-300">📅 Calendario de Pagos Obligatorios</span>
+                </h1>
+                <p class="text-bunker-300">Visualiza tus pagos recurrentes programados</p>
+            </div>
+        </div>
+    </div>
+
+    <%= turbo_frame_tag "calendar_payments", data: { controller: "calendar-loader" } do %>
+        <%= render ObligatoryPaymentsCalendar::MainComponent.new(title: "Pagos Obligatorios", date: @date, payment_occurrences: @payment_occurrences, options: {}) %>
+    <% end %>
+
+    <!-- Resumen del Mes -->
+    <%= turbo_frame_tag "summary_payments" do %>
+        <%= render partial: "obligatory_payments_calendar/summary", locals: { payment_occurrences: @payment_occurrences, date: @date } %>
+    <% end %>
+</div>

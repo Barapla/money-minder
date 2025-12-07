@@ -1,52 +1,264 @@
-<%= form_with(model: obligatory_payment) do |form| %>
-  <% if obligatory_payment.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(obligatory_payment.errors.count, "error") %> prohibited this obligatory_payment from being saved:</h2>
+<!-- Form -->
+<%= form_with(model: obligatory_payment, local: true, html: { class: "px-8 py-6",
+                data: { controller: "previews--obligatory-payments form-validator", 
+                        form_validator_validate_on_blur_value: true,
+                        form_validator_validate_on_input_value: false}
+         }) do |form| %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Left Column -->
+        <div>
+            <%= render Forms::InputComponent.new(
+                name: :name,
+                form:,
+                type: :text,
+                options: {
+                    placeholder: "Nombre del pago obligatorio",
+                    help_text: "Ej: Renta, Netflix, Seguro de Auto",
+                    required: true,
+                    data: {
+                        "previews--obligatory-payments-target": "title",
+                        action: "input->previews--obligatory-payments#updatePreview",
+                    }
+                }
+            ) %>
 
-      <ul>
-        <% obligatory_payment.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
+            <%= render Forms::InputComponent.new(
+                name: :amount,
+                form:,
+                type: :number,
+                options: {
+                    step: 0.01,
+                    min: 0,
+                    placeholder: "0.00",
+                    prefix: "$",
+                    help_text: "Monto del pago",
+                    data: {
+                        "previews--obligatory-payments-target": "amount",
+                        action: "input->previews--obligatory-payments#updateAmount",
+                    }
+                }
+            ) %>
+
+            <%= render Forms::SelectComponent.new(
+                name: :category_id,
+                form:,
+                options_collection: Category.where.not(parent_category_id: nil).pluck(:name, :id),
+                options: {
+                    help_text: "Categoría del pago",
+                    required: true,
+                    data: {
+                        "previews--obligatory-payments-target": "subtitle",
+                        action: "change->previews--obligatory-payments#updatePreview",
+                    }
+                }
+            ) %>
+
+            <%= render Forms::InputComponent.new(
+                name: :description,
+                form:,
+                type: :text_area,
+                options: {
+                    placeholder: "Descripción (opcional)",
+                    help_text: "Detalles adicionales sobre el pago",
+                    required: false
+                }
+            ) %>
+
+            <!-- Recurrence fields -->
+            <%= form.fields_for :recurrence do |recurrence_form| %>
+                <%= recurrence_form.hidden_field :recurrenceable_type_id,
+                    value: Catalog.by_group_and_code('recurrenceable_types', 'obligatory_payment')&.id %>
+
+                <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
+                    <h3 class="text-lg font-semibold text-white mb-4">Frecuencia de Pago</h3>
+
+                    <%= render Forms::InputComponent.new(
+                        name: :start_date,
+                        form: recurrence_form,
+                        type: :date,
+                        options: {
+                            help_text: "Fecha de inicio del pago recurrente",
+                            required: true,
+                            value: recurrence_form.object.start_date || Date.current,
+                            data: {
+                                "previews--obligatory-payments-target": "startDate",
+                                action: "change->previews--obligatory-payments#updateNextDate",
+                            }
+                        }
+                    ) %>
+
+                    <%= render Forms::InputComponent.new(
+                        name: :end_date,
+                        form: recurrence_form,
+                        type: :date,
+                        options: {
+                            help_text: "Fecha de fin del pago recurrente",
+                            value: recurrence_form.object.end_date || nil
+                        }
+                    ) %>
+
+                    <%= render Forms::SelectComponent.new(
+                        name: :frequency_type_id,
+                        form: recurrence_form,
+                        options_collection: Catalog.get_by_group_pluck('frequency_types'),
+                        options: {
+                            help_text: "¿Cada cuánto se realiza el pago?",
+                            required: true,
+                            data: {
+                                "previews--obligatory-payments-target": "frequency",
+                                action: "change->previews--obligatory-payments#updateFrequency",
+                            }
+                        }
+                    ) %>
+
+                    <%= render Forms::InputComponent.new(
+                        name: :frequency_value,
+                        form: recurrence_form,
+                        type: :number,
+                        options: {
+                            placeholder: "1",
+                            help_text: "Cada cuántas unidades (ej: 1 = cada mes, 3 = cada 3 meses)",
+                            required: true,
+                            value: recurrence_form.object.frequency_value || 1,
+                            data: {
+                                "previews--obligatory-payments-target": "frequencyValue",
+                                action: "input->previews--obligatory-payments#updateNextDate",
+                            }
+                        }
+                    ) %>
+
+                </div>
+            <% end %>
+        </div>
+
+        <!-- Right Column -->
+        <div class="space-y-6">
+            <!-- Icon Selection -->
+            <%= render Forms::SpecialRadioComponent.new(
+                name: :icon_id,
+                form:,
+                collection: Catalog.by_group('transaction_icons'),
+                options: { 
+                    default_object_label: 'value',
+                    help_text: "Selecciona un icono para identificar tu transacción",
+                    value: obligatory_payment.icon&.id,
+                    collection_options: {
+                        data: {
+                            "previews--obligatory-payments-target": "icons",
+                            action: "click->previews--obligatory-payments#selectIcon"
+                        }
+                    }
+                }
+            ) %>
+
+            <!-- Color Selection -->
+            <%= render Forms::SpecialRadioComponent.new(
+                name: :color_id,
+                form:,
+                collection: Catalog.by_group('colors'),
+                options: { 
+                    is_colors: true,
+                    default_object_label: 'value',
+                    help_text: "Elige un color para personalizar tu transacción",
+                    value: obligatory_payment.color&.id,
+                    collection_options: {
+                        data: {
+                            "previews--obligatory-payments-target": "colors",
+                            action: "click->previews--obligatory-payments#selectColor"
+                        }
+                    }
+                }
+            ) %>
+
+            <!-- Preview Section -->
+            <div class="form-group">
+                <label class="block text-sm font-medium text-bunker-200 mb-2">
+                    Vista previa
+                </label>
+                <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-4">
+                    <!-- Header del pago -->
+                    <div class="flex items-center gap-3 mb-4">
+                        <div data-previews--obligatory-payments-target="preview" 
+                            class="w-12 h-12 bg-<%= obligatory_payment.color&.value || 'blue-500' %> rounded-lg flex items-center justify-center">
+                            <span class="text-lg"><%= obligatory_payment.icon&.value || '💳' %></span>
+                        </div>
+                        <div class="flex-1">
+                            <div data-previews--obligatory-payments-target="previewTitle" 
+                                class="text-base font-semibold text-white">
+                                <%= obligatory_payment.name.presence || "Nombre del pago" %>
+                            </div>
+                            <div data-previews--obligatory-payments-target="previewSubtitle" 
+                                class="text-sm text-bunker-400">
+                                <%= obligatory_payment.category&.name || "Categoría" %>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs text-bunker-400">Monto mensual</div>
+                            <div data-previews--obligatory-payments-target="previewAmount" 
+                                class="text-xl font-bold text-red-400">
+                                -$<%= number_with_precision(obligatory_payment.amount || 0, precision: 2) %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información de recurrencia -->
+                    <div class="border-t border-bunker-700/50 pt-3 space-y-2">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-bunker-300">
+                                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                                Frecuencia
+                            </span>
+                            <span data-previews--obligatory-payments-target="previewFrequency" 
+                                class="text-white font-medium">
+                                Diaria
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-bunker-300">
+                                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                Próximo pago
+                            </span>
+                            <span data-previews--obligatory-payments-target="previewNextDate" 
+                                class="text-white font-medium">
+                                <%= (obligatory_payment.recurrence&.start_date || Date.current + 1.day).strftime("%m/%d/%Y") %>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Badge de estado -->
+                    <div class="mt-3 pt-3 border-t border-bunker-700/50">
+                        <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                            <div class="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                            <span class="text-xs font-medium text-purple-300">Pago Obligatorio Recurrente</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  <% end %>
 
-  <div>
-    <%= form.label :user_id, style: "display: block" %>
-    <%= form.text_field :user_id %>
-  </div>
-
-  <div>
-    <%= form.label :name, style: "display: block" %>
-    <%= form.text_field :name %>
-  </div>
-
-  <div>
-    <%= form.label :amount, style: "display: block" %>
-    <%= form.text_field :amount %>
-  </div>
-
-  <div>
-    <%= form.label :category_id, style: "display: block" %>
-    <%= form.text_field :category_id %>
-  </div>
-
-  <div>
-    <%= form.label :description, style: "display: block" %>
-    <%= form.text_area :description %>
-  </div>
-
-  <div>
-    <%= form.label :color_id, style: "display: block" %>
-    <%= form.text_field :color_id %>
-  </div>
-
-  <div>
-    <%= form.label :icon_id, style: "display: block" %>
-    <%= form.text_field :icon_id %>
-  </div>
-
-  <div>
-    <%= form.submit %>
-  </div>
+    <!-- Form Actions -->
+    <div class="flex items-center justify-between pt-8 mt-8 border-t border-bunker-800/50">
+        <% href_button = obligatory_payment.persisted? ? obligatory_payment : obligatory_payments_path %>
+        <%= render Buttons::LinkComponent.new(content: '
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            Cancelar
+            ', href: href_button, 
+            options: { 
+                class: "btn-cancel" 
+            })
+        %>
+        <button type="submit" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Guardar Pago Obligatorio
+        </button>
+    </div>
 <% end %>

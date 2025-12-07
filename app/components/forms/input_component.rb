@@ -18,6 +18,15 @@ module Forms
       super(form:, options:)
     end
 
+    def field_type
+      case type
+      when :text_area
+        :text_area
+      else
+        "#{type}_field".to_sym
+      end
+    end
+
     private
 
     def input_classes

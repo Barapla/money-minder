@@ -6,13 +6,27 @@ class ObligatoryPayment < ApplicationRecord
 
   has_one :recurrence, as: :recurrenceable, dependent: :destroy
 
-  # Quitas due_day de este modelo
-  validates :name, :amount, presence: true
-  validates :amount, numericality: { greater_than: 0 }
+  # Accept nested attributes for recurrence
+  accepts_nested_attributes_for :recurrence, allow_destroy: true
 
-  delegate :next_occurrence_from, to: :recurrence
+  # Quitas due_day de este modelo
+  validates :name, presence: true
+  validates :amount, numericality: { greater_than: 0 }, if: -> { amount.present? }
+
+  def next_occurrence_from(date = Date.current)
+    rec = get_recurrence
+    rec&.next_occurrence_from(date)
+  end
 
   def next_due_date
-    recurrence&.next_occurrence_from || nil
+    rec = get_recurrence
+    rec&.next_occurrence_from || nil
+  end
+
+  def get_recurrence
+    Recurrence.find_by(
+      recurrenceable_type: 'ObligatoryPayment',
+      recurrenceable_id: id
+    )
   end
 end
