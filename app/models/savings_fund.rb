@@ -5,7 +5,7 @@ class SavingsFund < ApplicationRecord
   belongs_to :budget
 
   # Usar las transacciones para calcular el saldo
-  def current_balance
+  def closing_balance
     budget.current_amount
   end
 
@@ -22,7 +22,7 @@ class SavingsFund < ApplicationRecord
   # Proyección de saldo futuro
   def projected_balance_in_months(months)
     rate_monthly = (interest_rate || 0) / 12
-    current = current_balance
+    current = closing_balance
     monthly = monthly_contribution || 0
 
     # Interés compuesto con aportes mensuales
@@ -35,16 +35,16 @@ class SavingsFund < ApplicationRecord
 
   # Tiempo para alcanzar la meta
   def months_to_reach_goal
-    return 0 if (goal_amount || 0) <= current_balance
+    return 0 if (goal_amount || 0) <= closing_balance
     return nil if (monthly_contribution || 0) <= 0
 
     rate_monthly = (interest_rate || 0) / 12
-    remaining = goal_amount - current_balance
+    remaining = goal_amount - closing_balance
     monthly = monthly_contribution
 
     if rate_monthly.positive?
       Math.log((goal_amount * rate_monthly + monthly) /
-               (current_balance * rate_monthly + monthly)) /
+               (closing_balance * rate_monthly + monthly)) /
         Math.log(1 + rate_monthly)
     else
       remaining / monthly
@@ -55,21 +55,21 @@ class SavingsFund < ApplicationRecord
   def progress_percentage
     return 0 if (goal_amount || 0) <= 0
 
-    [(current_balance / goal_amount * 100), 100].min
+    [(closing_balance / goal_amount * 100), 100].min
   end
 
   # Sugerencia de aporte mensual para alcanzar meta
   def suggested_monthly_contribution
-    return 0 unless target_date && goal_amount && goal_amount > current_balance
+    return 0 unless target_date && goal_amount && goal_amount > closing_balance
 
     months_available = ((target_date - Date.current) / 30.44).to_i
     return 0 if months_available <= 0
 
-    remaining_amount = goal_amount - current_balance
+    remaining_amount = goal_amount - closing_balance
     rate_monthly = (interest_rate || 0) / 12
 
     if rate_monthly.positive?
-      future_value_current = current_balance * ((1 + rate_monthly)**months_available)
+      future_value_current = closing_balance * ((1 + rate_monthly)**months_available)
       remaining_after_interest = goal_amount - future_value_current
 
       remaining_after_interest / (((1 + rate_monthly)**months_available - 1) / rate_monthly)

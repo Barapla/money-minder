@@ -20,16 +20,16 @@ module CreditCardServices
 
         cycle.payment_due_date = cutting_date + credit_card.payment_due_days.days
         cycle.cycle_balance = 0
-        cycle.historical_balance = cycle.previous_cycle.present? ? cycle.previous_cycle.current_balance : 0.0
-        cycle.current_balance = cycle.historical_balance + initial_debt
-        cycle.purchases_made = 0
-        cycle.payments_received = 0
+        cycle.historical_balance = cycle.previous_cycle.present? ? cycle.previous_cycle.closing_balance : 0.0
+        cycle.closing_balance = cycle.historical_balance + initial_debt
+        cycle.purchases = 0
+        cycle.payments = 0
         cycle.fees = 0.0
 
         # Cálculo correcto del pago mínimo
         cycle.minimum_payment = 0
 
-        cycle.interest_charges = 0.0
+        cycle.interest = 0.0
         cycle.fees = 0.0
         cycle.status = cycle_status
       end
@@ -40,16 +40,16 @@ module CreditCardServices
 
     private
 
-    def calculate_minimum_payment(current_balance)
+    def calculate_minimum_payment(closing_balance)
       # Si el saldo es 0 o negativo, no hay pago mínimo
-      return 0.0 if current_balance <= 0
+      return 0.0 if closing_balance <= 0
 
-      percentage_payment = current_balance * 0.05 # 5%
+      percentage_payment = closing_balance * 0.05 # 5%
       minimum_fixed = 25.0
 
       # Si el saldo total es menor al mínimo fijo, pagar el saldo total
-      if current_balance < minimum_fixed
-        current_balance
+      if closing_balance < minimum_fixed
+        closing_balance
       else
         # Pagar el mayor entre el porcentaje y el mínimo fijo
         [percentage_payment, minimum_fixed].max

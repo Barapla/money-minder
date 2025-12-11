@@ -1,0 +1,2 @@
+class CreditCardTier < ApplicationRecord
+end

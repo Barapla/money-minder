@@ -87,11 +87,11 @@ module Utils
         target_cycle = credit_card.determine_cycle_for_transaction(self)
 
         if negative_transaction?
-          target_cycle.current_balance += amount
-          target_cycle.purchases_made -= amount
+          target_cycle.closing_balance += amount
+          target_cycle.purchases -= amount
         else
-          target_cycle.current_balance -= amount # Revertir pago (quitar la reducción)
-          target_cycle.payments_received -= amount
+          target_cycle.closing_balance -= amount # Revertir pago (quitar la reducción)
+          target_cycle.purchases -= amount
         end
 
         target_cycle.save!
@@ -104,11 +104,11 @@ module Utils
         # Revertir monto anterior
         old_amount = amount_before_last_save
         if negative_transaction?
-          target_cycle.current_balance += old_amount
-          target_cycle.purchases_made -= old_amount
+          target_cycle.closing_balance += old_amount
+          target_cycle.purchases -= old_amount
         else
-          target_cycle.current_balance += old_amount
-          target_cycle.payments_received -= old_amount
+          target_cycle.closing_balance += old_amount
+          target_cycle.payments -= old_amount
         end
         # Aplicar nuevo monto
         target_cycle.process_transaction(self)
