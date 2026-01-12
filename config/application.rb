@@ -23,7 +23,7 @@ module MoneyMinder
     config.i18n.load_path += Dir[Rails.root.join('config', 'locales', '**', '*.{rb,yml}')]
 
     # Permitted locales available for the application
-    config.i18n.available_locales = %i[es]
+    config.i18n.available_locales = %i[es en]
 
     # Set default locale
     config.i18n.locale = :es
