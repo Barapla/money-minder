@@ -39,7 +39,7 @@ module MoneyMinder
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    config.time_zone = "America/Mexico_City"
+    config.time_zone = 'America/Mexico_City'
 
     config.active_record.default_timezone = :utc
 

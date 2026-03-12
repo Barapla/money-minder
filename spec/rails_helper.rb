@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 require 'spec_helper'
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../config/environment'
 # Prevent database truncation if the environment is production
-abort("The Rails environment is running in production mode!") if Rails.env.production?
+abort('The Rails environment is running in production mode!') if Rails.env.production?
 # Uncomment the line below in case you have `--require rails_helper` in the `.rspec` file
 # that will avoid rails generators crashing because migrations haven't been run yet
 # return unless Rails.env.test?
@@ -76,7 +78,7 @@ RSpec.configure do |config|
     I18n.locale = :en
     I18n.default_locale = :en
     Faker::Config.locale = :en
-    
+
     # Limpia la BD una vez
     DatabaseCleaner.clean_with(:truncation)
   end
@@ -84,5 +86,9 @@ RSpec.configure do |config|
   config.before(:each) do
     # Asegura que cada test use inglés
     I18n.locale = :en
+  end
+
+  config.before(:each, type: :view) do
+    allow(view).to receive(:current_user).and_return(nil)
   end
 end

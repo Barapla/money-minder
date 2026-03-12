@@ -6,19 +6,19 @@ class TransactionPresenter < ApplicationPresenter
   include ActionView::Helpers::TextHelper
   include ActionView::Helpers::DateHelper
   def transaction_type
-    @resource.transaction_type.value
+    @resource.transaction_type&.value
   end
 
   def category
-    @resource.category.name
+    @resource.category&.name
   end
 
   def icon
-    @resource.icon.value
+    @resource.icon&.value
   end
 
   def color
-    @resource.color.value
+    @resource.color&.value
   end
 
   def amount
@@ -42,19 +42,19 @@ class TransactionPresenter < ApplicationPresenter
   end
 
   def transaction_date
-    DatePresenter.new(@resource.transaction_date).date_in_words_long
+    DatePresenter.new(@resource.transaction_date).date_in_words_long if @resource.transaction_date
   end
 
   def budget
-    @resource.budget.name
+    @resource.budget&.name
   end
 
   def created_at
-    @resource.created_at.strftime('%d %b %Y')
+    @resource.created_at&.strftime('%d %b %Y')
   end
 
   def updated_at
-    @resource.updated_at.strftime('%d %b %Y')
+    @resource.updated_at&.strftime('%d %b %Y')
   end
 
   def spent_amount_the_month_by_category
