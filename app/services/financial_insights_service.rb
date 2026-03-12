@@ -392,7 +392,7 @@ class FinancialInsightsService
       cutting_date: current_cycle.cutting_date,
       payment_due_date: current_cycle.payment_due_date,
       days_until_cutting: (current_cycle.cutting_date - Date.current).to_i,
-      current_balance: current_cycle.current_balance,
+      closing_balance: current_cycle.closing_balance,
       minimum_payment: current_cycle.minimum_payment,
       cycle_status: current_cycle.status_id
     }
@@ -433,15 +433,15 @@ class FinancialInsightsService
       current_cycle = get_current_cycle_info(card)
       next unless current_cycle && card.credit_card.limit_amount.positive?
 
-      current_balance = current_cycle[:current_balance]
+      closing_balance = current_cycle[:closing_balance]
       limit_amount = card.credit_card.limit_amount
-      current_utilization = (current_balance / limit_amount * 100)
+      current_utilization = (closing_balance / limit_amount * 100)
       target_balance = limit_amount * 0.10 # 10% target
-      payment_needed = [current_balance - target_balance, 0].max
+      payment_needed = [closing_balance - target_balance, 0].max
 
       payment_recommendations << {
         card_name: card.name,
-        current_balance: current_balance.to_f.round(2),
+        closing_balance: closing_balance.to_f.round(2),
         current_utilization: current_utilization.round(2),
         target_utilization: 10.0,
         payment_needed: payment_needed.round(2),
@@ -468,20 +468,20 @@ class FinancialInsightsService
   def calculate_optimal_payment_for_card(budget, cycle_info)
     return nil unless cycle_info || budget.credit_card
 
-    # Usar current_balance del ciclo o del credit_card
-    current_balance = cycle_info&.dig(:current_balance) || budget.credit_card&.current_balance || 0
+    # Usar closing_balance del ciclo o del credit_card
+    closing_balance = cycle_info&.dig(:closing_balance) || budget.credit_card&.closing_balance || 0
     limit_amount = budget.credit_card&.limit_amount || 0
 
     return nil if limit_amount.zero?
 
     target_balance = limit_amount * 0.10 # 10% target
-    payment_needed = [current_balance - target_balance, 0].max
+    payment_needed = [closing_balance - target_balance, 0].max
 
     {
-      current_balance: current_balance.to_f.round(2),
+      closing_balance: closing_balance.to_f.round(2),
       target_balance: target_balance.to_f.round(2),
       payment_needed: payment_needed.to_f.round(2),
-      current_utilization: (current_balance / limit_amount * 100).round(2),
+      current_utilization: (closing_balance / limit_amount * 100).round(2),
       target_utilization: 10.0,
       days_until_cutting: cycle_info&.dig(:days_until_cutting) || 0
     }
@@ -506,11 +506,11 @@ class FinancialInsightsService
 
       next unless current_cycle && card.credit_card.limit_amount.positive?
 
-      current_balance = current_cycle.current_balance
+      closing_balance = current_cycle.closing_balance
       limit_amount = card.credit_card.limit_amount
-      utilization = (current_balance / limit_amount * 100)
+      utilization = (closing_balance / limit_amount * 100)
 
-      total_debt += current_balance
+      total_debt += closing_balance
       total_limit += limit_amount
 
       cards_over_30 << card.name if utilization > 30
@@ -602,7 +602,7 @@ class FinancialInsightsService
           \"card_name\": \"name\",
           \"cutting_date\": \"YYYY-MM-DD\",
           \"days_remaining\": 0,
-          \"current_balance\": 0,
+          \"closing_balance\": 0,
           \"recommended_payment\": 0,
           \"resulting_utilization\": 0,
           \"urgency_level\": \"critical|high|medium|low\"

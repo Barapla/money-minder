@@ -26,7 +26,7 @@ class CreditCard < ApplicationRecord
     last_cycle = credit_card_cycles.order(cutting_date: :asc).first
     return unless last_cycle
 
-    last_cycle.update(current_balance: last_cycle.cycle_balance + initial_debt)
+    last_cycle.update(closing_balance: last_cycle.cycle_balance + initial_debt)
   end
 
   def set_initial_debt
@@ -35,8 +35,8 @@ class CreditCard < ApplicationRecord
     # Crear ciclo inicial con la deuda usando tu sistema existente
     cycle = current_cycle # Usa el método de tu TemporaryConsciousness
     cycle.update(
-      current_balance: initial_debt,
-      purchases_made: initial_debt
+      closing_balance: initial_debt,
+      purchases: initial_debt
     )
   end
 end

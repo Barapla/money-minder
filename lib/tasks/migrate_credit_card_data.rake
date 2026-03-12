@@ -25,13 +25,13 @@ namespace :credit_cards do
         c.payment_due_date = cutting_date + card.payment_due_days.days
         c.cycle_balance = 0
         c.historical_balance = 0
-        c.current_balance = 0
-        c.purchases_made = 0
-        c.payments_received = 0
+        c.closing_balance = 0
+        c.purchases = 0
+        c.payments = 0
         c.status = Status.find_by(code: 'open')
       end
       previous_cycle = cycle.previous_cycle
-      cycle.historical_balance = previous_cycle ? previous_cycle.current_balance : card.initial_debt
+      cycle.historical_balance = previous_cycle ? previous_cycle.closing_balance : card.initial_debt
       cycle.save!
 
       # Procesar la transacción individual

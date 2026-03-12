@@ -19,16 +19,16 @@ class CreditCardCycle < ApplicationRecord
 
   after_save :handle_balance_updates
 
-  def push_credit_card_current_balance
-    next_cycle&.update(historical_balance: current_balance)
+  def push_credit_card_closing_balance
+    next_cycle&.update(historical_balance: closing_balance)
   end
 
   def update_budget_amount
     credit_card.update_budget_amount
   end
 
-  def update_credit_card_current_balance
-    update(current_balance: cycle_balance + historical_balance)
+  def update_credit_card_closing_balance
+    update(closing_balance: cycle_balance + historical_balance)
   end
 
   # **MÉTODOS DEL CICLO**
@@ -45,14 +45,14 @@ class CreditCardCycle < ApplicationRecord
 
   def process_payment(transaction)
     amount = transaction.amount
-    self.payments_received += amount
+    self.payments += amount
     self.cycle_balance -= amount
     save!
   end
 
   def process_purchase(transaction)
     amount = transaction.amount
-    self.purchases_made += amount
+    self.purchases += amount
     self.cycle_balance += amount
     save!
   end
@@ -89,19 +89,19 @@ class CreditCardCycle < ApplicationRecord
   def utilization_at_closing
     return 0 if credit_card.limit_amount.zero?
 
-    (current_balance / credit_card.limit_amount * 100).round(2)
+    (closing_balance / credit_card.limit_amount * 100).round(2)
   end
 
   # Para reportes y análisis
   def net_activity
-    purchases_made - payments_received
+    purchases - payments
   end
 
   def payment_behavior
     return 'no_activity' if cycle_balance.zero?
-    return 'full_payment' if payments_received >= current_balance
-    return 'minimum_payment' if payments_received >= minimum_payment
-    return 'partial_payment' if payments_received.positive?
+    return 'full_payment' if payments >= closing_balance
+    return 'minimum_payment' if payments >= minimum_payment
+    return 'partial_payment' if payments.positive?
 
     'no_payment'
   end
@@ -118,11 +118,11 @@ class CreditCardCycle < ApplicationRecord
 
   def handle_balance_updates
     if balance_changed_or_new_record?
-      update_credit_card_current_balance
-      push_credit_card_current_balance if should_push_balance?
+      update_credit_card_closing_balance
+      push_credit_card_closing_balance if should_push_balance?
       update_budget_amount if should_push_balance?
     elsif should_push_balance?
-      push_credit_card_current_balance
+      push_credit_card_closing_balance
       update_budget_amount
     end
   end
@@ -132,18 +132,18 @@ class CreditCardCycle < ApplicationRecord
   end
 
   def should_push_balance?
-    new_record? || saved_change_to_current_balance?
+    new_record? || saved_change_to_closing_balance?
   end
 
   def calculate_minimum_payment
     base_percentage = 0.05
-    self.minimum_payment = (current_balance * base_percentage).round(2)
+    self.minimum_payment = (closing_balance * base_percentage).round(2)
 
     if credit_card.interest_rate.present?
-      interest = current_balance * (credit_card.interest_rate / 100)
+      interest = closing_balance * (credit_card.interest_rate / 100)
       self.minimum_payment += interest
     end
 
-    self.minimum_payment = [minimum_payment, 25.0].max if current_balance.positive?
+    self.minimum_payment = [minimum_payment, 25.0].max if closing_balance.positive?
   end
 end

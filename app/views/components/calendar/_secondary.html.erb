@@ -1,0 +1,78 @@
+<% 
+    date = component.date
+    first_day = component.first_day
+    last_day = component.last_day
+    dates_array = component.dates_array
+    options = component.options
+    options_params = options[:params] || {}
+%>
+<!-- Navegación del Calendario -->
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 mb-8">
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
+            <%= render Buttons::LinkComponent.new(content: '
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                ', href: set_month_calendar_index_path(date: (date - 1.month).strftime('%Y-%m-%d'), filter: options_params[:filter]&.to_unsafe_h), 
+                options: { 
+                    class: "p-2 bg-bunker-800/60 hover:bg-bunker-700/60 text-white border border-bunker-700/50 rounded-xl transition-all duration-200", 
+                    data: { 
+                        turbo_method: :post
+                    } 
+                })
+            %>
+            <h2 id="currentMonth" class="text-2xl font-bold text-white"><%= I18n.l(date, format: '%B %Y') %></h2>
+            <%= render Buttons::LinkComponent.new(content: '
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+                ', href: set_month_calendar_index_path(date: (date + 1.month).strftime('%Y-%m-%d'), filter: options_params[:filter]&.to_unsafe_h), 
+                options: { 
+                    class: "p-2 bg-bunker-800/60 hover:bg-bunker-700/60 text-white border border-bunker-700/50 rounded-xl transition-all duration-200", 
+                    data: { 
+                        turbo_method: :post
+                    } 
+                })
+            %>
+        </div>
+        <div class="flex gap-2">
+            <%= render Buttons::LinkComponent.new(content: '
+                Hoy    
+                ', href: set_month_calendar_index_path(date: Date.today.strftime('%Y-%m-%d'), filter: options_params[:filter]&.to_unsafe_h), 
+                options: { 
+                    class: "px-4 py-2 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-xl font-medium transition-all duration-200", 
+                    data: { 
+                        turbo_method: :post
+                    } 
+                })
+            %>
+        </div>
+    </div>
+
+    <!-- Grid del Calendario -->
+    <div class="grid grid-cols-7 gap-1 mb-4">
+        <!-- Headers de días -->
+        <div class="p-3 text-center text-sm font-medium text-bunker-300">Dom</div>
+        <div class="p-3 text-center text-sm font-medium text-bunker-300">Lun</div>
+        <div class="p-3 text-center text-sm font-medium text-bunker-300">Mar</div>
+        <div class="p-3 text-center text-sm font-medium text-bunker-300">Mié</div>
+        <div class="p-3 text-center text-sm font-medium text-bunker-300">Jue</div>
+        <div class="p-3 text-center text-sm font-medium text-bunker-300">Vie</div>
+        <div class="p-3 text-center text-sm font-medium text-bunker-300">Sáb</div>
+    </div>
+
+    <!-- Días del calendario -->
+    <div id="calendarGrid" class="grid grid-cols-7 gap-1">
+        <% for i in 0...first_day do %>
+            <%= render partial: "components/calendar/main/blank_day" %>
+        <% end %>
+
+        <!-- Los días del mes se cargarán aquí dinámicamente -->
+        <% dates_array.each do |date| %>
+            <%= render Calendar::DayComponent.new(date: date[:date], objects: date[:objects], day_balance: date[:day_balance], options: { has_income: date[:has_income], has_expenses: date[:has_expenses], filter: options_params[:filter]&.to_unsafe_h }) %>
+        <% end %>
+    </div>
+</div>
+
+<%= turbo_frame_tag "day_details" %>

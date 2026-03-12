@@ -46,11 +46,11 @@ module Utils
 
       # Métodos de consulta principales
       def total_debt
-        credit_card_cycles.sum(:current_balance)
+        credit_card_cycles.sum(:closing_balance)
       end
 
       def current_debt
-        current_cycle&.current_balance || 0.0
+        current_cycle&.closing_balance || 0.0
       end
 
       def available_credit
