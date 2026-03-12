@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :status do
-    code { "MyString" }
-    value { "MyString" }
-    color { "MyString" }
+    code { 'MyString' }
+    name { 'MyString' }
+    color { 'MyString' }
   end
 end
