@@ -2,6 +2,7 @@
 
 require 'active_support/core_ext/integer/time'
 
+# rubocop:disable Metrics/BlockLength
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -59,10 +60,12 @@ Rails.application.configure do
   config.active_record.verbose_query_logs = true
 
   # This should be true in development
-  config.assets.debug = true
+  if config.respond_to?(:assets)
+    config.assets.debug = true
 
-  # Suppress logger output for asset requests.
-  config.assets.quiet = true
+    # Suppress logger output for asset requests.
+    config.assets.quiet = true
+  end
 
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
@@ -76,3 +79,4 @@ Rails.application.configure do
   #
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
 end
+# rubocop:enable Metrics/BlockLength
