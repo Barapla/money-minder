@@ -15,7 +15,7 @@ CLAUDE_API_KEY = ENV.fetch('CLAUDE_API_KEY')
 
 ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages'
 ANTHROPIC_VERSION = '2023-06-01'
-CLAUDE_MODEL      = ENV.fetch('CLAUDE_MODEL', 'claude-sonnet-4-20250514')
+CLAUDE_MODEL      = ENV.fetch('CLAUDE_MODEL', 'claude-sonnet-4-5')
 MAX_TOKENS        = 4096
 
 github_ref_match = ENV['GITHUB_REF']&.match(%r{refs/pull/(\d+)/merge})
