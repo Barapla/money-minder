@@ -2,12 +2,12 @@
   "name": "app",
   "private": true,
   "devDependencies": {
-    "autoprefixer": "^10.4.20",
-    "esbuild": "^0.23.1",
-    "postcss": "^8.4.42",
-    "postcss-cli": "^11.0.0",
-    "postcss-import": "^16.1.0",
-    "tailwindcss": "^3.4.10"
+    "autoprefixer": "^10.5.0",
+    "esbuild": "^0.25.0",
+    "postcss": "^8.5.15",
+    "postcss-cli": "^11.0.1",
+    "postcss-import": "^16.1.1",
+    "tailwindcss": "^3.4.19"
   },
   "scripts": {
     "build": "esbuild app/javascript/*.* --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets",
@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
-    "@hotwired/turbo-rails": "^8.0.5",
-    "chart.js": "^4.5.0",
+    "@hotwired/turbo-rails": "^8.0.23",
+    "chart.js": "^4.5.1",
     "yarn": "^1.22.22"
   }
 }

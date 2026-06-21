@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.2.2"
+ruby ">= 3.2"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 7.0.8", ">= 7.0.8.4"
@@ -13,7 +13,7 @@ gem "sprockets-rails"
 gem "pg", "~> 1.1"
 
 # Use the Puma web server [https://github.com/puma/puma]
-gem "puma", "~> 5.0"
+gem "puma", "~> 7.0"
 
 # Bundle and transpile JavaScript [https://github.com/rails/jsbundling-rails]
 gem "jsbundling-rails"
@@ -85,12 +85,11 @@ group :test do
   gem 'database_cleaner-active_record'
 end
 
-gem 'httparty', '~> 0.20.0'
+gem 'httparty', '~> 0.21'
 gem 'date'
 gem 'inline_svg'
 gem 'foreman'
 gem 'colorize'
 gem 'awesome_print'
-gem 'inline_svg'
 gem 'sidekiq', '~> 6.5'
 gem 'sidekiq-cron'
