@@ -11,7 +11,7 @@ class ClaudeService
     raise 'ANTHROPIC_API_KEY no está configurada' if @api_key.blank?
   end
 
-  def send_message(prompt:, context: nil, data: nil, model: 'claude-sonnet-4-20250514')
+  def send_message(prompt:, context: nil, data: nil, model: 'claude-sonnet-4-5')
     # Construir el mensaje con contexto y datos
     full_message = build_message(prompt, context, data)
 

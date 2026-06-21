@@ -13,19 +13,58 @@ MoneyMinder es un gestor de gastos personales, en el cual se podran visualizar d
 
 ## Stack
 
-Ruby on Rails, PostgreSQL, Redis, Sidekiq, RSpec, RuboCop, Node.js
+| Tecnología | Version |
+|---|---|
+| Ruby | 3.2.2 |
+| Rails | 7.0.8 |
+| PostgreSQL | 16 |
+| Redis | — |
+| Sidekiq | 6.5 |
+| RSpec | — |
+| RuboCop | — |
+| Node.js | — |
+
+Gemas clave: `devise`, `httparty`, `sidekiq-cron`, `brakeman`, `bundler-audit`
+
+---
+
+## Features implementados
+
+| Feature | Modelos principales | Estado |
+|---|---|---|
+| Autenticación | `User` (Devise) | Completo |
+| Transacciones | `Transaction`, `TransactionHistory` | Completo |
+| Transacciones recurrentes | `RecurringTransaction`, `Recurrence` | Completo |
+| Presupuestos | `Budget` | Completo |
+| Categorías | `Category` | Completo |
+| Catálogos | `GroupCatalog`, `Catalog` | Completo |
+| Tarjetas de crédito | `CreditCard`, `CreditCardCycle`, `CreditCardProduct`, `CreditCardTier`, `CreditCardCycleTransaction` | Completo |
+| Fondos de ahorro | `SavingsFund` | Completo |
+| Instituciones financieras | `FinancialInstitution` | Completo |
+| Pagos obligatorios | `ObligatoryPayment` | Completo |
+| Reportes IA | `AiReport` | Completo |
+| Historial crediticio | `CreditScoreEvent`, `Status` | Completo |
+| Vistas de calendario | — | Completo |
+| Insights financieros | `FinancialInsightsService`, `ClaudeService` | Completo |
+| Jobs en background | `RecurringTransactionsJob`, `ProcessSingleRecurringTransactionJob`, `RecurringTransactionsCleanupJob` | Completo |
 
 ---
 
 ## Technical Decisions
 
-Sidekiq for background jobs. RSpec for testing
+- **Sidekiq** para background jobs (queues: `default`, `automation`)
+- **RSpec** para testing con FactoryBot y Faker
+- **Devise** para autenticación
+- **ClaudeService / HTTParty** para integración con Anthropic API (modelo `claude-sonnet-4`)
+- **Presenters** para lógica de presentación compleja (moneda, fechas, presupuestos)
+- **Service objects** sin módulo namespace raíz, con sub-namespace por dominio (ej. `CreditCardServices::`)
+- **Sidekiq-cron** para jobs programados (ej. procesamiento de transacciones recurrentes)
 
 ---
 
 ## Conventions
 
-Service objects, RSpec
+Service objects, RSpec, Presenters, FactoryBot
 
 ---
 

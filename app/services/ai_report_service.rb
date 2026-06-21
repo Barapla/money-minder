@@ -30,7 +30,7 @@ class AiReportService
         timestamp: start_time.iso8601
       },
       ai_response_data: ai_result,
-      ai_model_used: 'claude-sonnet-4-20250514',
+      ai_model_used: 'claude-sonnet-4-5',
       tokens_used: (ai_result[:usage]&.dig('input_tokens')&.+ ai_result[:usage]&.dig('output_tokens')) || 0,
       processing_time:,
       processing_success: ai_result[:success],
