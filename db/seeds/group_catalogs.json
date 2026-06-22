@@ -58,6 +58,22 @@
         {
           "value": "emerald-500",
           "code": "emerald"
+        },
+        {
+          "value": "white",
+          "code": "white"
+        },
+        {
+          "value": "gray-200",
+          "code": "gray_light"
+        },
+        {
+          "value": "gray-400",
+          "code": "gray_medium"
+        },
+        {
+          "value": "gray-600",
+          "code": "gray_dark"
         }
       ]
     },
