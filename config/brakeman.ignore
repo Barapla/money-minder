@@ -3,12 +3,12 @@
     {
       "warning_type": "Unmaintained Dependency",
       "warning_code": 120,
-      "fingerprint": "d84924377155b41e094acae7404ec2e521629d86f97b0ff628e3d1b263f8101c",
+      "fingerprint": "21ab0fe00fdd5899ffc405cff75aadb91b805ee996a614f7e27b08a287e9062d",
       "check_name": "EOLRails",
-      "message": "Support for Rails 7.0.10 ended on 2025-04-01",
+      "message": "Support for Rails 7.2.3.1 ends on 2026-08-09",
       "file": "Gemfile.lock",
-      "line": 225,
-      "note": "Upgrade pendiente — Rails 7.0 EOL conocido, se actualizará en FEAT separado"
+      "line": 229,
+      "note": "Upgrade a Rails 8.x pendiente — EOL próximo 2026-08-09, se actualizará en FEAT separado"
     },
     {
       "warning_type": "Unmaintained Dependency",
