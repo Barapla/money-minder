@@ -13,25 +13,21 @@ class ApplicationComponent
   def self.renders_one(name)
     attr_accessor name
 
-    class_eval <<-CODE, __FILE__, __LINE__ + 1
-      def #{name}?
-        @#{name}.present?
-      end
-    CODE
+    define_method(:"#{name}?") do
+      instance_variable_get(:"@#{name}").present?
+    end
   end
 
   def self.renders_many(name)
     attr_writer name
 
-    class_eval <<-CODE, __FILE__, __LINE__ + 1
-      def #{name}
-        @#{name} || []
-      end
+    define_method(name) do
+      instance_variable_get(:"@#{name}") || []
+    end
 
-      def #{name}?
-        @#{name}.present?
-      end
-    CODE
+    define_method(:"#{name}?") do
+      instance_variable_get(:"@#{name}").present?
+    end
   end
 
   # Captures content to be stored later
