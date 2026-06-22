@@ -1,0 +1,26 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Unmaintained Dependency",
+      "warning_code": 120,
+      "fingerprint": "21ab0fe00fdd5899ffc405cff75aadb91b805ee996a614f7e27b08a287e9062d",
+      "check_name": "EOLRails",
+      "message": "Support for Rails 7.2.3.1 ends on 2026-08-09",
+      "file": "Gemfile.lock",
+      "line": 229,
+      "note": "Upgrade a Rails 8.x pendiente — EOL próximo 2026-08-09, se actualizará en FEAT separado"
+    },
+    {
+      "warning_type": "Unmaintained Dependency",
+      "warning_code": 121,
+      "fingerprint": "edf687f759ec9765bd5db185dbc615c80af77d6e7e19386fc42934e7a80307af",
+      "check_name": "EOLRuby",
+      "message": "Support for Ruby 3.2.2 ended on 2026-03-31",
+      "file": ".ruby-version",
+      "line": 1,
+      "note": "Upgrade pendiente — Ruby 3.2.2 EOL conocido, se actualizará en FEAT separado"
+    }
+  ],
+  "updated": "2026-06-22",
+  "brakeman_version": "8.0.5"
+}

@@ -29,7 +29,7 @@ jobs:
           ruby-version: "3.2.2"
           bundler-cache: true
       - name: Run Brakeman
-        run: bundle exec brakeman --no-pager
+        run: bundle exec brakeman --no-pager -i config/brakeman.ignore
 
   bundler-audit:
     name: Bundler Audit
@@ -83,5 +83,7 @@ jobs:
           bundler-cache: true
       - name: Set up database
         run: bundle exec rails db:schema:load
+      - name: Create asset stubs
+        run: mkdir -p app/assets/builds && touch app/assets/builds/application.css app/assets/builds/application.js
       - name: Run tests
         run: bundle exec rspec
