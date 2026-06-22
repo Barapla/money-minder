@@ -83,5 +83,7 @@ jobs:
           bundler-cache: true
       - name: Set up database
         run: bundle exec rails db:schema:load
+      - name: Create asset stubs
+        run: mkdir -p app/assets/builds && touch app/assets/builds/application.css app/assets/builds/application.js
       - name: Run tests
         run: bundle exec rspec
