@@ -5,3 +5,7 @@ AllCops:
 Naming/FileName:
   Exclude:
     - 'lib/data_scripts/**/*'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'

@@ -1,11 +1,9 @@
-class Recurrence < ApplicationRecord
-  # Campos básicos
-  # frequency_type: 'daily', 'weekly', 'monthly', 'yearly'
-  # frequency_value: cada cuántas unidades (ej: cada 2 semanas = weekly + 2)
-  # day_of_week: para frecuencias semanales (0-6, domingo=0)
-  # day_of_month: para frecuencias mensuales (1-31)
-  # month_of_year: para frecuencias anuales (1-12)
+# frozen_string_literal: true
 
+# Modelo de recurrencia para pagos y transacciones periódicas.
+# Soporta frecuencias: daily, weekly, monthly, yearly.
+# frequency_value indica cada cuántas unidades (ej: 2 para "cada 2 meses").
+class Recurrence < ApplicationRecord
   belongs_to :recurrenceable, polymorphic: true, optional: true
   belongs_to :recurrenceable_type_catalog, class_name: 'Catalog', foreign_key: 'recurrenceable_type_id'
   belongs_to :frequency_type, class_name: 'Catalog', foreign_key: 'frequency_type_id'
@@ -13,55 +11,40 @@ class Recurrence < ApplicationRecord
   validates :frequency_value, presence: true, numericality: { greater_than: 0 }
   validates :start_date, presence: true
 
-  # Validaciones condicionales
-  # validates :day_of_week, presence: true, if: -> { frequency_type&.code == 'weekly' }
-  # validates :day_of_month, presence: true, if: -> { frequency_type&.code == 'monthly' || frequency_type&.code == 'yearly' }
-
   def next_occurrence_from(date = Date.current)
     case frequency_type.code
     when 'monthly'
       calculate_next_monthly_occurrence(date)
-    when 'weekly'
-      # calculate_next_weekly_occurrence(date)
-    # etc...
     when 'daily'
       calculate_next_daily_occurrence(date)
     end
   end
 
-  # Genera múltiples ocurrencias futuras
-  def next_n_occurrences(n, from_date = Date.current)
+  def next_n_occurrences(count, from_date = Date.current)
     occurrences = []
     current_date = from_date
 
-    n.times do
+    count.times do
       next_date = next_occurrence_from(current_date)
       break if next_date.nil?
 
       occurrences << next_date
-      current_date = next_date
+      current_date = next_date + 1.day
     end
 
     occurrences
   end
 
-  # Genera todas las ocurrencias dentro de un rango de fechas
-  def occurrences_in_range(start_date, end_date)
+  def occurrences_in_range(range_start, range_end)
     occurrences = []
-    current_date = start_date
+    current_date = range_start
 
-    while current_date <= end_date
+    while current_date <= range_end
       next_date = next_occurrence_from(current_date)
-      break if next_date.nil? || next_date > end_date
+      break if next_date.nil? || next_date > range_end
 
-      occurrences << next_date if next_date >= start_date && !occurrences.include?(next_date)
-
-      # Ensure we advance to avoid infinite loops
-      if next_date == current_date
-        current_date = current_date + 1.day
-      else
-        current_date = next_date + 1.day
-      end
+      occurrences << next_date if next_date >= range_start && !occurrences.include?(next_date)
+      current_date = advance_past(next_date, current_date)
     end
 
     occurrences
@@ -69,37 +52,47 @@ class Recurrence < ApplicationRecord
 
   private
 
-  def calculate_next_monthly_occurrence(from_date)
+  def advance_past(next_date, current_date)
+    current_date = next_date if next_date == current_date
+    current_date + 1.day
+  end
+
+  def occurrence_day_in_month(year, month)
     target_day = start_date.day
+    capped_day = [target_day, Date.new(year, month, -1).day].min
+    Date.new(year, month, capped_day)
+  end
 
-    # First try current month
-    current_month_occurrence = begin
-      Date.new(from_date.year, from_date.month, [target_day, from_date.end_of_month.day].min)
-    rescue ArgumentError
-      from_date.end_of_month
+  def months_offset(from_date)
+    (from_date.year * 12 + from_date.month) - (start_date.year * 12 + start_date.month)
+  end
+
+  def current_month_valid_occurrence(from_date)
+    candidate = occurrence_day_in_month(from_date.year, from_date.month)
+    return nil if candidate < from_date
+    return nil if end_date.present? && candidate > end_date
+
+    candidate
+  end
+
+  def next_valid_monthly_occurrence(from_date, remainder)
+    months_to_advance = remainder.zero? ? frequency_value : (frequency_value - remainder)
+    next_month = from_date.beginning_of_month + months_to_advance.months
+    candidate = occurrence_day_in_month(next_month.year, next_month.month)
+    return nil if end_date.present? && candidate > end_date
+
+    candidate
+  end
+
+  def calculate_next_monthly_occurrence(from_date)
+    remainder = months_offset(from_date) % frequency_value
+
+    if remainder.zero?
+      hit = current_month_valid_occurrence(from_date)
+      return hit if hit
     end
 
-    # If the target day in current month is today or in the future, use it
-    if current_month_occurrence >= from_date
-      # Validar que no exceda el end_date (si existe)
-      return nil if end_date.present? && current_month_occurrence > end_date
-      return current_month_occurrence
-    end
-
-    # Otherwise, calculate for next occurrence based on frequency
-    next_month = from_date.beginning_of_month + frequency_value.months
-
-    # Calcular la próxima ocurrencia
-    next_occurrence = if target_day > next_month.end_of_month.day
-      next_month.end_of_month
-    else
-      Date.new(next_month.year, next_month.month, target_day)
-    end
-
-    # Validar que no exceda el end_date (si existe)
-    return nil if end_date.present? && next_occurrence > end_date
-    
-    next_occurrence
+    next_valid_monthly_occurrence(from_date, remainder)
   end
 
   def calculate_next_daily_occurrence(from_date)
