@@ -27,7 +27,7 @@ module Seeds
 
       def create_record(model_class, record_data)
         # Separamos las asociaciones de los atributos regulares
-        associations, attributes = extract_associations(record_data)
+        associations, attributes = extract_associations(record_data, model_class)
 
         # Encontramos o inicializamos el registro principal
         record = find_or_initialize_record(model_class, attributes)
@@ -40,7 +40,7 @@ module Seeds
         record
       end
 
-      def extract_associations(record_data)
+      def extract_associations(record_data, model_class = nil)
         associations = {}
         attributes = {}
 
@@ -48,7 +48,12 @@ module Seeds
           if value.is_a?(Hash) || value.is_a?(Array)
             associations[key] = value
           else
-            attributes[key] = value
+            reflection = model_class&.reflect_on_association(key.to_sym)
+            if reflection&.macro == :belongs_to && value.is_a?(String)
+              attributes[key] = reflection.klass.find_by(code: value)
+            else
+              attributes[key] = value
+            end
           end
         end
 
