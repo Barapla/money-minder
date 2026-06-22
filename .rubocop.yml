@@ -1,0 +1,7 @@
+AllCops:
+  NewCops: disable
+  SuggestExtensions: false
+
+Naming/FileName:
+  Exclude:
+    - 'lib/data_scripts/**/*'
