@@ -25,13 +25,70 @@ MoneyMinder es un gestor de gastos personales, en el cual se podran visualizar d
 
 Asegúrate de tener instalado lo siguiente:
 
-- Ruby
-- Rails
-- PostgreSQL
+- Ruby 3.2.2
+- Rails 7.0.8
+- PostgreSQL 16
 - Node.js
 - Yarn
 
-## Pasos
+### Instalación de PostgreSQL 16
+
+#### macOS
+
+```bash
+brew install postgresql@16
+brew services start postgresql@16
+echo 'export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+#### Linux (Ubuntu/Debian)
+
+```bash
+sudo apt-get update
+sudo apt-get install -y postgresql-16 postgresql-client-16
+sudo systemctl enable postgresql
+sudo systemctl start postgresql
+```
+
+#### Windows
+
+Descarga el instalador desde [postgresql.org/download/windows](https://www.postgresql.org/download/windows/) y sigue el asistente de instalación. Asegúrate de agregar el directorio `bin` de PostgreSQL al PATH del sistema.
+
+### Configuración local (development)
+
+El ambiente de development usa PostgreSQL local. Los ambientes de staging/production usan Railway vía `DATABASE_URL`.
+
+1. Instala las dependencias y configura el entorno:
+
+```bash
+bin/setup
+```
+
+Esto copiará `.env.example` a `.env` automáticamente si no existe.
+
+2. Ajusta las variables en `.env` si tu instalación de PostgreSQL usa credenciales distintas a las predeterminadas:
+
+```
+DB_USERNAME=postgres
+DB_PASSWORD=
+DB_HOST=localhost
+DB_PORT=5432
+```
+
+3. Crea, migra y seedea la base de datos:
+
+```bash
+rails db:create db:migrate db:seed
+```
+
+4. Inicia el servidor:
+
+```bash
+foreman start -f Procfile.dev
+```
+
+## Pasos de desarrollo
 
 ### Creación del proyecto
 
