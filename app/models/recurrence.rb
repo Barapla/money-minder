@@ -85,21 +85,27 @@ class Recurrence < ApplicationRecord
   end
 
   def calculate_next_monthly_occurrence(from_date)
-    remainder = months_offset(from_date) % frequency_value
+    effective_from = valid_from_date(from_date)
+    remainder = months_offset(effective_from) % frequency_value
 
     if remainder.zero?
-      hit = current_month_valid_occurrence(from_date)
+      hit = current_month_valid_occurrence(effective_from)
       return hit if hit
     end
 
-    next_valid_monthly_occurrence(from_date, remainder)
+    next_valid_monthly_occurrence(effective_from, remainder)
   end
 
   def calculate_next_daily_occurrence(from_date)
-    days_difference = (from_date - start_date).to_i
+    effective_from = valid_from_date(from_date)
+    days_difference = (effective_from - start_date).to_i
     intervals_passed = (days_difference / frequency_value.to_f).ceil
     next_occurrence = start_date + (intervals_passed * frequency_value).days
 
-    next_occurrence >= from_date ? next_occurrence : next_occurrence + frequency_value.days
+    next_occurrence >= effective_from ? next_occurrence : next_occurrence + frequency_value.days
+  end
+
+  def valid_from_date(from_date)
+    [from_date, start_date].max
   end
 end
