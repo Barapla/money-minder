@@ -148,5 +148,12 @@ RSpec.describe EmploymentInformationServices::Calculator do
         expect(result[:daily]).to eq(1000.0)
       end
     end
+
+    context 'periodicidad inválida' do
+      it 'lanza ArgumentError con mensaje descriptivo' do
+        expect { described_class.normalize_salary(1000.0, 'invalid') }
+          .to raise_error(ArgumentError, /Periodicidad inválida/)
+      end
+    end
   end
 end

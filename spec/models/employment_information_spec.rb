@@ -70,6 +70,15 @@ RSpec.describe EmploymentInformation, type: :model do
     end
   end
 
+  describe 'unicidad de usuario' do
+    it 'no permite dos registros para el mismo usuario' do
+      create(:employment_information, user:)
+      duplicate = build(:employment_information, user:)
+      expect(duplicate).not_to be_valid
+      expect(duplicate.errors[:user_id]).to be_present
+    end
+  end
+
   describe 'CA1: registro válido' do
     it 'es válido con todos los atributos correctos' do
       expect(employment_information).to be_valid

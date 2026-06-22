@@ -12,6 +12,7 @@ class EmploymentInformation < ApplicationRecord
   validates :start_date, presence: true
   validates :gross_salary_amount, presence: true, numericality: { greater_than: 0 }
   validates :salary_periodicity, presence: true
+  validates :user_id, uniqueness: true
   validate :start_date_not_in_future
 
   private

@@ -19,7 +19,7 @@ module EmploymentInformationServices
     end
 
     def self.normalize_salary(amount, periodicity)
-      daily_rate = amount / DAYS_PER_PERIODICITY.fetch(periodicity.to_s)
+      daily_rate = amount / days_for(periodicity)
       {
         daily: daily_rate,
         weekly: daily_rate * 7,
@@ -28,6 +28,11 @@ module EmploymentInformationServices
         yearly: daily_rate * 365
       }
     end
+
+    def self.days_for(periodicity)
+      DAYS_PER_PERIODICITY.fetch(periodicity.to_s) { raise ArgumentError, "Periodicidad inválida: #{periodicity}" }
+    end
+    private_class_method :days_for
 
     def self.calculate_years_and_months(start_date, today)
       years = today.year - start_date.year

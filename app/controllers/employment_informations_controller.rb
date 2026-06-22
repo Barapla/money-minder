@@ -35,7 +35,7 @@ class EmploymentInformationsController < ApplicationController
   private
 
   def set_employment_information
-    @employment_information = current_user.employment_information
+    @employment_information = EmploymentInformation.find_by(user_id: current_user.id)
     return unless @employment_information.nil?
 
     redirect_to new_employment_information_path, alert: 'No tienes información laboral registrada.'
