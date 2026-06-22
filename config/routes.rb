@@ -59,6 +59,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resource :employment_information, only: %i[show new create edit update]
+
   resources :financial_insights, only: [] do
     collection do
       post :generate

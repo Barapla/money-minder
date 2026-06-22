@@ -23,6 +23,7 @@
                         <%= navbar_link_to("Calendario", calendar_index_path) %>
                         <%= navbar_link_to("Recordatorios", obligatory_payments_path) %>
                         <%= navbar_link_to("Recordatorios Calendario", obligatory_payments_calendar_index_path) %>
+                        <%= navbar_link_to("Perfil Laboral", current_user&.employment_information ? employment_information_path : new_employment_information_path) %>
                     </div>
                 </div>
 
