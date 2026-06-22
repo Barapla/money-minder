@@ -80,7 +80,7 @@ end
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
-  gem "selenium-webdriver"
+  gem "selenium-webdriver", "< 4.45.0"
   gem 'shoulda-matchers', '~> 6.0'
   gem 'database_cleaner-active_record'
 end
