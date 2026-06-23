@@ -1,0 +1,190 @@
+<div class="max-w-3xl mx-auto">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-bunker-900/80 to-purple-900/80 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-400 rounded-xl flex items-center justify-center">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-white">Configuración de Nómina</h1>
+        <p class="text-bunker-300 mt-1">Bonos no gravados y tasas de deducción personalizadas</p>
+      </div>
+    </div>
+  </div>
+
+  <%= form_with url: payroll_profile_path, method: :patch, local: true, html: { class: "space-y-8" } do |form| %>
+    <% if @payroll_profile.errors.any? %>
+      <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+        <h4 class="text-red-400 font-semibold mb-2">Por favor corrige los siguientes errores:</h4>
+        <ul class="list-disc list-inside space-y-1">
+          <% @payroll_profile.errors.full_messages.each do |message| %>
+            <li class="text-red-300 text-sm"><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <!-- Bonos no gravados -->
+    <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+      <h2 class="text-xl font-semibold text-white mb-2 flex items-center gap-2">
+        <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Bonos No Gravados
+      </h2>
+      <p class="text-bunker-400 text-sm mb-6">Ingresos adicionales que no forman parte del salario gravado (vales, transporte, teletrabajo, etc.).</p>
+
+      <div data-controller="bonus-manager" class="space-y-4">
+        <div class="grid grid-cols-[1fr_9rem_2.25rem] gap-3 mb-2">
+          <span class="text-xs text-bunker-400 font-medium uppercase tracking-wide">Concepto</span>
+          <span class="text-xs text-bunker-400 font-medium uppercase tracking-wide">Monto mensual</span>
+          <span></span>
+        </div>
+
+        <div data-bonus-manager-target="container" class="space-y-3">
+          <% bonuses = @payroll_profile.non_taxable_bonuses.presence || {} %>
+          <% if bonuses.empty? %>
+            <div data-bonus-manager-target="row" class="grid grid-cols-[1fr_9rem_2.25rem] gap-3 items-center">
+              <input type="text"
+                     name="payroll_profile[bonus_names][]"
+                     placeholder="Ej: Transporte"
+                     class="w-full bg-bunker-800/60 border border-bunker-700/50 rounded-lg px-4 py-2.5 text-white text-sm placeholder-bunker-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20">
+              <input type="number"
+                     name="payroll_profile[bonus_amounts][]"
+                     step="0.01"
+                     min="0"
+                     placeholder="0.00"
+                     class="w-full bg-bunker-800/60 border border-bunker-700/50 rounded-lg px-4 py-2.5 text-white text-sm placeholder-bunker-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20">
+              <button type="button"
+                      data-action="bonus-manager#removeRow"
+                      class="w-9 h-9 flex items-center justify-center text-bunker-400 hover:text-red-400 border border-bunker-700/50 hover:border-red-500/40 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          <% else %>
+            <% bonuses.each do |name, amount| %>
+              <div data-bonus-manager-target="row" class="grid grid-cols-[1fr_9rem_2.25rem] gap-3 items-center">
+                <input type="text"
+                       name="payroll_profile[bonus_names][]"
+                       value="<%= name %>"
+                       placeholder="Ej: Transporte"
+                       class="w-full bg-bunker-800/60 border border-bunker-700/50 rounded-lg px-4 py-2.5 text-white text-sm placeholder-bunker-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20">
+                <input type="number"
+                       name="payroll_profile[bonus_amounts][]"
+                       value="<%= amount %>"
+                       step="0.01"
+                       min="0"
+                       placeholder="0.00"
+                       class="w-full bg-bunker-800/60 border border-bunker-700/50 rounded-lg px-4 py-2.5 text-white text-sm placeholder-bunker-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20">
+                <button type="button"
+                        data-action="bonus-manager#removeRow"
+                        class="w-9 h-9 flex items-center justify-center text-bunker-400 hover:text-red-400 border border-bunker-700/50 hover:border-red-500/40 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+
+        <button type="button"
+                data-action="bonus-manager#addRow"
+                class="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors py-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Agregar bono
+        </button>
+      </div>
+    </div>
+
+    <!-- Tasas de deduccion -->
+    <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+      <h2 class="text-xl font-semibold text-white mb-2 flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path>
+        </svg>
+        Tasas de Deducción
+      </h2>
+      <p class="text-bunker-400 text-sm mb-6">Personaliza las tasas según tu situación fiscal. Deja en blanco para usar los valores por defecto del sistema.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-bunker-300 mb-2">
+            Fondo de Ahorro
+            <span class="text-bunker-500 text-xs font-normal ml-1">(default: 4%)</span>
+          </label>
+          <div class="relative">
+            <input type="number"
+                   name="payroll_profile[savings_fund_rate]"
+                   value="<%= @payroll_profile.savings_fund_rate %>"
+                   step="0.01"
+                   min="0"
+                   max="100"
+                   placeholder="4.00"
+                   class="w-full bg-bunker-800/60 border border-bunker-700/50 rounded-lg px-4 py-2.5 pr-8 text-white text-sm placeholder-bunker-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-bunker-400 text-sm">%</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-bunker-300 mb-2">
+            ISR personalizado
+            <span class="text-bunker-500 text-xs font-normal ml-1">(default: 18.6%)</span>
+          </label>
+          <div class="relative">
+            <input type="number"
+                   name="payroll_profile[custom_isr_rate]"
+                   value="<%= @payroll_profile.custom_isr_rate %>"
+                   step="0.01"
+                   min="0"
+                   max="100"
+                   placeholder="18.60"
+                   class="w-full bg-bunker-800/60 border border-bunker-700/50 rounded-lg px-4 py-2.5 pr-8 text-white text-sm placeholder-bunker-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-bunker-400 text-sm">%</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-bunker-300 mb-2">
+            IMSS personalizado
+            <span class="text-bunker-500 text-xs font-normal ml-1">(default: 3%)</span>
+          </label>
+          <div class="relative">
+            <input type="number"
+                   name="payroll_profile[custom_imss_rate]"
+                   value="<%= @payroll_profile.custom_imss_rate %>"
+                   step="0.01"
+                   min="0"
+                   max="100"
+                   placeholder="3.00"
+                   class="w-full bg-bunker-800/60 border border-bunker-700/50 rounded-lg px-4 py-2.5 pr-8 text-white text-sm placeholder-bunker-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-bunker-400 text-sm">%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-between pt-2">
+      <%= link_to employment_information_path,
+                  class: "flex items-center gap-2 px-4 py-2.5 text-bunker-400 hover:text-white border border-bunker-700 hover:border-bunker-600 rounded-lg text-sm transition-colors" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+        Cancelar
+      <% end %>
+      <button type="submit" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Guardar Configuración
+      </button>
+    </div>
+  <% end %>
+</div>

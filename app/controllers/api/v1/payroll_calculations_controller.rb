@@ -9,7 +9,7 @@ module Api
 
       def aguinaldo
         result = Payroll::AguinaldoCalculator.new(
-          monthly_gross_salary: @payroll_profile.monthly_gross_salary,
+          monthly_gross_salary: @payroll_profile.base_salary,
           hire_date: @payroll_profile.hire_date
         ).call
 
@@ -18,17 +18,15 @@ module Api
 
       def savings_fund
         result = Payroll::SavingsFundCalculator.new(
-          monthly_gross_salary: @payroll_profile.monthly_gross_salary,
-          savings_fund_percentage: @payroll_profile.savings_fund_percentage
+          monthly_gross_salary: @payroll_profile.base_salary,
+          savings_fund_percentage: @payroll_profile.savings_fund_rate
         ).call
 
         render_result(result)
       end
 
       def net_salary
-        result = Payroll::NetSalaryCalculator.new(
-          monthly_gross_salary: @payroll_profile.monthly_gross_salary
-        ).call
+        result = PayrollServices::Calculator.new(@payroll_profile).call
 
         render_result(result)
       end
@@ -42,7 +40,7 @@ module Api
         render json: {
           error: {
             code: 'not_found',
-            message: 'Perfil de nómina no encontrado. Registra tu información laboral primero.'
+            message: 'Perfil de nomina no encontrado. Registra tu informacion laboral primero.'
           }
         }, status: :not_found
       end
