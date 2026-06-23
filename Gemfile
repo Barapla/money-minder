@@ -93,5 +93,5 @@ gem 'colorize'
 gem 'awesome_print'
 gem 'sidekiq', '~> 6.5'
 gem 'sidekiq-cron'
-# Actualizado por CVE-2026-54904, CVE-2026-54905, CVE-2026-54906
+# Actualizado por seguridad: versiones anteriores de concurrent-ruby contienen vulnerabilidades conocidas
 gem "concurrent-ruby", ">= 1.3.7"

@@ -50,7 +50,12 @@ class EmploymentInformationPresenter < ApplicationPresenter
 
   def formatted_start_date    = @resource.start_date.strftime('%d/%m/%Y')
   def job_title               = @resource.job_title
-  def weekly_payment_day_name = DAY_NAMES_ES[@resource.start_date.wday]
+
+  def weekly_payment_day_name
+    return nil unless @resource.start_date
+
+    DAY_NAMES_ES[@resource.start_date.wday]
+  end
 
   def original_salary_formatted
     number_to_currency(@resource.gross_salary_amount, unit: '$', separator: '.', delimiter: ',')
@@ -80,7 +85,10 @@ class EmploymentInformationPresenter < ApplicationPresenter
   attr_reader :resource
 
   def next_weekly_payment
+    return nil unless @resource.start_date
+
     today = Date.current
+    # days_ahead=0 means the payment day is today, so the next one is in 7 days
     days_ahead = (@resource.start_date.wday - today.wday) % 7
     days_ahead = 7 if days_ahead.zero?
     today + days_ahead
@@ -88,7 +96,7 @@ class EmploymentInformationPresenter < ApplicationPresenter
 
   def next_biweekly_payment
     today = Date.current
-    candidates = biweekly_payment_dates(today).select { |d| d >= today }
+    candidates = biweekly_payment_dates(today).compact.select { |d| d >= today }
     return candidates.min unless candidates.empty?
 
     nxt = today >> 1
@@ -111,6 +119,7 @@ class EmploymentInformationPresenter < ApplicationPresenter
     last_working_day_on_or_before(Date.new(nxt.year, nxt.month, -1))
   end
 
+  # Solo omite sábados y domingos; los días festivos mexicanos no se consideran.
   def last_working_day_on_or_before(date)
     date -= 1 while date.saturday? || date.sunday?
     date
