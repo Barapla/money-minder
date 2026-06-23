@@ -44,11 +44,12 @@ RSpec.describe PayrollServices::ReminderGenerator, type: :service do
         expect(reminders).to all(be_a(PayrollReminder))
       end
 
-      it 'genera recordatorios cada 15 días dentro del rango' do
+      it 'genera recordatorios en días hábiles ajustados al ciclo de 15 días' do
         reminders = generator.generate(from_date:, to_date:)
         expect(reminders).not_to be_empty
-        reminders.each_cons(2) do |a, b|
-          expect((b.date - a.date).to_i).to eq(15)
+        reminders.each do |reminder|
+          expect(reminder.date.wday).to be_between(1, 5),
+                                        "Se esperaba día hábil, se obtuvo #{reminder.date}"
         end
       end
 
@@ -106,6 +107,15 @@ RSpec.describe PayrollServices::ReminderGenerator, type: :service do
     context 'CA6: usuario con periodicity weekly' do
       before do
         employment_info.update!(salary_periodicity: 'weekly', start_date: Date.new(2024, 1, 1))
+      end
+
+      it 'genera recordatorios siempre en jueves' do
+        reminders = generator.generate(from_date: Date.new(2024, 3, 1), to_date: Date.new(2024, 3, 31))
+        expect(reminders).not_to be_empty
+        reminders.each do |reminder|
+          expect(reminder.date.wday).to eq(4),
+                                        "Se esperaba jueves, se obtuvo #{reminder.date}"
+        end
       end
 
       it 'genera recordatorios cada 7 días' do

@@ -37,8 +37,8 @@ module PayrollServices
 
       case employment_info.salary_periodicity
       when 'daily' then daily_dates(start, from_date, to_date)
-      when 'weekly' then fixed_interval_dates(start, from_date, to_date, 7)
-      when 'biweekly' then fixed_interval_dates(start, from_date, to_date, 15)
+      when 'weekly' then weekly_dates(from_date, to_date)
+      when 'biweekly' then biweekly_dates(start, from_date, to_date)
       when 'monthly' then monthly_dates(start, from_date, to_date)
       when 'yearly' then yearly_dates(start, from_date, to_date)
       else []
@@ -50,11 +50,28 @@ module PayrollServices
       (first..to_date).to_a
     end
 
+    # Los pagos semanales son siempre los jueves (día hábil fijo por convención de nómina).
+    def weekly_dates(from_date, to_date)
+      dates = []
+      days_until_thursday = (4 - from_date.wday) % 7
+      current = from_date + days_until_thursday
+      while current <= to_date
+        dates << current
+        current += 7
+      end
+      dates
+    end
+
+    # La quincena se ajusta al día hábil anterior si cae en fin de semana (nunca se pasa de la fecha calculada).
+    def biweekly_dates(start, from_date, to_date)
+      fixed_interval_dates(start, from_date, to_date, 15).map { |d| adjust_to_business_day(d) }
+    end
+
     def fixed_interval_dates(start, from_date, to_date, interval)
       dates = []
       current = first_occurrence_on_or_after(start, from_date, interval)
       while current <= to_date
-        dates << current if current >= from_date
+        dates << current
         current += interval
       end
       dates
@@ -65,8 +82,17 @@ module PayrollServices
       return start if start >= from_date
 
       elapsed_days = (from_date - start).to_i
-      cycles = (elapsed_days + interval - 1) / interval
+      cycles = (elapsed_days.to_f / interval).ceil
       start + (cycles * interval)
+    end
+
+    # Ajusta al día hábil anterior si cae en sábado o domingo.
+    def adjust_to_business_day(date)
+      case date.wday
+      when 6 then date - 1  # sábado -> viernes
+      when 0 then date - 2  # domingo -> viernes
+      else date
+      end
     end
 
     def monthly_dates(start, from_date, to_date)

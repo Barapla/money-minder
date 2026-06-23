@@ -21,24 +21,7 @@ class ObligatoryPaymentsCalendarController < ApplicationController
   def day_details
     @date = safe_parse_date(params[:date])
     @obligatory_payments = ObligatoryPayment.includes(:category, :icon, :color)
-
-    # Get recurrences for all payments using raw SQL
-    payment_ids = @obligatory_payments.pluck(:id)
-    recurrences = payment_ids.any? ? Recurrence
-      .where("recurrences.recurrenceable_type::text = ?", 'ObligatoryPayment')
-      .where(recurrenceable_id: payment_ids)
-      .includes(:frequency_type) : []
-
-    # Build recurrence map
-    recurrence_map = {}
-    recurrences.each { |rec| recurrence_map[rec.recurrenceable_id] = rec }
-
-    # Filtrar solo los pagos que vencen en esta fecha específica
-    @day_payments = @obligatory_payments.select do |payment|
-      recurrence = recurrence_map[payment.id]
-      recurrence&.occurrences_in_range(@date, @date)&.any?
-    end
-
+    @day_payments = payments_for_date(@date, @obligatory_payments)
     @total_amount = @day_payments.sum(&:amount)
     @payroll_reminders = payroll_reminders_for_date(@date)
 
@@ -55,6 +38,25 @@ class ObligatoryPaymentsCalendarController < ApplicationController
     Date.today
   end
 
+  def payments_for_date(date, payments)
+    payment_ids = payments.pluck(:id)
+    recurrence_map = build_recurrence_map(payment_ids)
+
+    payments.select do |payment|
+      recurrence_map[payment.id]&.occurrences_in_range(date, date)&.any?
+    end
+  end
+
+  def build_recurrence_map(payment_ids)
+    return {} if payment_ids.empty?
+
+    Recurrence
+      .where('recurrences.recurrenceable_type::text = ?', 'ObligatoryPayment')
+      .where(recurrenceable_id: payment_ids)
+      .includes(:frequency_type)
+      .each_with_object({}) { |rec, map| map[rec.recurrenceable_id] = rec }
+  end
+
   def set_payroll_reminders_for_month
     return unless current_user
 
@@ -67,6 +69,9 @@ class ObligatoryPaymentsCalendarController < ApplicationController
     return [] unless current_user
 
     reminder_generator.generate(from_date: date, to_date: date)
+  rescue StandardError => e
+    Rails.logger.error("PayrollReminder error for date #{date}: #{e.message}")
+    []
   end
 
   def reminder_generator
@@ -74,39 +79,26 @@ class ObligatoryPaymentsCalendarController < ApplicationController
   end
 
   def generate_payment_occurrences(date)
-    start_date = date.beginning_of_month
-    end_date = date.end_of_month
-
-    payment_occurrences = {}
-
-    # Get all recurrences for obligatory payments using raw SQL to avoid ActiveRecord confusion
     payment_ids = @obligatory_payments.pluck(:id)
-    return payment_occurrences if payment_ids.empty?
+    return {} if payment_ids.empty?
 
-    recurrences = Recurrence
-      .where("recurrences.recurrenceable_type::text = ?", 'ObligatoryPayment')
-      .where(recurrenceable_id: payment_ids)
-      .includes(:frequency_type)
+    recurrence_map = build_recurrence_map(payment_ids)
+    accumulate_occurrences(@obligatory_payments, recurrence_map, date)
+  end
 
-    # Build a hash of payment_id => recurrence
-    recurrence_map = {}
-    recurrences.each do |rec|
-      recurrence_map[rec.recurrenceable_id] = rec
-    end
-
-    # Generate occurrences for each payment
-    @obligatory_payments.each do |payment|
+  def accumulate_occurrences(payments, recurrence_map, date)
+    payments.each_with_object({}) do |payment, occurrences|
       recurrence = recurrence_map[payment.id]
       next unless recurrence
 
-      occurrences = recurrence.occurrences_in_range(start_date, end_date)
-
-      occurrences.each do |occurrence_date|
-        payment_occurrences[occurrence_date] ||= []
-        payment_occurrences[occurrence_date] << payment
-      end
+      add_occurrences(occurrences, recurrence, payment, date)
     end
+  end
 
-    payment_occurrences
+  def add_occurrences(occurrences, recurrence, payment, date)
+    recurrence.occurrences_in_range(date.beginning_of_month, date.end_of_month).each do |occurrence_date|
+      occurrences[occurrence_date] ||= []
+      occurrences[occurrence_date] << payment
+    end
   end
 end
