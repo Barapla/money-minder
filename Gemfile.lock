@@ -102,7 +102,7 @@ GEM
       xpath (~> 3.2)
     cgi (0.5.1)
     colorize (1.1.0)
-    concurrent-ruby (1.3.5)
+    concurrent-ruby (1.3.7)
     connection_pool (2.5.4)
     crass (1.0.6)
     cronex (0.15.0)
@@ -373,6 +373,7 @@ DEPENDENCIES
   bundler-audit
   capybara
   colorize
+  concurrent-ruby (>= 1.3.7)
   cssbundling-rails
   database_cleaner-active_record
   date
@@ -403,7 +404,7 @@ DEPENDENCIES
   web-console
 
 RUBY VERSION
-   ruby 3.2.2p53
+  ruby 3.2.2p53
 
 BUNDLED WITH
-   2.4.10
+  4.0.6

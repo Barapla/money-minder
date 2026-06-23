@@ -15,8 +15,8 @@ module Payroll
 
       result = days_worked < 365 ? proportional_aguinaldo(days_worked) : full_years_aguinaldo(days_worked)
       Result.success(data: result)
-    rescue StandardError => e
-      Result.failure(error: e.message)
+    rescue ArgumentError, TypeError => e
+      Result.failure(error: :configuracion_invalida, message: "#{e.class}: #{e.message}")
     end
 
     private
@@ -28,7 +28,10 @@ module Payroll
     end
 
     def aguinaldo_days
-      BigDecimal(PayrollConstants[:aguinaldo_days].to_s)
+      days = PayrollConstants[:aguinaldo_days]
+      raise ArgumentError, 'PayrollConstants[:aguinaldo_days] no está configurado' if days.nil?
+
+      BigDecimal(days.to_s)
     end
 
     def proportional_aguinaldo(days_worked)

@@ -13,8 +13,8 @@ module Payroll
       cap = uma_monthly_cap
       capped = [calculated, cap].min.round(2)
       build_result(capped, calculated > cap)
-    rescue StandardError => e
-      Result.failure(error: e.message)
+    rescue ArgumentError, TypeError => e
+      Result.failure(error: :configuracion_invalida, message: "#{e.class}: #{e.message}")
     end
 
     private
@@ -22,8 +22,10 @@ module Payroll
     attr_reader :monthly_gross_salary, :savings_fund_percentage
 
     def uma_monthly_cap
-      uma_daily = BigDecimal(PayrollConstants[:uma_daily].to_s)
-      (uma_daily * BigDecimal('30.4') * BigDecimal('1.3')).round(2)
+      uma_daily = PayrollConstants[:uma_daily]
+      raise ArgumentError, 'PayrollConstants[:uma_daily] no está configurado' if uma_daily.nil?
+
+      (BigDecimal(uma_daily.to_s) * BigDecimal('30.4') * BigDecimal('1.3')).round(2)
     end
 
     def build_result(capped, uma_cap_applied)

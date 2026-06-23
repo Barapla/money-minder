@@ -14,8 +14,8 @@ module Payroll
       imss = calculate_imss
       net = (monthly_gross_salary - isr - imss).round(2)
       Result.success(data: build_data(isr, imss, net))
-    rescue StandardError => e
-      Result.failure(error: e.message)
+    rescue ArgumentError, TypeError => e
+      Result.failure(error: :configuracion_invalida, message: "#{e.class}: #{e.message}")
     end
 
     private
@@ -32,21 +32,33 @@ module Payroll
     end
 
     def calculate_isr
-      bracket = find_isr_bracket
-      return BigDecimal('0') unless bracket
+      bracket = validated_isr_bracket
+      lower = BigDecimal(bracket[:lower_limit].to_s)
+      rate  = BigDecimal(bracket[:rate].to_s)
+      quota = BigDecimal(bracket[:fixed_quota].to_s)
+      ((monthly_gross_salary - lower) * rate + quota).round(2)
+    end
 
-      lower_limit = BigDecimal(bracket[:lower_limit].to_s)
-      fixed_quota = BigDecimal(bracket[:fixed_quota].to_s)
-      rate = BigDecimal(bracket[:rate].to_s)
-      ((monthly_gross_salary - lower_limit) * rate + fixed_quota).round(2)
+    def validated_isr_bracket
+      bracket = find_isr_bracket
+      raise ArgumentError, "No se encontró tramo ISR para salario #{monthly_gross_salary}" if bracket.nil?
+
+      missing = %i[lower_limit fixed_quota rate].select { |k| bracket[k].nil? }
+      raise ArgumentError, "Tramo ISR inválido: faltan campos #{missing.join(', ')}" if missing.any?
+
+      bracket
     end
 
     def find_isr_bracket
-      PayrollConstants[ISR_TABLE_KEY].find do |bracket|
+      matches = PayrollConstants[ISR_TABLE_KEY].select do |bracket|
         lower = BigDecimal(bracket[:lower_limit].to_s)
         upper = BigDecimal(bracket[:upper_limit].to_s)
         monthly_gross_salary >= lower && monthly_gross_salary <= upper
       end
+
+      raise ArgumentError, "Múltiples tramos ISR coinciden para salario #{monthly_gross_salary}" if matches.size > 1
+
+      matches.first
     end
 
     def calculate_imss

@@ -7,6 +7,7 @@ class EmploymentInformationsController < ApplicationController
 
   def show
     @presenter = EmploymentInformationPresenter.new(@employment_information)
+    load_payroll_calculations
   end
 
   def new
@@ -45,5 +46,19 @@ class EmploymentInformationsController < ApplicationController
     params.require(:employment_information).permit(
       :job_title, :start_date, :gross_salary_amount, :salary_periodicity
     )
+  end
+
+  def load_payroll_calculations
+    payroll_profile = current_user.payroll_profile
+    return unless payroll_profile
+
+    salary = payroll_profile.monthly_gross_salary
+    @net_salary_result = Payroll::NetSalaryCalculator.new(monthly_gross_salary: salary).call
+    @aguinaldo_result = Payroll::AguinaldoCalculator.new(
+      monthly_gross_salary: salary, hire_date: payroll_profile.hire_date
+    ).call
+    @savings_fund_result = Payroll::SavingsFundCalculator.new(
+      monthly_gross_salary: salary, savings_fund_percentage: payroll_profile.savings_fund_percentage
+    ).call
   end
 end

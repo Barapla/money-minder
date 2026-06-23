@@ -37,7 +37,7 @@ module Api
 
       def set_payroll_profile
         @payroll_profile = current_user.payroll_profile
-        return unless @payroll_profile.nil?
+        return if @payroll_profile.present?
 
         render json: {
           error: {
