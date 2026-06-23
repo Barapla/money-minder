@@ -48,7 +48,7 @@ Gemas clave: `devise`, `httparty`, `sidekiq-cron`, `brakeman`, `bundler-audit`
 | Insights financieros | `FinancialInsightsService`, `ClaudeService` | Completo |
 | Jobs en background | `RecurringTransactionsJob`, `ProcessSingleRecurringTransactionJob`, `RecurringTransactionsCleanupJob` | Completo |
 | Información laboral | `EmploymentInformation` | Completo |
-| Cálculos de nómina | `PayrollProfile`, `Payroll::AguinaldoCalculator`, `Payroll::SavingsFundCalculator`, `Payroll::NetSalaryCalculator` | Completo |
+| Cálculos de nómina | `PayrollProfile`, `Payroll::AguinaldoCalculator`, `Payroll::SavingsFundCalculator`, `PayrollServices::Calculator` | Completo |
 
 ---
 
@@ -61,6 +61,34 @@ Gemas clave: `devise`, `httparty`, `sidekiq-cron`, `brakeman`, `bundler-audit`
 - **Presenters** para lógica de presentación compleja (moneda, fechas, presupuestos)
 - **Service objects** sin módulo namespace raíz, con sub-namespace por dominio (ej. `CreditCardServices::`)
 - **Sidekiq-cron** para jobs programados (ej. procesamiento de transacciones recurrentes)
+
+---
+
+## PayrollProfile — estructura de campos (FEAT-005)
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `base_salary` | decimal(10,2) | Sueldo base gravado (campo principal) |
+| `monthly_gross_salary` | decimal(12,2) | Legado — sincronizado desde EmploymentInformation |
+| `non_taxable_bonuses` | jsonb | Hash de bonos no gravados: `{ "concepto" => monto }` |
+| `savings_fund_rate` | decimal(5,2) | Tasa de fondo de ahorro (default: 4.0%) |
+| `savings_fund_percentage` | decimal(5,2) | Legado — conservado por compatibilidad |
+| `custom_isr_rate` | decimal(5,2) | Tasa ISR personalizada (nil = usa default 18.6%) |
+| `custom_imss_rate` | decimal(5,2) | Tasa IMSS personalizada (nil = usa default 3.0%) |
+
+### Metodo deprecado
+
+`PayrollProfile#monthly_salary` — delegado a `base_salary` con warning. Remover en version futura.
+
+### Formula de salario neto (PayrollServices::Calculator)
+
+`base_salary + total_bonuses - savings_fund_employee - isr_estimado - imss_estimado`
+
+### Constantes (PayrollConstants)
+
+- `DEFAULT_ISR_RATE = 18.6` — porcentaje efectivo sobre salario gravado
+- `DEFAULT_IMSS_RATE = 3.0` — porcentaje efectivo sobre SBC
+- `DEFAULT_SAVINGS_FUND_RATE = 4.0` — porcentaje de fondo de ahorro
 
 ---
 

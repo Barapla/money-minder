@@ -24,10 +24,12 @@ class EmploymentInformation < ApplicationRecord
       gross_salary_amount, salary_periodicity
     )[:monthly]
 
+    payroll_attrs = { monthly_gross_salary: monthly_salary, base_salary: monthly_salary, hire_date: start_date }
+
     if (profile = user.payroll_profile)
-      profile.update!(monthly_gross_salary: monthly_salary, hire_date: start_date)
+      profile.update!(payroll_attrs)
     else
-      user.create_payroll_profile!(monthly_gross_salary: monthly_salary, hire_date: start_date)
+      user.create_payroll_profile!(payroll_attrs)
     end
   end
 

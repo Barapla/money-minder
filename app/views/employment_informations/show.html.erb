@@ -149,20 +149,30 @@
         <% if @net_salary_result.success? %>
           <div class="space-y-3">
             <div class="flex justify-between items-center py-2 border-b border-bunker-700/50">
-              <span class="text-bunker-300 text-sm">Salario bruto mensual</span>
-              <span class="text-white font-semibold"><%= number_to_currency(@net_salary_result.data[:gross], unit: '$', separator: '.', delimiter: ',') %></span>
+              <span class="text-bunker-300 text-sm">Sueldo base mensual</span>
+              <span class="text-white font-semibold"><%= number_to_currency(@net_salary_result.data[:base_salary], unit: '$', separator: '.', delimiter: ',') %></span>
+            </div>
+            <% if @net_salary_result.data[:total_bonuses] > 0 %>
+              <div class="flex justify-between items-center py-2 border-b border-bunker-700/50">
+                <span class="text-bunker-300 text-sm">Bonos no gravados</span>
+                <span class="text-emerald-400 font-semibold">+ <%= number_to_currency(@net_salary_result.data[:total_bonuses], unit: '$', separator: '.', delimiter: ',') %></span>
+              </div>
+            <% end %>
+            <div class="flex justify-between items-center py-2 border-b border-bunker-700/50">
+              <span class="text-bunker-300 text-sm">Fondo de ahorro (trabajador)</span>
+              <span class="text-rose-400 font-semibold">- <%= number_to_currency(@net_salary_result.data[:savings_fund_employee], unit: '$', separator: '.', delimiter: ',') %></span>
             </div>
             <div class="flex justify-between items-center py-2 border-b border-bunker-700/50">
-              <span class="text-bunker-300 text-sm">ISR retenido</span>
-              <span class="text-rose-400 font-semibold">- <%= number_to_currency(@net_salary_result.data[:isr_withholding], unit: '$', separator: '.', delimiter: ',') %></span>
+              <span class="text-bunker-300 text-sm">ISR estimado</span>
+              <span class="text-rose-400 font-semibold">- <%= number_to_currency(@net_salary_result.data[:isr_estimated], unit: '$', separator: '.', delimiter: ',') %></span>
             </div>
             <div class="flex justify-between items-center py-2 border-b border-bunker-700/50">
-              <span class="text-bunker-300 text-sm">IMSS obrero</span>
-              <span class="text-rose-400 font-semibold">- <%= number_to_currency(@net_salary_result.data[:imss_withholding], unit: '$', separator: '.', delimiter: ',') %></span>
+              <span class="text-bunker-300 text-sm">IMSS estimado</span>
+              <span class="text-rose-400 font-semibold">- <%= number_to_currency(@net_salary_result.data[:imss_estimated], unit: '$', separator: '.', delimiter: ',') %></span>
             </div>
             <div class="flex justify-between items-center py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3">
               <span class="text-emerald-300 font-semibold">Salario neto mensual</span>
-              <span class="text-emerald-400 text-xl font-bold"><%= number_to_currency(@net_salary_result.data[:net], unit: '$', separator: '.', delimiter: ',') %></span>
+              <span class="text-emerald-400 text-xl font-bold"><%= number_to_currency(@net_salary_result.data[:net_salary], unit: '$', separator: '.', delimiter: ',') %></span>
             </div>
           </div>
         <% end %>
