@@ -61,6 +61,7 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
 
   # destroy excluido intencionalmente: cada usuario tiene una sola información laboral permanente
   resource :employment_information, only: %i[show new create edit update]
+  resource :payroll_profile, only: %i[edit update]
 
   namespace :api do
     namespace :v1 do

@@ -20,6 +20,14 @@ RSpec.describe PayrollServices::Calculator, type: :service do
       end
     end
 
+    context 'con non_taxable_bonuses nil' do
+      let(:base_profile) { build(:payroll_profile, base_salary: 20_000, non_taxable_bonuses: nil) }
+
+      it 'retorna cero sin error' do
+        expect(calculator.calculate_total_bonuses).to eq(BigDecimal('0'))
+      end
+    end
+
     context 'CA6: con múltiples bonos no gravados' do
       let(:base_profile) do
         build(:payroll_profile, base_salary: 20_000,

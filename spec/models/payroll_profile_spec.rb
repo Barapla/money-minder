@@ -123,8 +123,8 @@ RSpec.describe PayrollProfile, type: :model do
   end
 
   describe '#monthly_salary (deprecado)' do
-    it 'retorna base_salary con advertencia de deprecación' do
-      expect { profile.monthly_salary }.to output(/deprecado/).to_stderr
+    it 'retorna base_salary con advertencia de deprecación en el log' do
+      expect(Rails.logger).to receive(:warn).with(match(/deprecado/))
       expect(profile.monthly_salary).to eq(profile.base_salary)
     end
   end

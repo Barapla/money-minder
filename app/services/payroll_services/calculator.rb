@@ -9,7 +9,7 @@ module PayrollServices
 
     def call
       Result.success(data: build_data)
-    rescue StandardError => e
+    rescue TypeError, ArgumentError => e
       Result.failure(error: :calculation_error, message: e.message)
     end
 
@@ -18,7 +18,7 @@ module PayrollServices
     end
 
     def calculate_total_bonuses
-      BigDecimal(@profile.non_taxable_bonuses.values.sum.to_s)
+      BigDecimal((@profile.non_taxable_bonuses || {}).values.sum.to_s)
     end
 
     def calculate_savings_fund_employee_contribution

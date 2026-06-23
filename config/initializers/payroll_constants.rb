@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 # Constantes y valores de configuracion para calculos de nomina.
+# Constantes del modulo (acceso directo): PayrollConstants::DEFAULT_ISR_RATE
+# Valores del YAML via []: PayrollConstants[:uma_daily], PayrollConstants[:aguinaldo_days]
+# Claves validas del YAML: :uma_daily, :aguinaldo_days
 module PayrollConstants
   DEFAULT_ISR_RATE = 18.6
   DEFAULT_IMSS_RATE = 3.0

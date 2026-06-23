@@ -7,6 +7,7 @@ class EmploymentInformationsController < ApplicationController
 
   def show
     @presenter = EmploymentInformationPresenter.new(@employment_information)
+    @payroll_profile = current_user.payroll_profile
     load_payroll_calculations
   end
 
@@ -49,12 +50,11 @@ class EmploymentInformationsController < ApplicationController
   end
 
   def load_payroll_calculations
-    payroll_profile = current_user.payroll_profile
-    return unless payroll_profile
+    return unless @payroll_profile
 
-    @net_salary_result = PayrollServices::Calculator.new(payroll_profile).call
-    @aguinaldo_result = calculate_aguinaldo(payroll_profile)
-    @savings_fund_result = calculate_savings_fund(payroll_profile)
+    @net_salary_result = PayrollServices::Calculator.new(@payroll_profile).call
+    @aguinaldo_result = calculate_aguinaldo(@payroll_profile)
+    @savings_fund_result = calculate_savings_fund(@payroll_profile)
   end
 
   def calculate_aguinaldo(payroll_profile)

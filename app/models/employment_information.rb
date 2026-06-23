@@ -24,6 +24,8 @@ class EmploymentInformation < ApplicationRecord
       gross_salary_amount, salary_periodicity
     )[:monthly]
 
+    return if monthly_salary.nil? || monthly_salary <= 0
+
     payroll_attrs = { monthly_gross_salary: monthly_salary, base_salary: monthly_salary, hire_date: start_date }
 
     if (profile = user.payroll_profile)

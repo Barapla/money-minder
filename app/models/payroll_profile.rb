@@ -22,7 +22,7 @@ class PayrollProfile < ApplicationRecord
   validate :non_taxable_bonuses_structure
 
   def monthly_salary
-    warn '[DEPRECATED] monthly_salary esta deprecado, usar base_salary'
+    Rails.logger.warn '[DEPRECATED] monthly_salary esta deprecado, usar base_salary'
     base_salary
   end
 
@@ -35,7 +35,7 @@ class PayrollProfile < ApplicationRecord
   end
 
   def non_taxable_bonuses_structure
-    return if non_taxable_bonuses.blank?
+    return if non_taxable_bonuses.nil? || non_taxable_bonuses == {}
 
     return if non_taxable_bonuses.is_a?(Hash) &&
               non_taxable_bonuses.values.all? { |v| v.is_a?(Numeric) && v >= 0 }
