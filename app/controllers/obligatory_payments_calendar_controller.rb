@@ -2,6 +2,8 @@
 
 # ObligatoryPaymentsCalendarController
 class ObligatoryPaymentsCalendarController < ApplicationController
+  before_action :set_payroll_reminders_for_month, only: %i[index set_month]
+
   def index
     @date = Date.today
     @obligatory_payments = ObligatoryPayment.includes(:recurrence, :category, :icon, :color)
@@ -9,7 +11,7 @@ class ObligatoryPaymentsCalendarController < ApplicationController
   end
 
   def set_month
-    @date = params[:date] ? Date.parse(params[:date]) : Date.today
+    @date = safe_parse_date(params[:date])
     @obligatory_payments = ObligatoryPayment.includes(:recurrence, :category, :icon, :color)
     @payment_occurrences = generate_payment_occurrences(@date)
 
@@ -17,7 +19,7 @@ class ObligatoryPaymentsCalendarController < ApplicationController
   end
 
   def day_details
-    @date = params[:date] ? Date.parse(params[:date]) : Date.today
+    @date = safe_parse_date(params[:date])
     @obligatory_payments = ObligatoryPayment.includes(:category, :icon, :color)
 
     # Get recurrences for all payments using raw SQL
@@ -38,11 +40,38 @@ class ObligatoryPaymentsCalendarController < ApplicationController
     end
 
     @total_amount = @day_payments.sum(&:amount)
+    @payroll_reminders = payroll_reminders_for_date(@date)
 
     render layout: false if turbo_frame_request?
   end
 
   private
+
+  def safe_parse_date(date_param)
+    return Date.today unless date_param
+
+    Date.parse(date_param)
+  rescue ArgumentError
+    Date.today
+  end
+
+  def set_payroll_reminders_for_month
+    return unless current_user
+
+    date = safe_parse_date(params[:date]) || Date.today
+    reminders = reminder_generator.generate(from_date: date.beginning_of_month, to_date: date.end_of_month)
+    @payroll_reminders_by_date = reminders.group_by(&:date)
+  end
+
+  def payroll_reminders_for_date(date)
+    return [] unless current_user
+
+    reminder_generator.generate(from_date: date, to_date: date)
+  end
+
+  def reminder_generator
+    @reminder_generator ||= PayrollServices::ReminderGenerator.new(current_user)
+  end
 
   def generate_payment_occurrences(date)
     start_date = date.beginning_of_month

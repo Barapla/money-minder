@@ -2,15 +2,13 @@
 
 # CalendarController
 class CalendarController < ApplicationController
-  before_action :set_payroll_reminders_for_month, only: %i[index set_month]
-
   def index
     @transactions = Transaction.report.where(transaction_date: Date.today.beginning_of_month..Date.today.end_of_month)
     set_income_and_expense_transactions
   end
 
   def set_month
-    @date = params[:date] ? Date.parse(params[:date]) : Date.today
+    @date = safe_parse_date(params[:date])
 
     @transactions = Transaction
       .includes(:transaction_type, :category, :icon, :color)
@@ -24,7 +22,7 @@ class CalendarController < ApplicationController
   end
 
   def day_details
-    @date = params[:date] ? Date.parse(params[:date]) : Date.today
+    @date = safe_parse_date(params[:date])
 
     @transactions = Transaction
       .includes(:transaction_type, :category, :icon, :color)
@@ -35,13 +33,12 @@ class CalendarController < ApplicationController
 
     @expensed_total = @transactions.expense.sum(&:amount)
     @earned_total = @transactions.income.sum(&:amount)
-    @payroll_reminders = payroll_reminders_for_date(@date)
 
     render layout: false if turbo_frame_request?
   end
 
   def advanced_search
-    @date = params[:date] ? Date.parse(params[:date]) : Date.today
+    @date = safe_parse_date(params[:date])
 
     @filter = params[:filter]
 
@@ -60,22 +57,12 @@ class CalendarController < ApplicationController
 
   private
 
-  def set_payroll_reminders_for_month
-    return unless current_user
+  def safe_parse_date(date_param)
+    return Date.today unless date_param
 
-    date = params[:date] ? Date.parse(params[:date]) : Date.today
-    reminders = reminder_generator.generate(from_date: date.beginning_of_month, to_date: date.end_of_month)
-    @payroll_reminders_by_date = reminders.group_by(&:date)
-  end
-
-  def payroll_reminders_for_date(date)
-    return [] unless current_user
-
-    reminder_generator.generate(from_date: date, to_date: date)
-  end
-
-  def reminder_generator
-    PayrollServices::ReminderGenerator.new(current_user)
+    Date.parse(date_param)
+  rescue ArgumentError
+    Date.today
   end
 
   def filter_transactions(transactions, filter)

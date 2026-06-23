@@ -70,7 +70,7 @@
 
         <!-- Los días del mes se cargarán aquí dinámicamente -->
         <% dates_array.each do |date| %>
-            <%= render ObligatoryPaymentsCalendar::DayComponent.new(date: date[:date], objects: date[:objects], day_total: date[:day_total], options: { has_payments: date[:has_payments], payment_count: date[:payment_count] }) %>
+            <%= render ObligatoryPaymentsCalendar::DayComponent.new(date: date[:date], objects: date[:objects], day_total: date[:day_total], options: { has_payments: date[:has_payments], payment_count: date[:payment_count], has_payroll: date[:has_payroll], payroll_reminders: date[:payroll_reminders] }) %>
         <% end %>
     </div>
 </div>

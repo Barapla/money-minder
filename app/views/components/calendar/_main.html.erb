@@ -70,7 +70,7 @@
 
         <!-- Los días del mes se cargarán aquí dinámicamente -->
         <% dates_array.each do |date| %>
-            <%= render Calendar::DayComponent.new(date: date[:date], objects: date[:objects], day_balance: date[:day_balance], options: { has_income: date[:has_income], has_expenses: date[:has_expenses], has_payroll: date[:has_payroll], payroll_reminders: date[:payroll_reminders], filter: options_params[:filter]&.to_unsafe_h }) %>
+            <%= render Calendar::DayComponent.new(date: date[:date], objects: date[:objects], day_balance: date[:day_balance], options: { has_income: date[:has_income], has_expenses: date[:has_expenses], filter: options_params[:filter]&.to_unsafe_h }) %>
         <% end %>
     </div>
 </div>

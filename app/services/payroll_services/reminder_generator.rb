@@ -65,7 +65,7 @@ module PayrollServices
       return start if start >= from_date
 
       elapsed_days = (from_date - start).to_i
-      cycles = (elapsed_days / interval.to_f).ceil
+      cycles = (elapsed_days + interval - 1) / interval
       start + (cycles * interval)
     end
 

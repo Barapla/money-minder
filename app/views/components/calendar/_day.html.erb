@@ -2,9 +2,7 @@
     date = component.date
     has_income = component.has_income
     has_expenses = component.has_expenses
-    has_payroll = component.has_payroll
     objects = component.objects
-    payroll_reminders = component.payroll_reminders
     day_balance = component.day_balance
     is_today = date == Date.today
     filter = component.options[:filter]
@@ -20,7 +18,6 @@
         <div class="flex gap-1">
             <%= has_income ? '<div class="w-2 h-2 bg-emerald-400 rounded-full"></div>'.html_safe : '' %>
             <%= has_expenses ? '<div class="w-2 h-2 bg-red-400 rounded-full"></div>'.html_safe : '' %>
-            <%= has_payroll ? '<div class="w-2 h-2 bg-amber-400 rounded-full" title="Quincena"></div>'.html_safe : '' %>
         </div>
     </div>
     <div class="space-y-1">
@@ -39,12 +36,6 @@
                 truncate flex items-center gap-1">
                 <span><%= object.icon.value %></span>
                 <span class="truncate"><%= object.description %></span>
-            </div>
-        <% end %>
-        <% payroll_reminders.first(1).each do |reminder| %>
-            <div class="text-xs px-2 py-1 rounded bg-amber-500/20 text-amber-300 truncate flex items-center gap-1">
-                <span>💰</span>
-                <span class="truncate"><%= reminder.periodicity_label %></span>
             </div>
         <% end %>
         <% if objects.length > 2 %>

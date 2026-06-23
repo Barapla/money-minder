@@ -4,7 +4,7 @@ module Calendar
   # MainComponent
   class DayComponent < Calendar::ApplicationComponent
     include PaginationHelper
-    attr_reader :date, :objects, :day_balance, :has_income, :has_expenses, :has_payroll, :payroll_reminders
+    attr_reader :date, :objects, :day_balance, :has_income, :has_expenses
 
     def initialize(date:, objects:, day_balance:, options: {})
       @id = options[:id]
@@ -13,8 +13,6 @@ module Calendar
       @day_balance = day_balance
       @has_income = options[:has_income]
       @has_expenses = options[:has_expenses]
-      @has_payroll = options[:has_payroll] || false
-      @payroll_reminders = options[:payroll_reminders] || []
       super(options:)
     end
 
