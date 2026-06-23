@@ -15,7 +15,7 @@
     </div>
 
     <%= turbo_frame_tag "calendar", data: { controller: "calendar-loader" } do %>
-        <%= render partial: "calendar/index/month", locals: { date: Date.today, transactions: @transactions } %>
+        <%= render partial: "calendar/index/month", locals: { date: Date.today, transactions: @transactions, payroll_reminders_by_date: @payroll_reminders_by_date || {} } %>
     <% end %>
     <!-- Resumen del Mes -->
     <%= turbo_frame_tag "summary" do %>
