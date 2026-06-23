@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_23_011342) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_24_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -328,6 +328,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_23_011342) do
     t.decimal "savings_fund_percentage", precision: 5, scale: 2, default: "13.0", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "base_salary", precision: 10, scale: 2, null: false
+    t.jsonb "non_taxable_bonuses", default: {}
+    t.decimal "custom_isr_rate", precision: 5, scale: 2
+    t.decimal "custom_imss_rate", precision: 5, scale: 2
+    t.decimal "savings_fund_rate", precision: 5, scale: 2, default: "4.0"
     t.index ["user_id"], name: "index_payroll_profiles_on_user_id", unique: true
   end
 

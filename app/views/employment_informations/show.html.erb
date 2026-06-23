@@ -113,6 +113,73 @@
       </div>
     </div>
 
+    <!-- Configuracion de Nomina -->
+    <% if @payroll_profile %>
+      <div class="lg:col-span-2 bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-semibold text-white flex items-center gap-2">
+            <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Configuración de Nómina
+          </h2>
+          <%= link_to edit_payroll_profile_path, class: "flex items-center gap-1.5 text-sm text-purple-400 hover:text-purple-300 transition-colors" do %>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Editar
+          <% end %>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-4">
+            <div class="text-xs text-bunker-400 mb-1">Fondo de Ahorro</div>
+            <div class="text-xl font-bold text-blue-400"><%= @payroll_profile.savings_fund_rate %>%</div>
+          </div>
+          <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-4">
+            <div class="text-xs text-bunker-400 mb-1">ISR</div>
+            <div class="text-lg font-bold text-rose-400">
+              <% if @payroll_profile.custom_isr_rate %>
+                <%= @payroll_profile.custom_isr_rate %>% <span class="text-xs font-normal text-bunker-400">(personalizado)</span>
+              <% else %>
+                18.6% <span class="text-xs font-normal text-bunker-400">(default)</span>
+              <% end %>
+            </div>
+          </div>
+          <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-4">
+            <div class="text-xs text-bunker-400 mb-1">IMSS</div>
+            <div class="text-lg font-bold text-rose-400">
+              <% if @payroll_profile.custom_imss_rate %>
+                <%= @payroll_profile.custom_imss_rate %>% <span class="text-xs font-normal text-bunker-400">(personalizado)</span>
+              <% else %>
+                3% <span class="text-xs font-normal text-bunker-400">(default)</span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <% bonuses = @payroll_profile.non_taxable_bonuses.presence %>
+        <% if bonuses.present? %>
+          <div>
+            <h3 class="text-sm font-medium text-bunker-300 mb-3">Bonos no gravados</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <% bonuses.each do |concept, amount| %>
+                <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3">
+                  <div class="text-xs text-bunker-400 mb-1 capitalize"><%= concept %></div>
+                  <div class="text-sm font-bold text-emerald-400"><%= number_to_currency(amount, unit: '$', separator: '.', delimiter: ',') %></div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% else %>
+          <div class="bg-bunker-800/40 border border-bunker-700/30 border-dashed rounded-lg p-4 text-center">
+            <p class="text-bunker-400 text-sm mb-1">No tienes bonos no gravados configurados.</p>
+            <%= link_to 'Agregar bonos', edit_payroll_profile_path, class: "text-purple-400 hover:text-purple-300 text-sm underline" %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
     <!-- Próximo Pago -->
     <% if @presenter.show_payment_reminder? %>
       <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
@@ -149,20 +216,30 @@
         <% if @net_salary_result.success? %>
           <div class="space-y-3">
             <div class="flex justify-between items-center py-2 border-b border-bunker-700/50">
-              <span class="text-bunker-300 text-sm">Salario bruto mensual</span>
-              <span class="text-white font-semibold"><%= number_to_currency(@net_salary_result.data[:gross], unit: '$', separator: '.', delimiter: ',') %></span>
+              <span class="text-bunker-300 text-sm">Sueldo base mensual</span>
+              <span class="text-white font-semibold"><%= number_to_currency(@net_salary_result.data[:base_salary], unit: '$', separator: '.', delimiter: ',') %></span>
+            </div>
+            <% if @net_salary_result.data[:total_bonuses] > 0 %>
+              <div class="flex justify-between items-center py-2 border-b border-bunker-700/50">
+                <span class="text-bunker-300 text-sm">Bonos no gravados</span>
+                <span class="text-emerald-400 font-semibold">+ <%= number_to_currency(@net_salary_result.data[:total_bonuses], unit: '$', separator: '.', delimiter: ',') %></span>
+              </div>
+            <% end %>
+            <div class="flex justify-between items-center py-2 border-b border-bunker-700/50">
+              <span class="text-bunker-300 text-sm">Fondo de ahorro (trabajador)</span>
+              <span class="text-rose-400 font-semibold">- <%= number_to_currency(@net_salary_result.data[:savings_fund_employee], unit: '$', separator: '.', delimiter: ',') %></span>
             </div>
             <div class="flex justify-between items-center py-2 border-b border-bunker-700/50">
-              <span class="text-bunker-300 text-sm">ISR retenido</span>
-              <span class="text-rose-400 font-semibold">- <%= number_to_currency(@net_salary_result.data[:isr_withholding], unit: '$', separator: '.', delimiter: ',') %></span>
+              <span class="text-bunker-300 text-sm">ISR estimado</span>
+              <span class="text-rose-400 font-semibold">- <%= number_to_currency(@net_salary_result.data[:isr_estimated], unit: '$', separator: '.', delimiter: ',') %></span>
             </div>
             <div class="flex justify-between items-center py-2 border-b border-bunker-700/50">
-              <span class="text-bunker-300 text-sm">IMSS obrero</span>
-              <span class="text-rose-400 font-semibold">- <%= number_to_currency(@net_salary_result.data[:imss_withholding], unit: '$', separator: '.', delimiter: ',') %></span>
+              <span class="text-bunker-300 text-sm">IMSS estimado</span>
+              <span class="text-rose-400 font-semibold">- <%= number_to_currency(@net_salary_result.data[:imss_estimated], unit: '$', separator: '.', delimiter: ',') %></span>
             </div>
             <div class="flex justify-between items-center py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3">
               <span class="text-emerald-300 font-semibold">Salario neto mensual</span>
-              <span class="text-emerald-400 text-xl font-bold"><%= number_to_currency(@net_salary_result.data[:net], unit: '$', separator: '.', delimiter: ',') %></span>
+              <span class="text-emerald-400 text-xl font-bold"><%= number_to_currency(@net_salary_result.data[:net_salary], unit: '$', separator: '.', delimiter: ',') %></span>
             </div>
           </div>
         <% end %>

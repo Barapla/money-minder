@@ -7,6 +7,7 @@ class EmploymentInformationsController < ApplicationController
 
   def show
     @presenter = EmploymentInformationPresenter.new(@employment_information)
+    @payroll_profile = current_user.payroll_profile
     load_payroll_calculations
   end
 
@@ -49,16 +50,24 @@ class EmploymentInformationsController < ApplicationController
   end
 
   def load_payroll_calculations
-    payroll_profile = current_user.payroll_profile
-    return unless payroll_profile
+    return unless @payroll_profile
 
-    salary = payroll_profile.monthly_gross_salary
-    @net_salary_result = Payroll::NetSalaryCalculator.new(monthly_gross_salary: salary).call
-    @aguinaldo_result = Payroll::AguinaldoCalculator.new(
-      monthly_gross_salary: salary, hire_date: payroll_profile.hire_date
+    @net_salary_result = PayrollServices::Calculator.new(@payroll_profile).call
+    @aguinaldo_result = calculate_aguinaldo(@payroll_profile)
+    @savings_fund_result = calculate_savings_fund(@payroll_profile)
+  end
+
+  def calculate_aguinaldo(payroll_profile)
+    Payroll::AguinaldoCalculator.new(
+      monthly_gross_salary: payroll_profile.base_salary,
+      hire_date: payroll_profile.hire_date
     ).call
-    @savings_fund_result = Payroll::SavingsFundCalculator.new(
-      monthly_gross_salary: salary, savings_fund_percentage: payroll_profile.savings_fund_percentage
+  end
+
+  def calculate_savings_fund(payroll_profile)
+    Payroll::SavingsFundCalculator.new(
+      monthly_gross_salary: payroll_profile.base_salary,
+      savings_fund_percentage: payroll_profile.savings_fund_rate
     ).call
   end
 end

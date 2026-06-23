@@ -4,6 +4,9 @@
 
 import { application } from "./application"
 
+import BonusManagerController from "./bonus_manager_controller"
+application.register("bonus-manager", BonusManagerController)
+
 import Budgets__PreviewController from "./budgets/preview_controller"
 application.register("budgets--preview", Budgets__PreviewController)
 
