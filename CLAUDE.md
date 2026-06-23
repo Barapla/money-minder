@@ -47,6 +47,7 @@ Gemas clave: `devise`, `httparty`, `sidekiq-cron`, `brakeman`, `bundler-audit`
 | Vistas de calendario | — | Completo |
 | Insights financieros | `FinancialInsightsService`, `ClaudeService` | Completo |
 | Jobs en background | `RecurringTransactionsJob`, `ProcessSingleRecurringTransactionJob`, `RecurringTransactionsCleanupJob` | Completo |
+| Información laboral | `EmploymentInformation` | Completo |
 
 ---
 

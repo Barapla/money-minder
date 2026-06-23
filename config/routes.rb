@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Rails.application.routes.draw do
+Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   resources :obligatory_payments
   devise_for :users, controllers: {
     sessions: 'users/sessions',
@@ -59,10 +59,13 @@ Rails.application.routes.draw do
     end
   end
 
+  # destroy excluido intencionalmente: cada usuario tiene una sola información laboral permanente
+  resource :employment_information, only: %i[show new create edit update]
+
   resources :financial_insights, only: [] do
     collection do
       post :generate
-      get :raw_data  # Para debugging
+      get :raw_data # Para debugging
     end
   end
 
