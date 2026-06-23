@@ -48,6 +48,7 @@ Gemas clave: `devise`, `httparty`, `sidekiq-cron`, `brakeman`, `bundler-audit`
 | Insights financieros | `FinancialInsightsService`, `ClaudeService` | Completo |
 | Jobs en background | `RecurringTransactionsJob`, `ProcessSingleRecurringTransactionJob`, `RecurringTransactionsCleanupJob` | Completo |
 | Información laboral | `EmploymentInformation` | Completo |
+| Cálculos de nómina | `PayrollProfile`, `Payroll::AguinaldoCalculator`, `Payroll::SavingsFundCalculator`, `Payroll::NetSalaryCalculator` | Completo |
 
 ---
 
