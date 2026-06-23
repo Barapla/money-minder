@@ -1,0 +1,58 @@
+default: &default
+  uma_daily: 113.14
+  aguinaldo_days: 15
+  imss_worker_rate: 0.0357
+  isr_table:
+    - lower_limit: 0.01
+      upper_limit: 7735.00
+      fixed_quota: 0.00
+      rate: 0.0192
+    - lower_limit: 7735.01
+      upper_limit: 65651.07
+      fixed_quota: 148.51
+      rate: 0.064
+    - lower_limit: 65651.08
+      upper_limit: 115375.90
+      fixed_quota: 3844.44
+      rate: 0.1088
+    - lower_limit: 115375.91
+      upper_limit: 134118.89
+      fixed_quota: 9264.67
+      rate: 0.16
+    - lower_limit: 134118.90
+      upper_limit: 160577.65
+      fixed_quota: 12253.01
+      rate: 0.1792
+    - lower_limit: 160577.66
+      upper_limit: 323862.00
+      fixed_quota: 16989.13
+      rate: 0.2136
+    - lower_limit: 323862.01
+      upper_limit: 510451.00
+      fixed_quota: 51813.59
+      rate: 0.2352
+    - lower_limit: 510451.01
+      upper_limit: 974535.03
+      fixed_quota: 95658.35
+      rate: 0.30
+    - lower_limit: 974535.04
+      upper_limit: 1299380.04
+      fixed_quota: 234993.95
+      rate: 0.32
+    - lower_limit: 1299380.05
+      upper_limit: 3898140.12
+      fixed_quota: 338944.23
+      rate: 0.34
+    - lower_limit: 3898140.13
+      upper_limit: 9999999999.99
+      fixed_quota: 1222522.17
+      rate: 0.35
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default

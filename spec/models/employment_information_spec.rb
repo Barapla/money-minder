@@ -88,4 +88,42 @@ RSpec.describe EmploymentInformation, type: :model do
       expect { employment_information.save! }.to change(EmploymentInformation, :count).by(1)
     end
   end
+
+  describe 'sincronización de PayrollProfile' do
+    context 'cuando no existe PayrollProfile para el usuario' do
+      it 'crea un PayrollProfile al guardar' do
+        expect { employment_information.save! }.to change(PayrollProfile, :count).by(1)
+      end
+
+      it 'el PayrollProfile tiene el salario mensual normalizado' do
+        employment_information.save!
+        profile = user.reload.payroll_profile
+        expected = EmploymentInformationServices::Calculator.normalize_salary(
+          employment_information.gross_salary_amount,
+          employment_information.salary_periodicity
+        )[:monthly]
+        expect(profile.monthly_gross_salary).to be_within(0.01).of(expected)
+      end
+
+      it 'el PayrollProfile tiene la fecha de ingreso correcta' do
+        employment_information.save!
+        expect(user.reload.payroll_profile.hire_date).to eq(employment_information.start_date)
+      end
+    end
+
+    context 'cuando ya existe un PayrollProfile para el usuario' do
+      before { employment_information.save! }
+
+      it 'actualiza el PayrollProfile al modificar el salario' do
+        employment_information.update!(gross_salary_amount: 50_000.0, salary_periodicity: 'monthly')
+        expect(user.reload.payroll_profile.monthly_gross_salary).to be_within(0.01).of(50_000.0)
+      end
+
+      it 'no crea un PayrollProfile duplicado' do
+        expect do
+          employment_information.update!(gross_salary_amount: 60_000.0)
+        end.not_to change(PayrollProfile, :count)
+      end
+    end
+  end
 end

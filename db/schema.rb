@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_22_224929) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_23_011342) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -321,6 +321,16 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_22_224929) do
     t.index ["uuid"], name: "index_obligatory_payments_on_uuid", unique: true
   end
 
+  create_table "payroll_profiles", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.decimal "monthly_gross_salary", precision: 12, scale: 2, null: false
+    t.date "hire_date", null: false
+    t.decimal "savings_fund_percentage", precision: 5, scale: 2, default: "13.0", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_payroll_profiles_on_user_id", unique: true
+  end
+
   create_table "recurrences", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
@@ -514,6 +524,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_22_224929) do
   add_foreign_key "obligatory_payments", "catalogs", column: "color_id", name: "fk_obligatory_payments_color"
   add_foreign_key "obligatory_payments", "catalogs", column: "icon_id", name: "fk_obligatory_payments_icon"
   add_foreign_key "obligatory_payments", "users", name: "fk_obligatory_payments_user"
+  add_foreign_key "payroll_profiles", "users"
   add_foreign_key "recurrences", "catalogs", column: "frequency_type_id", name: "fk_recurrences_frequency_type"
   add_foreign_key "recurrences", "catalogs", column: "recurrenceable_type_id", name: "fk_recurrences_recurrenceable_type"
   add_foreign_key "recurring_transactions", "users", name: "fk_recurring_transactions_user"
