@@ -55,6 +55,12 @@ application.register("modal", ModalController)
 import MultiselectController from "./multiselect_controller"
 application.register("multiselect", MultiselectController)
 
+import NavbarDropdownController from "./navbar_dropdown_controller"
+application.register("navbar-dropdown", NavbarDropdownController)
+
+import NavbarMobileController from "./navbar_mobile_controller"
+application.register("navbar-mobile", NavbarMobileController)
+
 import PaginationController from "./pagination_controller"
 application.register("pagination", PaginationController)
 
