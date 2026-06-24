@@ -1,0 +1,61 @@
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center">
+      <div class="w-10 h-10 bg-violet-500/20 rounded-xl flex items-center justify-center mr-3">
+        <svg class="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold text-white">Presupuesto del Mes</h2>
+        <p class="text-bunker-400 text-xs mt-0.5">Top categorías por gasto — <%= Date.current.strftime('%B %Y').capitalize %></p>
+      </div>
+    </div>
+    <%= link_to "Ver presupuestos", budgets_path, class: "text-violet-400 text-sm hover:text-violet-300 underline" %>
+  </div>
+
+  <% budget_items = @presenter.monthly_budget_summary %>
+  <% if budget_items.any? %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+      <% budget_items.each do |item| %>
+        <%
+          bar_class = case item[:status]
+                      when :danger  then 'bg-red-500'
+                      when :warning then 'bg-amber-500'
+                      else               'bg-emerald-500'
+                      end
+          text_class = case item[:status]
+                       when :danger  then 'text-red-400'
+                       when :warning then 'text-amber-400'
+                       else               'text-emerald-400'
+                       end
+        %>
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <span class="text-bunker-300 text-sm line-clamp-1"><%= item[:category_name] %></span>
+            <span class="<%= text_class %> text-sm font-medium ml-2 shrink-0"><%= item[:amount_formatted] %></span>
+          </div>
+          <div class="w-full bg-bunker-700/60 rounded-full h-2"
+               role="progressbar"
+               aria-label="Gasto en <%= item[:category_name] %>: <%= item[:progress_percent] %>%"
+               aria-valuenow="<%= item[:progress_percent] %>"
+               aria-valuemin="0"
+               aria-valuemax="100">
+            <div class="h-2 rounded-full <%= bar_class %> transition-all duration-300"
+                 style="width: <%= item[:progress_percent] %>%"></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-8">
+      <div class="w-12 h-12 bg-bunker-800/60 rounded-xl flex items-center justify-center mx-auto mb-3">
+        <svg class="w-6 h-6 text-bunker-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+      </div>
+      <p class="text-bunker-400 text-sm mb-3">Sin gastos registrados este mes</p>
+      <%= link_to "Registrar transacción", new_budget_path, class: "text-violet-400 text-sm hover:text-violet-300 underline" %>
+    </div>
+  <% end %>
+</div>

@@ -1,12 +1,34 @@
 # frozen_string_literal: true
 
 # Presenter para el dashboard financiero del usuario.
-# Agrega saldos, tarjetas de crédito/débito y alertas de utilización.
+# Agrega saldos, tarjetas de crédito/débito, alertas de utilización, nómina y presupuesto del mes.
 class DashboardPresenter # rubocop:disable Metrics/ClassLength
   include ActionView::Helpers::NumberHelper
 
   def initialize(user)
     @user = user
+  end
+
+  # Retorna datos de la próxima nómina o nil si el usuario no tiene información laboral.
+  def next_payroll_info
+    return nil unless payroll_configured?
+
+    reminder = next_payroll_reminder
+    build_payroll_info(reminder) if reminder
+  end
+
+  def payroll_configured?
+    user.employment_information.present? && user.payroll_profile.present?
+  end
+
+  # Retorna top 8 categorías de gasto del mes actual, ordenadas de mayor a menor.
+  # La barra muestra la proporción relativa al gasto máximo entre las categorías.
+  def monthly_budget_summary
+    @monthly_budget_summary ||= build_budget_summary(monthly_expense_rows)
+  end
+
+  def monthly_budget_summary?
+    monthly_budget_summary.any?
   end
 
   # Suma de efectivo, tarjetas de débito y fondos de ahorro activos
@@ -222,6 +244,53 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     [amount, 0].max
   end
 
+  def next_payroll_reminder
+    PayrollServices::ReminderGenerator
+      .new(user)
+      .generate(from_date: Date.current, to_date: Date.current + 60.days)
+      .first
+  end
+
+  def build_payroll_info(reminder)
+    days = (reminder.date - Date.current).to_i
+    { net_amount: reminder.net_amount,
+      net_amount_formatted: format_currency(reminder.net_amount),
+      payment_date: reminder.date,
+      days_until: days,
+      coming_soon: days <= 7 }
+  end
+
+  def monthly_expense_rows
+    start_date = Date.current.beginning_of_month
+    end_date   = Date.current.end_of_month
+    user.transactions
+        .joins(:transaction_type)
+        .joins(:category)
+        .where(transaction_type: { code: 'expense' })
+        .where(transaction_date: start_date..end_date)
+        .group('categories.id', 'categories.name')
+        .sum('ABS(transactions.amount)')
+  end
+
+  # Construye el resumen de presupuesto a partir de filas agrupadas por categoría.
+  # El porcentaje es relativo al gasto máximo entre las categorías (mayor = 100%).
+  def build_budget_summary(rows)
+    return [] if rows.empty?
+
+    sorted = rows.sort_by { |_key, amount| -amount }.first(8)
+    max_amount = sorted.first[1].to_f
+    sorted.map { |(_, name), amount| budget_row(name, amount, max_amount) }
+  end
+
+  def budget_row(category_name, amount, max_amount)
+    pct = max_amount.positive? ? ((amount.to_f / max_amount) * 100).round : 0
+    { category_name: category_name,
+      amount: amount.to_f,
+      amount_formatted: format_currency(amount.to_f),
+      progress_percent: pct,
+      status: budget_status(pct) }
+  end
+
   # :healthy (<30%), :warning (30-70%), :critical (>70%)
   def utilization_status(percentage)
     if percentage <= 30
@@ -231,6 +300,13 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     else
       :critical
     end
+  end
+
+  def budget_status(progress)
+    return :danger if progress >= 90
+    return :warning if progress >= 70
+
+    :safe
   end
 
   def format_currency(amount)

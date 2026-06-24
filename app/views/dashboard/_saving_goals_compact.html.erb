@@ -1,0 +1,45 @@
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 flex flex-col">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center">
+      <div class="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center mr-3">
+        <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+        </svg>
+      </div>
+      <h2 class="text-base font-semibold text-white">Metas de Ahorro</h2>
+    </div>
+    <%= link_to "Ver todas", saving_goals_path, class: "text-emerald-400 text-xs hover:text-emerald-300 underline" %>
+  </div>
+
+  <% if @presenter.saving_goals? %>
+    <div class="overflow-y-auto max-h-72 space-y-3 flex-1"
+         data-controller="savings-goals-calculator"
+         data-savings-goals-calculator-url-value="<%= dashboard_saving_goals_recalculate_path(format: :json) %>">
+      <% @presenter.prioritized_saving_goals.first(5).each do |item| %>
+        <% goal = item[:saving_goal] %>
+        <div class="bg-bunker-800/40 rounded-xl p-3"
+             data-savings-goals-calculator-target="goal"
+             data-goal-id="<%= goal.id %>">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-white text-sm font-medium line-clamp-1"><%= goal.name %></span>
+            <span class="text-emerald-300 text-xs font-semibold ml-2 shrink-0" data-percentage><%= item[:progress_percentage] %>%</span>
+          </div>
+          <div class="w-full bg-bunker-700/60 rounded-full h-1.5 mb-1.5">
+            <div class="h-1.5 rounded-full bg-emerald-500 transition-all duration-300"
+                 data-progress-bar
+                 style="width: <%= item[:progress_percentage] %>%"></div>
+          </div>
+          <div class="flex justify-between text-xs text-bunker-500">
+            <span data-allocated-amount><%= item[:allocated_formatted] %></span>
+            <span><%= item[:target_formatted] %></span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-6 flex-1">
+      <p class="text-bunker-400 text-sm mb-2">Sin metas de ahorro activas</p>
+      <%= link_to "Crear meta", new_saving_goal_path, class: "text-emerald-400 text-xs hover:text-emerald-300 underline" %>
+    </div>
+  <% end %>
+</div>
