@@ -1,0 +1,46 @@
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 flex flex-col">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center">
+      <div class="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center mr-3">
+        <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
+      </div>
+      <h2 class="text-base font-semibold text-white">Próximos Pagos</h2>
+    </div>
+    <span class="text-bunker-400 text-xs">30 días</span>
+  </div>
+
+  <% payments = @presenter.upcoming_obligatory_payments %>
+  <% if payments.any? %>
+    <% total_count = payments.size %>
+    <div class="overflow-y-auto max-h-72 space-y-2 flex-1">
+      <% payments.first(10).each do |payment| %>
+        <% days_away = (payment[:date] - Date.current).to_i %>
+        <div class="bg-bunker-800/40 rounded-xl p-3">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-white text-sm font-medium line-clamp-1"><%= payment[:description].presence || "Sin descripción" %></span>
+            <% badge_class = days_away == 0 ? 'bg-red-500/20 text-red-300' : days_away <= 3 ? 'bg-red-500/20 text-red-300' : days_away <= 7 ? 'bg-amber-500/20 text-amber-300' : 'bg-bunker-700/60 text-bunker-300' %>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-2 shrink-0 <%= badge_class %>">
+              <% if days_away == 0 %>Hoy<% elsif days_away == 1 %>Mañana<% else %><%= days_away %>d<% end %>
+            </span>
+          </div>
+          <div class="flex items-center justify-between text-xs text-bunker-400">
+            <span><%= payment[:date].strftime('%d/%m/%Y') %></span>
+            <span class="text-red-300 font-medium"><%= payment[:amount_formatted] %></span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    <% if total_count > 10 %>
+      <div class="mt-3 pt-3 border-t border-bunker-700/50">
+        <span class="text-bunker-400 text-xs">+<%= total_count - 10 %> más en los próximos 30 días</span>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="text-center py-6 flex-1">
+      <p class="text-bunker-400 text-sm mb-2">Sin pagos próximos</p>
+      <%= link_to "Crear pago obligatorio", new_obligatory_payment_path, class: "text-red-400 text-xs hover:text-red-300 underline" %>
+    </div>
+  <% end %>
+</div>

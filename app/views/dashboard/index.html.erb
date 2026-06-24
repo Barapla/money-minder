@@ -17,9 +17,15 @@
   </div>
 
   <!-- Fila 3: Fechas de Corte + Metas de Ahorro + Alertas (compactas, 3 columnas) -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
     <%= render 'credit_cards_compact' %>
     <%= render 'saving_goals_compact' %>
     <%= render 'utilization_alerts_compact' %>
+  </div>
+
+  <!-- Fila 4: Gastos Recurrentes + Próximos Pagos -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <%= render 'recurring_expenses_card' %>
+    <%= render 'upcoming_payments_card' %>
   </div>
 </div>

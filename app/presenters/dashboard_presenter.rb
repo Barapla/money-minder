@@ -108,6 +108,26 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     active_debit_budgets.any?
   end
 
+  # Cuenta y total mensual de gastos recurrentes activos
+  def recurring_expenses_summary
+    expenses = active_recurring_expenses
+    { count: expenses.size, monthly_total: calculate_monthly_total(expenses) }
+  end
+
+  def recurring_expenses?
+    active_recurring_expenses.any?
+  end
+
+  # Próximos pagos obligatorios en los siguientes 30 días (máx. 10)
+  def upcoming_obligatory_payments
+    @upcoming_obligatory_payments ||= begin
+      end_date = Date.current + 30.days
+      ops = user.obligatory_payments.includes(recurrence: :frequency_type)
+      instances = ops.flat_map { |op| obligatory_payment_instances(op, end_date) }
+      instances.sort_by { |i| i[:date] }.take(10)
+    end
+  end
+
   private
 
   attr_reader :user
@@ -311,5 +331,49 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
 
   def format_currency(amount)
     number_to_currency(amount, unit: '$')
+  end
+
+  MONTHLY_FREQUENCY_MULTIPLIERS = {
+    'daily' => 30, 'weekly' => 4.33, 'bi_weekly' => 2.17, 'monthly' => 1,
+    'bi_monthly' => 0.5, 'quarterly' => (1.0 / 3), 'semi_annually' => (1.0 / 6),
+    'annually' => (1.0 / 12)
+  }.freeze
+
+  def active_recurring_expenses
+    @active_recurring_expenses ||= begin
+      type_id = expense_transaction_type_id
+      return [] if type_id.nil?
+
+      user.recurring_transactions
+          .active
+          .where("transaction_options->>'transaction_type_id' = ?", type_id.to_s)
+    end
+  end
+
+  def expense_transaction_type_id
+    @expense_transaction_type_id ||= Catalog.by_group_and_code('transaction_types', 'expense')&.id
+  end
+
+  def calculate_monthly_total(recurring_transactions)
+    recurring_transactions.sum do |recurrence|
+      amount = recurrence.transaction_options['amount'].to_f
+      multiplier = MONTHLY_FREQUENCY_MULTIPLIERS.fetch(recurrence.frequency, 1)
+      amount * multiplier
+    end
+  end
+
+  def obligatory_payment_instances(payment, end_date)
+    recurrence = payment.recurrence
+    return [] if recurrence.nil?
+
+    recurrence.occurrences_in_range(Date.current, end_date)
+              .map { |date| build_obligatory_instance(payment, date) }
+  end
+
+  def build_obligatory_instance(payment, date)
+    { date: date,
+      description: payment.name.to_s,
+      amount: payment.amount.to_f,
+      amount_formatted: format_currency(payment.amount.to_f) }
   end
 end

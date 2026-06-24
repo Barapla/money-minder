@@ -505,6 +505,200 @@ RSpec.describe DashboardPresenter do
     end
   end
 
+  describe '#recurring_expenses_summary' do
+    def rt_double(frequency:, amount:)
+      instance_double(RecurringTransaction,
+                      frequency: frequency,
+                      transaction_options: { 'amount' => amount.to_s })
+    end
+
+    context 'CA1: sin transacciones recurrentes activas' do
+      before { allow(presenter).to receive(:active_recurring_expenses).and_return([]) }
+
+      it 'CA1: retorna count 0 y monthly_total 0' do
+        summary = presenter.recurring_expenses_summary
+        expect(summary[:count]).to eq(0)
+        expect(summary[:monthly_total]).to eq(0)
+      end
+    end
+
+    context 'CA1: con gastos de distintas frecuencias' do
+      before do
+        rts = [
+          rt_double(frequency: 'monthly', amount: 100),
+          rt_double(frequency: 'weekly', amount: 20),
+          rt_double(frequency: 'bi_weekly', amount: 50)
+        ]
+        allow(presenter).to receive(:active_recurring_expenses).and_return(rts)
+      end
+
+      it 'CA1: retorna count correcto' do
+        expect(presenter.recurring_expenses_summary[:count]).to eq(3)
+      end
+
+      it 'CA1: calcula total mensual con factores correctos (100 + 20*4.33 + 50*2.17)' do
+        expected = 100 + (20 * 4.33) + (50 * 2.17)
+        expect(presenter.recurring_expenses_summary[:monthly_total]).to be_within(0.01).of(expected)
+      end
+    end
+
+    context 'CA5: con transacciones de tipo income' do
+      before { allow(presenter).to receive(:active_recurring_expenses).and_return([]) }
+
+      it 'CA5: no cuenta transacciones income (filtradas en active_recurring_expenses)' do
+        expect(presenter.recurring_expenses_summary[:count]).to eq(0)
+      end
+    end
+
+    context 'con frecuencia daily' do
+      before do
+        allow(presenter).to receive(:active_recurring_expenses)
+          .and_return([rt_double(frequency: 'daily', amount: 10)])
+      end
+
+      it 'multiplica por 30 para monthly_total' do
+        expect(presenter.recurring_expenses_summary[:monthly_total]).to be_within(0.01).of(300)
+      end
+    end
+
+    context 'con frecuencia quarterly' do
+      before do
+        allow(presenter).to receive(:active_recurring_expenses)
+          .and_return([rt_double(frequency: 'quarterly', amount: 300)])
+      end
+
+      it 'divide entre 3 para monthly_total' do
+        expect(presenter.recurring_expenses_summary[:monthly_total]).to be_within(0.01).of(100)
+      end
+    end
+
+    context 'con frecuencia annually' do
+      before do
+        allow(presenter).to receive(:active_recurring_expenses)
+          .and_return([rt_double(frequency: 'annually', amount: 1200)])
+      end
+
+      it 'divide entre 12 para monthly_total' do
+        expect(presenter.recurring_expenses_summary[:monthly_total]).to be_within(0.01).of(100)
+      end
+    end
+  end
+
+  describe '#recurring_expenses?' do
+    context 'sin gastos recurrentes' do
+      before { allow(presenter).to receive(:active_recurring_expenses).and_return([]) }
+
+      it 'retorna false' do
+        expect(presenter.recurring_expenses?).to be false
+      end
+    end
+
+    context 'con gastos recurrentes' do
+      before do
+        rt = instance_double(RecurringTransaction,
+                             frequency: 'monthly',
+                             transaction_options: { 'amount' => '100' })
+        allow(presenter).to receive(:active_recurring_expenses).and_return([rt])
+      end
+
+      it 'retorna true' do
+        expect(presenter.recurring_expenses?).to be true
+      end
+    end
+  end
+
+  describe '#upcoming_obligatory_payments' do
+    def op_with_recurrence(name:, amount:, dates:)
+      recurrence = instance_double(Recurrence)
+      allow(recurrence).to receive(:occurrences_in_range).and_return(dates)
+      instance_double(ObligatoryPayment, name: name, amount: amount, recurrence: recurrence)
+    end
+
+    def op_without_recurrence(name: 'Pago', amount: 100)
+      instance_double(ObligatoryPayment, name: name, amount: amount, recurrence: nil)
+    end
+
+    def stub_obligatory_payments(ops)
+      relation = instance_double(ActiveRecord::Relation)
+      allow(relation).to receive(:includes).and_return(ops)
+      allow(user).to receive(:obligatory_payments).and_return(relation)
+    end
+
+    context 'sin pagos obligatorios' do
+      before { stub_obligatory_payments([]) }
+
+      it 'retorna array vacío' do
+        expect(presenter.upcoming_obligatory_payments).to be_empty
+      end
+    end
+
+    context 'con un pago mensual próximo' do
+      let(:date_in_range) { Date.current + 5 }
+      let(:op) { op_with_recurrence(name: 'Renta', amount: 5000, dates: [date_in_range]) }
+
+      before { stub_obligatory_payments([op]) }
+
+      it 'incluye los campos requeridos' do
+        payment = presenter.upcoming_obligatory_payments.first
+        expect(payment).to include(:date, :description, :amount, :amount_formatted)
+      end
+
+      it 'la fecha está dentro de los próximos 30 días' do
+        expect(presenter.upcoming_obligatory_payments.first[:date]).to be <= Date.current + 30
+      end
+
+      it 'usa el nombre del pago obligatorio como descripción' do
+        expect(presenter.upcoming_obligatory_payments.first[:description]).to eq('Renta')
+      end
+    end
+
+    context 'ordena cronológicamente' do
+      before do
+        ops = [
+          op_with_recurrence(name: 'Ultimo', amount: 100, dates: [Date.current + 20]),
+          op_with_recurrence(name: 'Primero', amount: 200, dates: [Date.current + 3]),
+          op_with_recurrence(name: 'Medio', amount: 150, dates: [Date.current + 10])
+        ]
+        stub_obligatory_payments(ops)
+      end
+
+      it 'ordena por fecha ascendente' do
+        dates = presenter.upcoming_obligatory_payments.map { |p| p[:date] }
+        expect(dates).to eq(dates.sort)
+      end
+    end
+
+    context 'con más de 10 ocurrencias en 30 días' do
+      before do
+        many_dates = (1..15).map { |i| Date.current + i }
+        ops = [op_with_recurrence(name: 'Diario', amount: 50, dates: many_dates)]
+        stub_obligatory_payments(ops)
+      end
+
+      it 'limita a 10 items' do
+        expect(presenter.upcoming_obligatory_payments.size).to be <= 10
+      end
+    end
+
+    context 'pago sin recurrencia configurada' do
+      before { stub_obligatory_payments([op_without_recurrence]) }
+
+      it 'omite el pago sin recurrencia' do
+        expect(presenter.upcoming_obligatory_payments).to be_empty
+      end
+    end
+
+    context 'recurrencia sin fechas en el rango' do
+      let(:op) { op_with_recurrence(name: 'Anual', amount: 1000, dates: []) }
+
+      before { stub_obligatory_payments([op]) }
+
+      it 'retorna array vacío cuando no hay fechas en el rango' do
+        expect(presenter.upcoming_obligatory_payments).to be_empty
+      end
+    end
+  end
+
   describe '#monthly_budget_summary?' do
     context 'CA5: sin datos' do
       before { allow(presenter).to receive(:monthly_budget_summary).and_return([]) }

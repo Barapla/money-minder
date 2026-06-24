@@ -39,7 +39,10 @@ RSpec.describe '/dashboard', type: :request do
                                     payroll_configured?: false,
                                     monthly_budget_summary: [],
                                     monthly_budget_summary?: false,
-                                    prioritized_saving_goals: [])
+                                    prioritized_saving_goals: [],
+                                    recurring_expenses_summary: { count: 0, monthly_total: 0 },
+                                    recurring_expenses?: false,
+                                    upcoming_obligatory_payments: [])
         allow(DashboardPresenter).to receive(:new).with(user).and_return(presenter)
       end
 
@@ -105,7 +108,10 @@ RSpec.describe '/dashboard', type: :request do
                                     payroll_configured?: true,
                                     monthly_budget_summary: budget_items,
                                     monthly_budget_summary?: true,
-                                    prioritized_saving_goals: [])
+                                    prioritized_saving_goals: [],
+                                    recurring_expenses_summary: { count: 0, monthly_total: 0 },
+                                    recurring_expenses?: false,
+                                    upcoming_obligatory_payments: [])
         allow(DashboardPresenter).to receive(:new).with(user).and_return(presenter)
       end
 
@@ -157,7 +163,10 @@ RSpec.describe '/dashboard', type: :request do
                                     payroll_configured?: true,
                                     monthly_budget_summary: [],
                                     monthly_budget_summary?: false,
-                                    prioritized_saving_goals: [])
+                                    prioritized_saving_goals: [],
+                                    recurring_expenses_summary: { count: 0, monthly_total: 0 },
+                                    recurring_expenses?: false,
+                                    upcoming_obligatory_payments: [])
         allow(DashboardPresenter).to receive(:new).with(user).and_return(presenter)
       end
 
