@@ -19,7 +19,11 @@ module CreditCardServices
         prev_cycle = cycle.previous_cycle
         cycle.payment_due_date = cutting_date + credit_card.payment_due_days.days
         cycle.cycle_balance = 0
-        cycle.historical_balance = prev_cycle.present? ? prev_cycle.closing_balance : (credit_card.initial_debt || 0.0)
+        cycle.historical_balance = if prev_cycle.present?
+                                     prev_cycle.closing_balance || 0.0
+                                   else
+                                     credit_card.initial_debt || 0.0
+                                   end
         cycle.purchases = 0
         cycle.payments = 0
         cycle.fees = 0.0
