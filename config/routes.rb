@@ -82,9 +82,11 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
     end
   end
 
+  get 'dashboard', to: 'dashboard#index', as: :dashboard
+
   # sidekiq routes
   require 'sidekiq/web'
   mount Sidekiq::Web => '/sidekiq'
 
-  root 'home#index'
+  root 'dashboard#index'
 end
