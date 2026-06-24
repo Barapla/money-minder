@@ -7,4 +7,20 @@ class DashboardController < ApplicationController
   def index
     @presenter = DashboardPresenter.new(current_user)
   end
+
+  def saving_goals_recalculate
+    presenter = DashboardPresenter.new(current_user)
+    goals = presenter.prioritized_saving_goals.map { |item| serialize_goal(item) }
+    render json: { goals: goals }
+  end
+
+  private
+
+  def serialize_goal(item)
+    goal = item[:saving_goal]
+    { id: goal.id,
+      allocated_amount: item[:allocated_amount],
+      allocated_formatted: item[:allocated_formatted],
+      percentage: item[:progress_percentage] }
+  end
 end

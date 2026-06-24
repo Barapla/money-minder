@@ -159,7 +159,9 @@
 
   <!-- Card 5: Metas de Ahorro -->
   <% if @presenter.saving_goals? %>
-    <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 mb-6">
+    <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 mb-6"
+         data-controller="savings-goals-calculator"
+         data-savings-goals-calculator-url-value="<%= dashboard_saving_goals_recalculate_path(format: :json) %>">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center">
           <div class="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center mr-3">
@@ -167,9 +169,21 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
             </svg>
           </div>
-          <div>
-            <h2 class="text-xl font-semibold text-white">Metas de Ahorro</h2>
-            <p class="text-bunker-400 text-xs mt-0.5">Arrastra para reordenar la prioridad</p>
+          <div class="flex items-center gap-2">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <h2 class="text-xl font-semibold text-white">Metas de Ahorro</h2>
+                <span class="relative"
+                      data-controller="tooltip"
+                      data-tooltip-content-value="Saldo disponible = Efectivo + Tarjetas de debito + Fondos de ahorro - Deuda en tarjetas de credito. Se asigna a metas activas en orden de prioridad hasta alcanzar su objetivo."
+                      data-action="mouseenter->tooltip#show mouseleave->tooltip#hide">
+                  <svg class="w-4 h-4 text-bunker-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </span>
+              </div>
+              <p class="text-bunker-400 text-xs mt-0.5">Arrastra para reordenar la prioridad</p>
+            </div>
           </div>
         </div>
         <%= link_to saving_goals_path, class: "text-purple-400 text-sm hover:text-purple-300 underline" do %>
@@ -185,6 +199,7 @@
           <div class="bg-bunker-800/40 rounded-xl p-4 cursor-grab active:cursor-grabbing"
                draggable="true"
                data-savings-goals-reorder-target="item"
+               data-savings-goals-calculator-target="goal"
                data-goal-id="<%= goal.id %>"
                data-action="dragstart->savings-goals-reorder#dragstart dragover->savings-goals-reorder#dragover dragend->savings-goals-reorder#dragend">
             <div class="flex items-center justify-between mb-2">
@@ -195,17 +210,18 @@
                   <span class="text-bunker-500 text-xs">· <%= goal.deadline.strftime('%d/%m/%Y') %></span>
                 <% end %>
               </div>
-              <span class="text-emerald-300 text-sm font-semibold"><%= item[:progress_percentage] %>%</span>
+              <span class="text-emerald-300 text-sm font-semibold" data-percentage><%= item[:progress_percentage] %>%</span>
             </div>
 
             <!-- Barra de progreso -->
             <div class="w-full bg-bunker-700/60 rounded-full h-2 mb-2">
               <div class="h-2 rounded-full bg-emerald-500 transition-all duration-300"
+                   data-progress-bar
                    style="width: <%= item[:progress_percentage] %>%"></div>
             </div>
 
             <div class="flex justify-between text-xs text-bunker-400">
-              <span>Asignado: <span class="text-emerald-400 font-medium"><%= item[:allocated_formatted] %></span></span>
+              <span>Asignado: <span class="text-emerald-400 font-medium" data-allocated-amount><%= item[:allocated_formatted] %></span></span>
               <span>Meta: <span class="text-white font-medium"><%= item[:target_formatted] %></span></span>
             </div>
           </div>

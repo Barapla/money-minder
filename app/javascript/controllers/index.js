@@ -75,3 +75,9 @@ application.register("select-to", SelectToController)
 
 import SavingsGoalsReorderController from "./savings_goals_reorder_controller"
 application.register("savings-goals-reorder", SavingsGoalsReorderController)
+
+import SavingsGoalsCalculatorController from "./savings_goals_calculator_controller"
+application.register("savings-goals-calculator", SavingsGoalsCalculatorController)
+
+import TooltipController from "./tooltip_controller"
+application.register("tooltip", TooltipController)

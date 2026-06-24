@@ -31,7 +31,7 @@ module SavingGoalServices
     attr_reader :user
 
     def available_balance
-      @available_balance ||= cash_balance + debit_balance + savings_balance
+      @available_balance ||= [cash_balance + debit_balance + savings_balance - credit_card_debt, 0].max
     end
 
     def active_goals_by_priority
@@ -55,6 +55,14 @@ module SavingGoalServices
                  .where(budgets: { user_id: user.id, active: true })
                  .where(active: true)
                  .sum('budgets.current_amount')
+    end
+
+    def credit_card_debt
+      user.budgets
+          .joins(:credit_card)
+          .where(credit_cards: { active: true })
+          .includes(:credit_card)
+          .sum { |b| b.credit_card&.current_debt.to_f }
     end
   end
 end
