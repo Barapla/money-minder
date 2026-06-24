@@ -18,7 +18,10 @@ export default class extends Controller {
       const response = await fetch(this.urlValue, {
         headers: { "Accept": "application/json" }
       })
-      if (!response.ok) return
+      if (!response.ok) {
+        this.#showError("No se pudo recalcular las metas. Intenta de nuevo.")
+        return
+      }
 
       const data = await response.json()
       data.goals.forEach(goal => {
@@ -35,6 +38,15 @@ export default class extends Controller {
       })
     } catch (e) {
       console.error("Error al recalcular metas de ahorro:", e)
+      this.#showError("Error de conexión al recalcular las metas.")
     }
+  }
+
+  #showError(message) {
+    const el = document.createElement("div")
+    el.className = "fixed top-4 right-4 bg-red-500/90 text-white px-4 py-2 rounded-xl text-sm z-50 shadow-lg"
+    el.textContent = message
+    document.body.appendChild(el)
+    setTimeout(() => el.remove(), 3000)
   }
 }

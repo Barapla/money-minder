@@ -65,9 +65,11 @@
   <% if @saving_goals.any? %>
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       <% @saving_goals.each do |goal| %>
-        <% progress_data = @calculator.calculate_for(goal) %>
-        <% bar_width = [progress_data[:progress_percentage], 100].min %>
-        <% achieved = progress_data[:is_achieved] %>
+        <% allocated = @allocations[goal.id] || 0 %>
+        <% progress_percentage = goal.target_amount > 0 ? (allocated.to_f / goal.target_amount * 100).round(2) : 0 %>
+        <% bar_width = [progress_percentage, 100].min %>
+        <% achieved = progress_percentage >= 100 %>
+        <% days_remaining = goal.deadline ? (goal.deadline - Date.today).to_i : nil %>
 
         <div class="bg-bunker-900/50 border <%= achieved ? 'border-emerald-500/50' : 'border-bunker-800/50' %> rounded-2xl p-6 hover:bg-bunker-900/60 transition-all duration-200 flex flex-col">
 
@@ -97,7 +99,7 @@
             <div class="flex justify-between items-center mb-2">
               <span class="text-sm text-bunker-400">Progreso</span>
               <span class="text-sm font-bold <%= achieved ? 'text-emerald-400' : 'text-white' %>">
-                <%= progress_data[:progress_percentage] %>%
+                <%= progress_percentage %>%
               </span>
             </div>
             <div class="w-full bg-bunker-800 rounded-full h-3 overflow-hidden">
@@ -110,9 +112,9 @@
           <!-- Amounts -->
           <div class="mb-4 space-y-1">
             <div class="flex justify-between text-sm">
-              <span class="text-bunker-400">Disponible actual</span>
-              <span class="font-medium <%= progress_data[:available_money] >= 0 ? 'text-white' : 'text-red-400' %>">
-                <%= number_to_currency(progress_data[:available_money]) %>
+              <span class="text-bunker-400">Asignado</span>
+              <span class="font-medium text-white">
+                <%= number_to_currency(allocated) %>
               </span>
             </div>
             <div class="flex justify-between text-sm">
@@ -123,19 +125,16 @@
 
           <!-- Deadline / days remaining -->
           <% if goal.deadline %>
-            <% days = progress_data[:days_remaining] %>
-            <div class="flex items-center gap-2 text-sm mb-4 <%= days && days < 0 ? 'text-red-400' : 'text-bunker-300' %>">
+            <div class="flex items-center gap-2 text-sm mb-4 <%= days_remaining && days_remaining < 0 ? 'text-red-400' : 'text-bunker-300' %>">
               <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
-              <% if days.nil? %>
-                Fecha: <%= goal.deadline.strftime('%d/%m/%Y') %>
-              <% elsif days > 0 %>
-                <%= days %> días restantes (<%= goal.deadline.strftime('%d/%m/%Y') %>)
-              <% elsif days == 0 %>
+              <% if days_remaining > 0 %>
+                <%= days_remaining %> días restantes (<%= goal.deadline.strftime('%d/%m/%Y') %>)
+              <% elsif days_remaining == 0 %>
                 Vence hoy
               <% else %>
-                Venció hace <%= days.abs %> días
+                Venció hace <%= days_remaining.abs %> días
               <% end %>
             </div>
           <% end %>

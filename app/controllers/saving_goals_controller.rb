@@ -10,7 +10,7 @@ class SavingGoalsController < ApplicationController
   def index
     @saving_goals = current_user.saving_goals.recent_first
     @active_goals_by_priority = current_user.saving_goals.where(status: :active).order(:priority_order)
-    @calculator = SavingGoalServices::ProgressCalculator.new(current_user)
+    @allocations = SavingGoalServices::PriorityAllocator.new(current_user).allocate
   end
 
   def new

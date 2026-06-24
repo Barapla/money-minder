@@ -57,12 +57,33 @@ module SavingGoalServices
                  .sum('budgets.current_amount')
     end
 
+    # Suma closing_balance del ciclo vigente (minimo cutting_date >= hoy) por tarjeta activa.
+    # Usa subconsulta correlacionada para evitar N+1 sin interpolacion de variables en SQL.
+    CURRENT_CYCLE_SQL = <<~SQL.squish.freeze
+      NOT EXISTS (
+        SELECT 1 FROM credit_card_cycles c2
+        WHERE c2.credit_card_id = credit_card_cycles.credit_card_id
+        AND c2.cutting_date >= ?
+        AND c2.cutting_date < credit_card_cycles.cutting_date
+      )
+    SQL
+
     def credit_card_debt
+      ids = active_credit_card_ids
+      return 0.0 if ids.empty?
+
+      today = Date.current
+      CreditCardCycle.where(credit_card_id: ids)
+                     .where('cutting_date >= ?', today)
+                     .where(CURRENT_CYCLE_SQL, today)
+                     .sum(:closing_balance)
+    end
+
+    def active_credit_card_ids
       user.budgets
           .joins(:credit_card)
           .where(credit_cards: { active: true })
-          .includes(:credit_card)
-          .sum { |b| b.credit_card&.current_debt.to_f }
+          .pluck('credit_cards.id')
     end
   end
 end
