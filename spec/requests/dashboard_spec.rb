@@ -21,6 +21,8 @@ RSpec.describe '/dashboard', type: :request do
                                     available_balance_formatted: '$0.00',
                                     balance_breakdown: {
                                       cash: 0, cash_formatted: '$0.00',
+                                      debit: 0, debit_formatted: '$0.00',
+                                      debit_detail: [],
                                       savings: 0, savings_formatted: '$0.00',
                                       savings_detail: []
                                     },
@@ -28,8 +30,10 @@ RSpec.describe '/dashboard', type: :request do
                                     credit_utilization_alerts: [],
                                     total_debt: 0,
                                     total_debt_formatted: '$0.00',
+                                    debt_breakdown: [],
                                     credit_cards?: false,
-                                    savings_funds?: false)
+                                    savings_funds?: false,
+                                    debit_cards?: false)
         allow(DashboardPresenter).to receive(:new).with(user).and_return(presenter)
       end
 
@@ -56,6 +60,8 @@ RSpec.describe '/dashboard', type: :request do
                                     available_balance_formatted: '$5,000.00',
                                     balance_breakdown: {
                                       cash: 5_000, cash_formatted: '$5,000.00',
+                                      debit: 0, debit_formatted: '$0.00',
+                                      debit_detail: [],
                                       savings: 0, savings_formatted: '$0.00',
                                       savings_detail: []
                                     },
@@ -63,8 +69,10 @@ RSpec.describe '/dashboard', type: :request do
                                     credit_utilization_alerts: [],
                                     total_debt: 0,
                                     total_debt_formatted: '$0.00',
+                                    debt_breakdown: [],
                                     credit_cards?: false,
-                                    savings_funds?: false)
+                                    savings_funds?: false,
+                                    debit_cards?: false)
         allow(DashboardPresenter).to receive(:new).with(user).and_return(presenter)
       end
 

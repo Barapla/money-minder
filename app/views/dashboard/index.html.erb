@@ -23,7 +23,7 @@
         <div class="text-4xl font-bold <%= @presenter.available_balance >= 0 ? 'text-emerald-400' : 'text-red-400' %>">
           <%= @presenter.available_balance_formatted %>
         </div>
-        <div class="text-bunker-400 text-sm mt-1">Total efectivo + ahorros</div>
+        <div class="text-bunker-400 text-sm mt-1">Total efectivo + débito + ahorros</div>
       </div>
 
       <% breakdown = @presenter.balance_breakdown %>
@@ -37,6 +37,20 @@
           <span class="text-white font-medium text-sm"><%= breakdown[:cash_formatted] %></span>
         </div>
 
+        <!-- Tarjetas de débito -->
+        <% if @presenter.debit_cards? %>
+          <% breakdown[:debit_detail].each do |card| %>
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <div class="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
+                <span class="text-bunker-300 text-sm"><%= card[:name] %></span>
+              </div>
+              <span class="text-white font-medium text-sm"><%= card[:balance_formatted] %></span>
+            </div>
+          <% end %>
+        <% end %>
+
+        <!-- Fondos de ahorro -->
         <% if @presenter.savings_funds? %>
           <% breakdown[:savings_detail].each do |fund| %>
             <div class="flex justify-between items-center">
@@ -48,7 +62,9 @@
             </div>
           <% end %>
         <% else %>
-          <div class="text-bunker-500 text-sm italic">Sin fondos de ahorro configurados</div>
+          <% unless @presenter.debit_cards? %>
+            <div class="text-bunker-500 text-sm italic">Sin fondos de ahorro ni débito configurados</div>
+          <% end %>
         <% end %>
       </div>
     </div>
@@ -65,12 +81,27 @@
       </div>
 
       <% if @presenter.credit_cards? %>
-        <div class="mb-2">
+        <div class="mb-4">
           <div class="text-4xl font-bold text-red-400">
             <%= @presenter.total_debt_formatted %>
           </div>
           <div class="text-bunker-400 text-sm mt-1">Suma de saldos actuales</div>
         </div>
+
+        <% debt_items = @presenter.debt_breakdown %>
+        <% if debt_items.any? %>
+          <div class="space-y-2 border-t border-bunker-700/50 pt-4">
+            <% debt_items.each do |item| %>
+              <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                  <div class="w-2 h-2 bg-red-400 rounded-full mr-2"></div>
+                  <span class="text-bunker-300 text-sm"><%= item[:card_name] %></span>
+                </div>
+                <span class="text-red-300 font-medium text-sm"><%= item[:debt_formatted] %></span>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
       <% else %>
         <div class="text-center py-6">
           <div class="text-bunker-400 text-sm mb-3">No tienes tarjetas de crédito configuradas</div>
@@ -102,6 +133,11 @@
                 Corte: <%= card[:cutting_date].strftime('%d/%m/%Y') %> &bull;
                 Pago: <%= card[:payment_due_date].strftime('%d/%m/%Y') %>
               </div>
+              <% if card[:current_debt].positive? %>
+                <div class="text-red-400 text-xs mt-1">
+                  Saldo: <%= card[:current_debt_formatted] %>
+                </div>
+              <% end %>
             </div>
             <div class="text-right">
               <% days = card[:days_until_cutting] %>

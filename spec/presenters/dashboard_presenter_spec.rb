@@ -25,16 +25,17 @@ RSpec.describe DashboardPresenter do
   describe '#available_balance' do
     before do
       allow(presenter).to receive(:cash_balance).and_return(5_000.0)
+      allow(presenter).to receive(:debit_balance).and_return(2_000.0)
       allow(presenter).to receive(:savings_balance).and_return(13_000.0)
     end
 
-    it 'CA1: suma efectivo más fondos de ahorro' do
-      expect(presenter.available_balance).to eq(18_000.0)
+    it 'CA1: suma efectivo, débito y fondos de ahorro' do
+      expect(presenter.available_balance).to eq(20_000.0)
     end
   end
 
   describe '#available_balance_formatted' do
-    before { allow(presenter).to receive(:available_balance).and_return(18_000.0) }
+    before { allow(presenter).to receive(:available_balance).and_return(20_000.0) }
 
     it 'incluye símbolo de moneda' do
       expect(presenter.available_balance_formatted).to include('$')
@@ -44,16 +45,26 @@ RSpec.describe DashboardPresenter do
   describe '#balance_breakdown' do
     before do
       allow(presenter).to receive(:cash_balance).and_return(5_000.0)
+      allow(presenter).to receive(:debit_balance).and_return(3_000.0)
+      allow(presenter).to receive(:debit_breakdown).and_return(
+        [{ name: 'Cuenta Nómina', balance: 3_000.0, balance_formatted: '$3,000.00' }]
+      )
       allow(presenter).to receive(:savings_balance).and_return(10_000.0)
       allow(presenter).to receive(:savings_breakdown).and_return(
         [{ name: 'Fondo Emergencia', balance: 10_000.0, balance_formatted: '$10,000.00' }]
       )
     end
 
-    it 'CA2: retorna hash con efectivo y ahorros' do
+    it 'CA2: retorna hash con efectivo, débito y ahorros' do
       breakdown = presenter.balance_breakdown
       expect(breakdown[:cash]).to eq(5_000.0)
+      expect(breakdown[:debit]).to eq(3_000.0)
       expect(breakdown[:savings]).to eq(10_000.0)
+    end
+
+    it 'CA2: incluye desglose de tarjetas de débito' do
+      breakdown = presenter.balance_breakdown
+      expect(breakdown[:debit_detail].first[:name]).to eq('Cuenta Nómina')
     end
 
     it 'CA2: incluye desglose de cada fondo' do
@@ -64,6 +75,7 @@ RSpec.describe DashboardPresenter do
     it 'CA2: incluye valores formateados con símbolo de moneda' do
       breakdown = presenter.balance_breakdown
       expect(breakdown[:cash_formatted]).to include('$')
+      expect(breakdown[:debit_formatted]).to include('$')
       expect(breakdown[:savings_formatted]).to include('$')
     end
   end
@@ -80,9 +92,10 @@ RSpec.describe DashboardPresenter do
       allow(presenter).to receive(:credit_card_budgets).and_return([budget_corte25, budget_corte10])
     end
 
-    it 'CA3: retorna array con nombre de tarjeta, fechas y días restantes' do
+    it 'CA3: retorna array con nombre de tarjeta, fechas, días restantes y deuda' do
       results = presenter.upcoming_card_due_dates
-      expect(results).to all(include(:card_name, :cutting_date, :payment_due_date, :days_until_cutting))
+      expect(results).to all(include(:card_name, :cutting_date, :payment_due_date,
+                                     :days_until_cutting, :current_debt, :current_debt_formatted))
     end
 
     it 'CA3: ordena por fecha de corte cronológicamente' do
@@ -91,12 +104,14 @@ RSpec.describe DashboardPresenter do
       expect(dates).to eq(dates.sort)
     end
 
-    it 'CA3: respeta el límite de 5 tarjetas' do
-      expect(presenter.upcoming_card_due_dates.size).to be <= 5
+    it 'CA3: retorna todas las tarjetas sin límite' do
+      expect(presenter.upcoming_card_due_dates.size).to eq(2)
     end
 
-    it 'aplica el límite personalizado' do
-      expect(presenter.upcoming_card_due_dates(limit: 1).size).to eq(1)
+    it 'incluye la deuda de cada tarjeta' do
+      result = presenter.upcoming_card_due_dates.find { |r| r[:card_name] == 'Oro' }
+      expect(result[:current_debt]).to eq(2_000.0)
+      expect(result[:current_debt_formatted]).to include('$')
     end
 
     context 'tarjeta sin día de corte configurado' do
@@ -235,6 +250,32 @@ RSpec.describe DashboardPresenter do
     end
   end
 
+  describe '#debt_breakdown' do
+    context 'con tarjetas con y sin saldo' do
+      before do
+        b1 = budget_with_card(name: 'Con Saldo', limit_amount: 10_000, current_debt: 3_500)
+        b2 = budget_with_card(name: 'Sin Saldo', limit_amount: 5_000, current_debt: 0)
+        allow(presenter).to receive(:credit_card_budgets).and_return([b1, b2])
+      end
+
+      it 'incluye solo tarjetas con saldo mayor a cero' do
+        result = presenter.debt_breakdown
+        expect(result.size).to eq(1)
+        expect(result.first[:card_name]).to eq('Con Saldo')
+        expect(result.first[:debt]).to eq(3_500.0)
+        expect(result.first[:debt_formatted]).to include('$')
+      end
+    end
+
+    context 'CA7: sin tarjetas de crédito' do
+      before { allow(presenter).to receive(:credit_card_budgets).and_return([]) }
+
+      it 'retorna array vacío' do
+        expect(presenter.debt_breakdown).to be_empty
+      end
+    end
+  end
+
   describe '#credit_cards?' do
     context 'CA7: sin tarjetas' do
       before { allow(presenter).to receive(:credit_card_budgets).and_return([]) }
@@ -273,6 +314,27 @@ RSpec.describe DashboardPresenter do
 
       it 'retorna true' do
         expect(presenter.savings_funds?).to be true
+      end
+    end
+  end
+
+  describe '#debit_cards?' do
+    context 'sin tarjetas de débito' do
+      before { allow(presenter).to receive(:active_debit_budgets).and_return([]) }
+
+      it 'retorna false' do
+        expect(presenter.debit_cards?).to be false
+      end
+    end
+
+    context 'con al menos una tarjeta de débito' do
+      before do
+        budget = instance_double(Budget)
+        allow(presenter).to receive(:active_debit_budgets).and_return([budget])
+      end
+
+      it 'retorna true' do
+        expect(presenter.debit_cards?).to be true
       end
     end
   end

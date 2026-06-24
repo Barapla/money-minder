@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Presenter para el dashboard financiero del usuario.
-# Agrega saldos, tarjetas de crédito y alertas de utilización.
+# Agrega saldos, tarjetas de crédito/débito y alertas de utilización.
 class DashboardPresenter # rubocop:disable Metrics/ClassLength
   include ActionView::Helpers::NumberHelper
 
@@ -9,30 +9,33 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     @user = user
   end
 
-  # Suma de efectivo y fondos de ahorro activos
+  # Suma de efectivo, tarjetas de débito y fondos de ahorro activos
   def available_balance
-    cash_balance + savings_balance
+    cash_balance + debit_balance + savings_balance
   end
 
   def available_balance_formatted
     format_currency(available_balance)
   end
 
-  # Desglose: efectivo y cada fondo de ahorro
+  # Desglose: efectivo, tarjetas de débito y cada fondo de ahorro
   def balance_breakdown
     {
       cash: cash_balance,
       cash_formatted: format_currency(cash_balance),
+      debit: debit_balance,
+      debit_formatted: format_currency(debit_balance),
+      debit_detail: debit_breakdown,
       savings: savings_balance,
       savings_formatted: format_currency(savings_balance),
       savings_detail: savings_breakdown
     }
   end
 
-  # Próximas fechas de corte de tarjetas activas, ordenadas cronológicamente
-  def upcoming_card_due_dates(limit: 5)
+  # Fechas de corte de todas las tarjetas activas, ordenadas cronológicamente
+  def upcoming_card_due_dates
     entries = credit_card_budgets.filter_map { |budget| build_due_date_entry(budget) }
-    entries.sort_by { |c| c[:cutting_date] }.first(limit)
+    entries.sort_by { |c| c[:cutting_date] }
   end
 
   # Tarjetas con utilización mayor al 30% — incluye monto para bajar al 30%
@@ -44,11 +47,21 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
 
   # Suma de deudas actuales de todas las tarjetas activas (ciclo vigente)
   def total_debt
-    credit_card_budgets.sum { |b| b.credit_card.current_debt.to_f }
+    credit_card_budgets.sum { |b| b.credit_card&.current_debt.to_f }
   end
 
   def total_debt_formatted
     format_currency(total_debt)
+  end
+
+  # Deuda desglosada por tarjeta
+  def debt_breakdown
+    credit_card_budgets.filter_map do |budget|
+      debt = budget.credit_card&.current_debt.to_f
+      next if debt.zero?
+
+      { card_name: budget.name, debt: debt, debt_formatted: format_currency(debt) }
+    end
   end
 
   def credit_cards?
@@ -57,6 +70,10 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
 
   def savings_funds?
     active_savings_funds.any?
+  end
+
+  def debit_cards?
+    active_debit_budgets.any?
   end
 
   private
@@ -68,15 +85,36 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     user.budgets.where(personal: true, active: true).sum(:current_amount)
   end
 
+  # Suma de saldos de tarjetas de débito activas
+  def debit_balance
+    active_debit_budgets.sum(:current_amount)
+  end
+
+  def debit_breakdown
+    active_debit_budgets.map do |budget|
+      { name: budget.name, balance: budget.current_amount,
+        balance_formatted: format_currency(budget.current_amount || 0) }
+    end
+  end
+
+  def active_debit_budgets
+    @active_debit_budgets ||= user.budgets
+                                  .joins(:budget_type)
+                                  .where(budgets: { active: true })
+                                  .where(budget_type: { code: 'debit_card' })
+  end
+
   # Suma del current_amount de todos los presupuestos con fondo de ahorro activo
   def savings_balance
-    active_savings_funds.sum { |sf| sf.budget.current_amount.to_f }
+    active_savings_funds.sum { |sf| sf.budget&.current_amount.to_f || 0 }
   end
 
   def savings_breakdown
-    active_savings_funds.map do |sf|
+    active_savings_funds.filter_map do |sf|
+      next unless sf.budget
+
       { name: sf.budget.name, balance: sf.budget.current_amount,
-        balance_formatted: format_currency(sf.budget.current_amount) }
+        balance_formatted: format_currency(sf.budget.current_amount || 0) }
     end
   end
 
@@ -99,12 +137,16 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     return nil unless card.cutting_day.present?
 
     cutting_date = next_cutting_date_for(card)
+    current_debt = card.current_debt.to_f
     { card_name: budget.name,
       cutting_date: cutting_date,
       payment_due_date: cutting_date + card.payment_due_days.to_i.days,
-      days_until_cutting: (cutting_date - Date.current).to_i }
+      days_until_cutting: (cutting_date - Date.current).to_i,
+      current_debt: current_debt,
+      current_debt_formatted: format_currency(current_debt) }
   end
 
+  # Tarjetas con deuda cero no generan alertas porque su utilización no representa riesgo.
   def alert_triggered?(card)
     card.limit_amount.present? && card.limit_amount.positive? &&
       card.current_debt.to_f.positive? &&
@@ -116,11 +158,12 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     utilization = utilization_percentage(card)
     suggested = suggested_payment(card)
     cutting_date = card.cutting_day.present? ? next_cutting_date_for(card) : nil
+    current_balance = card.current_debt.to_f
     { card_name: budget.name,
       utilization_percentage: utilization,
       utilization_status: utilization_status(utilization),
-      current_balance: card.current_debt,
-      current_balance_formatted: format_currency(card.current_debt),
+      current_balance: current_balance,
+      current_balance_formatted: format_currency(current_balance),
       suggested_payment: suggested,
       suggested_payment_formatted: format_currency(suggested),
       cutting_date: cutting_date }
@@ -143,14 +186,14 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
   end
 
   def utilization_percentage(card)
-    return 0 if card.limit_amount.nil? || card.limit_amount.zero?
+    return 0 if card.limit_amount.nil? || card.limit_amount <= 0
 
     ((card.current_debt.to_f / card.limit_amount) * 100).round(2)
   end
 
   # Monto a pagar para reducir la utilización al 30% del límite
   def suggested_payment(card)
-    amount = card.current_debt - (card.limit_amount * 0.30)
+    amount = card.current_debt.to_f - (card.limit_amount * 0.30)
     [amount, 0].max
   end
 
