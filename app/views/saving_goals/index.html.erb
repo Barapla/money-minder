@@ -62,16 +62,22 @@
     </div>
   <% end %>
 
-  <% if @saving_goals.any? %>
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <% @saving_goals.each do |goal| %>
+  <% if @active_goals_by_priority.any? || @inactive_goals.any? %>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+         data-controller="savings-goals-calculator"
+         data-savings-goals-calculator-url-value="<%= dashboard_saving_goals_recalculate_path(format: :json) %>">
+      <% (@active_goals_by_priority.to_a + @inactive_goals.to_a).each do |goal| %>
         <% allocated = @allocations[goal.id] || 0 %>
         <% progress_percentage = goal.target_amount > 0 ? (allocated.to_f / goal.target_amount * 100).round(2) : 0 %>
         <% bar_width = [progress_percentage, 100].min %>
         <% achieved = progress_percentage >= 100 %>
         <% days_remaining = goal.deadline ? (goal.deadline - Date.today).to_i : nil %>
 
-        <div class="bg-bunker-900/50 border <%= achieved ? 'border-emerald-500/50' : 'border-bunker-800/50' %> rounded-2xl p-6 hover:bg-bunker-900/60 transition-all duration-200 flex flex-col">
+        <div class="bg-bunker-900/50 border <%= achieved ? 'border-emerald-500/50' : 'border-bunker-800/50' %> rounded-2xl p-6 hover:bg-bunker-900/60 transition-all duration-200 flex flex-col"
+             <% if goal.active? %>
+               data-savings-goals-calculator-target="goal"
+               data-goal-id="<%= goal.id %>"
+             <% end %>>
 
           <!-- Status badge + name -->
           <div class="flex items-start justify-between mb-4">
@@ -98,12 +104,14 @@
           <div class="mb-4">
             <div class="flex justify-between items-center mb-2">
               <span class="text-sm text-bunker-400">Progreso</span>
-              <span class="text-sm font-bold <%= achieved ? 'text-emerald-400' : 'text-white' %>">
+              <span class="text-sm font-bold <%= achieved ? 'text-emerald-400' : 'text-white' %>"
+                    <% if goal.active? %>data-percentage<% end %>>
                 <%= progress_percentage %>%
               </span>
             </div>
             <div class="w-full bg-bunker-800 rounded-full h-3 overflow-hidden">
               <div class="h-3 rounded-full transition-all duration-500 <%= achieved ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-emerald-600 to-emerald-500' %>"
+                   <% if goal.active? %>data-progress-bar<% end %>
                    style="width: <%= bar_width %>%">
               </div>
             </div>
@@ -113,7 +121,8 @@
           <div class="mb-4 space-y-1">
             <div class="flex justify-between text-sm">
               <span class="text-bunker-400">Asignado</span>
-              <span class="font-medium text-white">
+              <span class="font-medium text-white"
+                    <% if goal.active? %>data-allocated-amount<% end %>>
                 <%= number_to_currency(allocated) %>
               </span>
             </div>

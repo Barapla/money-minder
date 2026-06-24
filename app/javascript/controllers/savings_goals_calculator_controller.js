@@ -26,7 +26,10 @@ export default class extends Controller {
       const data = await response.json()
       data.goals.forEach(goal => {
         const element = this.goalTargets.find(el => el.dataset.goalId === goal.id.toString())
-        if (!element) return
+        if (!element) {
+          console.warn(`Meta ${goal.id} no encontrada en el DOM`)
+          return
+        }
 
         const amountEl = element.querySelector('[data-allocated-amount]')
         const percentageEl = element.querySelector('[data-percentage]')

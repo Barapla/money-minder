@@ -12,6 +12,8 @@ class DashboardController < ApplicationController
     presenter = DashboardPresenter.new(current_user)
     goals = presenter.prioritized_saving_goals.map { |item| serialize_goal(item) }
     render json: { goals: goals }
+  rescue StandardError
+    render json: { error: 'No se pudo calcular las metas de ahorro.' }, status: :unprocessable_entity
   end
 
   private
