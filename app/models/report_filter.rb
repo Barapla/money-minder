@@ -14,12 +14,15 @@ class ReportFilter
   attribute :min_amount, :decimal
   attribute :max_amount, :decimal
 
+  attr_reader :user
+
   # Validaciones opcionales
   validates :start_date, presence: true
   validates :end_date, presence: true
   validate :end_date_after_start_date
 
   def initialize(attributes = {})
+    @user = attributes.delete(:user)
     super
     set_default_dates if start_date.blank? || end_date.blank?
   end
@@ -47,7 +50,6 @@ class ReportFilter
 
     # Completar con 0s para los que no tienen transacciones
     all_budgets.map { |budget_id| sum[budget_id] || 0 }
-
   end
 
   def transaction_type_per_frequency(transaction_type, frequency = period)
@@ -66,8 +68,6 @@ class ReportFilter
   end
 
   def categories(transaction_type, limit = nil)
-    # Construcción de la query con todos los filtros
-
     base_query = if transaction_type == "income"
       Category.by_parent_category(["Ingresos"])
                         .joins(:transactions)
@@ -76,7 +76,7 @@ class ReportFilter
                         .joins(:transactions)
     end
 
-    # Aplicar filtro de budgets
+    # Aplicar filtro de budgets (ya scopeados al usuario)
     budget_ids = budget_ids_from_filter
     base_query = base_query.where(transactions: { budget_id: budget_ids }) if budget_ids.present?
 
@@ -98,7 +98,6 @@ class ReportFilter
   end
 
   def transaction_count
-    # Construcción de la query con todos los filtros
     base_query = filtered_transactions.try(:report)
 
     base_query.count
@@ -156,16 +155,13 @@ class ReportFilter
     errors.add(:end_date, 'debe ser posterior a la fecha de inicio') if end_date < start_date
   end
 
-  # Query base con filtros de fecha aplicados
+  # Query base con filtros de fecha aplicados, scopeada al usuario
   def filtered_transactions
-    # Empezar desde Transaction y hacer join con Budget
-    base_query = Transaction.joins(:budget)
+    base_query = user_transactions.joins(:budget)
 
-    # Aplicar filtro de budgets si está presente
     budget_ids = budget_ids_from_filter
     base_query = base_query.where(budget_id: budget_ids)
 
-    # Aplicar filtros de fecha
     if start_date.present? && end_date.present?
       base_query = base_query.where(transaction_date: start_date..end_date)
     elsif start_date.present?
@@ -177,18 +173,30 @@ class ReportFilter
     base_query
   end
 
+  def user_transactions
+    return Transaction.joins(:budget) unless user
+
+    user.transactions
+  end
+
+  def user_budget_ids
+    return Budget.pluck(:id) unless user
+
+    user.budgets.pluck(:id)
+  end
+
   def budget_ids_from_filter
-    return Budget.pluck(:id) if budgets.blank?
+    return user_budget_ids if budgets.blank?
 
     case budgets
     when Array
-      budgets.present? ? budgets : Budget.pluck(:id)
+      budgets.present? ? budgets : user_budget_ids
     when String
       budgets.split(',').map(&:to_i)
     when Budget
       [budgets.id]
     else
-      Budget.pluck(:id)
+      user_budget_ids
     end
   end
 
@@ -260,5 +268,4 @@ class ReportFilter
 
     labels
   end
-
 end

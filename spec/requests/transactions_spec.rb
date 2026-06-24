@@ -42,9 +42,9 @@ RSpec.describe "/transactions", type: :request do
   end
 
   describe "GET /new" do
-    it "renders a successful response" do
+    it "redirige al login si no esta autenticado" do
       get new_transaction_url
-      expect(response).to be_successful
+      expect(response).to redirect_to(new_user_session_path)
     end
   end
 

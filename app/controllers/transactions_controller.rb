@@ -4,28 +4,22 @@
 class TransactionsController < ApplicationController
   include PaginationHelper
   include TransactionsHelper
+  before_action :authenticate_user!
   before_action :set_transaction, only: %i[show edit update destroy]
 
   # GET /transactions or /transactions.json
   def index
-    transactions = Transaction.order(transaction_date: :desc).order(created_at: :desc)
+    transactions = current_user.transactions.order(transaction_date: :desc).order(created_at: :desc)
     @total_collections = transactions.count
     @transactions = transactions.limit(10)
   end
 
   def transactions_table
     id = params[:id]
-    # query = params[:query]
     current_page = params[:page]
     per_page = params[:perPage].to_i
-    # select_filters = params[:select_filters] || []
-    # checkbox_filters = params[:checkbox_filters] || {}
 
-    transactions = Transaction.order(transaction_date: :desc).order(created_at: :desc)
-
-    # tickets = apply_select_filters(tickets, select_filters)
-    # users = apply_checkbox_filters(users, checkbox_filters)
-    # users = apply_query(users, query) if query.present?
+    transactions = current_user.transactions.order(transaction_date: :desc).order(created_at: :desc)
 
     total_transactions = transactions.count
 
@@ -76,6 +70,7 @@ class TransactionsController < ApplicationController
   # POST /transactions or /transactions.json
   def create
     @transaction = Transaction.new(transaction_params)
+    @transaction.user = current_user
 
     respond_to do |format|
       if @transaction.save
@@ -113,12 +108,10 @@ class TransactionsController < ApplicationController
 
   private
 
-  # Use callbacks to share common setup or constraints between actions.
   def set_transaction
-    @transaction = Transaction.find(params[:id])
+    @transaction = current_user.transactions.find(params[:id])
   end
 
-  # Only allow a list of trusted parameters through.
   def transaction_params
     params.require(:transaction).permit(:transaction_type_id,
                                         :amount,
@@ -128,8 +121,7 @@ class TransactionsController < ApplicationController
                                         :budget_id,
                                         :related_budget_id,
                                         :icon_id,
-                                        :color_id,
-                                        :user_id)
+                                        :color_id)
   end
 
   def get_turbo_stream_for_transaction_type(transaction_type)

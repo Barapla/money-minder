@@ -2,15 +2,17 @@
 
 # CalendarController
 class CalendarController < ApplicationController
+  before_action :authenticate_user!
+
   def index
-    @transactions = Transaction.report.where(transaction_date: Date.today.beginning_of_month..Date.today.end_of_month)
+    @transactions = current_user.transactions.report.where(transaction_date: Date.today.beginning_of_month..Date.today.end_of_month)
     set_income_and_expense_transactions
   end
 
   def set_month
     @date = safe_parse_date(params[:date])
 
-    @transactions = Transaction
+    @transactions = current_user.transactions
       .includes(:transaction_type, :category, :icon, :color)
       .where(transaction_date: @date.beginning_of_month..@date.end_of_month)
 
@@ -24,7 +26,7 @@ class CalendarController < ApplicationController
   def day_details
     @date = safe_parse_date(params[:date])
 
-    @transactions = Transaction
+    @transactions = current_user.transactions
       .includes(:transaction_type, :category, :icon, :color)
       .where(transaction_date: @date.all_day)
       .order(transaction_date: :desc, created_at: :desc)
@@ -70,9 +72,7 @@ class CalendarController < ApplicationController
       if filter[:special].present?
         filter_types = filter[:special]
 
-        # Aplicar scopes dinámicamente
         if filter_types.is_a?(Array) && filter_types.any?
-          # Construir la query con OR para múltiples tipos
           scope_queries = filter_types.map do |type|
             case type
             when 'expense'
@@ -84,7 +84,6 @@ class CalendarController < ApplicationController
             end
           end.compact
 
-          # Combinar las queries con OR
           if scope_queries.any?
             combined_query = scope_queries.reduce do |combined, query|
               combined.or(query)
@@ -95,7 +94,7 @@ class CalendarController < ApplicationController
         end
       end
       if filter[:budgets].present? && filter[:budgets].is_a?(Array)
-        transactions = transactions.joins(:budget).where(budgets: { id: filter[:budgets] })
+        transactions = transactions.joins(:budget).where(budgets: { id: current_user.budgets.where(id: filter[:budgets]) })
       end
       if filter[:icons].present? && filter[:icons].is_a?(Array)
         transactions = transactions.joins(:category).where(categories: { code: filter[:icons] })
