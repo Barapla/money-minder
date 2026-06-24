@@ -1,0 +1,48 @@
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 flex flex-col">
+  <div class="flex items-center mb-4">
+    <div class="w-10 h-10 bg-amber-500/20 rounded-xl flex items-center justify-center mr-3">
+      <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+      </svg>
+    </div>
+    <h2 class="text-base font-semibold text-white">Alertas de Utilización</h2>
+  </div>
+
+  <% alerts = @presenter.credit_utilization_alerts %>
+  <% if alerts.any? %>
+    <div class="overflow-y-auto max-h-72 space-y-2 flex-1">
+      <% alerts.first(5).each do |alert| %>
+        <% is_critical = alert[:utilization_status] == :critical %>
+        <div class="rounded-xl p-3 <%= is_critical ? 'border border-red-500/30 bg-red-500/5' : 'border border-amber-500/30 bg-amber-500/5' %>">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-white text-sm font-medium line-clamp-1"><%= alert[:card_name] %></span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-2 shrink-0 <%= is_critical ? 'bg-red-500/20 text-red-300' : 'bg-amber-500/20 text-amber-300' %>">
+              <%= alert[:utilization_percentage] %>%
+            </span>
+          </div>
+          <div class="w-full bg-bunker-700/60 rounded-full h-1.5 mb-1.5">
+            <div class="h-1.5 rounded-full <%= is_critical ? 'bg-red-500' : 'bg-amber-500' %>"
+                 style="width: <%= [alert[:utilization_percentage], 100].min %>%"></div>
+          </div>
+          <div class="text-bunker-400 text-xs">
+            Pagar <span class="text-white font-medium"><%= alert[:suggested_payment_formatted] %></span> para llegar al 30%
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% elsif @presenter.credit_cards? %>
+    <div class="flex items-center bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex-1">
+      <svg class="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <div>
+        <div class="text-emerald-300 font-medium text-sm">Utilización saludable</div>
+        <div class="text-emerald-400/70 text-xs mt-0.5">Todas tus tarjetas están bajo el 30%.</div>
+      </div>
+    </div>
+  <% else %>
+    <div class="text-center py-6 flex-1">
+      <p class="text-bunker-400 text-sm">Sin tarjetas de crédito configuradas.</p>
+    </div>
+  <% end %>
+</div>

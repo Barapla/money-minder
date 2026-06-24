@@ -338,4 +338,193 @@ RSpec.describe DashboardPresenter do
       end
     end
   end
+
+  describe '#payroll_configured?' do
+    context 'CA3: sin employment_information' do
+      before do
+        allow(user).to receive(:employment_information).and_return(nil)
+        allow(user).to receive(:payroll_profile).and_return(nil)
+      end
+
+      it 'CA3: retorna false' do
+        expect(presenter.payroll_configured?).to be false
+      end
+    end
+
+    context 'con employment_information pero sin payroll_profile' do
+      before do
+        allow(user).to receive(:employment_information).and_return(instance_double(EmploymentInformation))
+        allow(user).to receive(:payroll_profile).and_return(nil)
+      end
+
+      it 'retorna false' do
+        expect(presenter.payroll_configured?).to be false
+      end
+    end
+
+    context 'CA2: con employment_information y payroll_profile' do
+      before do
+        allow(user).to receive(:employment_information).and_return(instance_double(EmploymentInformation))
+        allow(user).to receive(:payroll_profile).and_return(instance_double(PayrollProfile))
+      end
+
+      it 'CA2: retorna true' do
+        expect(presenter.payroll_configured?).to be true
+      end
+    end
+  end
+
+  describe '#next_payroll_info' do
+    context 'CA3: sin información de nómina configurada' do
+      before { allow(presenter).to receive(:payroll_configured?).and_return(false) }
+
+      it 'CA3: retorna nil' do
+        expect(presenter.next_payroll_info).to be_nil
+      end
+    end
+
+    context 'CA2: con nómina configurada y pago en más de 7 días' do
+      let(:reminder) do
+        instance_double(PayrollReminder,
+                        date: Date.current + 15,
+                        net_amount: 25_000.0)
+      end
+      let(:generator) { instance_double(PayrollServices::ReminderGenerator) }
+
+      before do
+        allow(presenter).to receive(:payroll_configured?).and_return(true)
+        allow(PayrollServices::ReminderGenerator).to receive(:new).with(user).and_return(generator)
+        allow(generator).to receive(:generate).and_return([reminder])
+      end
+
+      it 'CA2: retorna hash con monto neto y fecha de pago' do
+        info = presenter.next_payroll_info
+        expect(info[:net_amount]).to eq(25_000.0)
+        expect(info[:payment_date]).to eq(Date.current + 15)
+      end
+
+      it 'CA2: coming_soon es false si faltan más de 7 días' do
+        expect(presenter.next_payroll_info[:coming_soon]).to be false
+      end
+
+      it 'incluye monto formateado con símbolo de moneda' do
+        expect(presenter.next_payroll_info[:net_amount_formatted]).to include('$')
+      end
+    end
+
+    context 'CA8: con pago en 5 días o menos' do
+      let(:reminder) do
+        instance_double(PayrollReminder,
+                        date: Date.current + 5,
+                        net_amount: 25_000.0)
+      end
+      let(:generator) { instance_double(PayrollServices::ReminderGenerator) }
+
+      before do
+        allow(presenter).to receive(:payroll_configured?).and_return(true)
+        allow(PayrollServices::ReminderGenerator).to receive(:new).with(user).and_return(generator)
+        allow(generator).to receive(:generate).and_return([reminder])
+      end
+
+      it 'CA8: coming_soon es true si faltan 7 días o menos' do
+        expect(presenter.next_payroll_info[:coming_soon]).to be true
+      end
+    end
+
+    context 'sin recordatorios próximos' do
+      let(:generator) { instance_double(PayrollServices::ReminderGenerator) }
+
+      before do
+        allow(presenter).to receive(:payroll_configured?).and_return(true)
+        allow(PayrollServices::ReminderGenerator).to receive(:new).with(user).and_return(generator)
+        allow(generator).to receive(:generate).and_return([])
+      end
+
+      it 'retorna nil cuando no hay pagos próximos' do
+        expect(presenter.next_payroll_info).to be_nil
+      end
+    end
+  end
+
+  describe '#monthly_budget_summary' do
+    context 'CA5: sin transacciones de gasto en el mes' do
+      before do
+        allow(presenter).to receive(:monthly_budget_summary).and_call_original
+        transactions_scope = instance_double(ActiveRecord::Relation)
+        allow(user).to receive(:transactions).and_return(transactions_scope)
+        allow(transactions_scope).to receive(:joins).and_return(transactions_scope)
+        allow(transactions_scope).to receive(:where).and_return(transactions_scope)
+        allow(transactions_scope).to receive(:group).and_return(transactions_scope)
+        allow(transactions_scope).to receive(:sum).and_return({})
+      end
+
+      it 'CA5: retorna array vacío' do
+        expect(presenter.monthly_budget_summary).to be_empty
+      end
+    end
+
+    context 'CA4: con gastos por categoría' do
+      before do
+        allow(presenter).to receive(:build_budget_summary).and_call_original
+        rows = {
+          [1, 'Alimentación'] => 5_000.0,
+          [2, 'Transporte'] => 2_000.0,
+          [3, 'Entretenimiento'] => 500.0
+        }
+        allow(presenter).to receive(:monthly_budget_summary).and_call_original
+        transactions_scope = instance_double(ActiveRecord::Relation)
+        allow(user).to receive(:transactions).and_return(transactions_scope)
+        allow(transactions_scope).to receive(:joins).and_return(transactions_scope)
+        allow(transactions_scope).to receive(:where).and_return(transactions_scope)
+        allow(transactions_scope).to receive(:group).and_return(transactions_scope)
+        allow(transactions_scope).to receive(:sum).and_return(rows)
+      end
+
+      it 'CA4: retorna categorías ordenadas de mayor a menor gasto' do
+        result = presenter.monthly_budget_summary
+        amounts = result.map { |r| r[:amount] }
+        expect(amounts).to eq(amounts.sort.reverse)
+      end
+
+      it 'CA4: incluye campos requeridos por la vista' do
+        result = presenter.monthly_budget_summary
+        expect(result.first).to include(:category_name, :amount, :amount_formatted,
+                                        :progress_percent, :status)
+      end
+
+      it 'CA4: la categoría con mayor gasto tiene 100% de progreso' do
+        result = presenter.monthly_budget_summary
+        expect(result.first[:progress_percent]).to eq(100)
+      end
+
+      it 'CA4: asigna status :safe a categorías con menos del 70% del máximo' do
+        result = presenter.monthly_budget_summary
+        low_item = result.last
+        expect(low_item[:status]).to eq(:safe)
+      end
+    end
+  end
+
+  describe '#monthly_budget_summary?' do
+    context 'CA5: sin datos' do
+      before { allow(presenter).to receive(:monthly_budget_summary).and_return([]) }
+
+      it 'CA5: retorna false' do
+        expect(presenter.monthly_budget_summary?).to be false
+      end
+    end
+
+    context 'CA4: con datos' do
+      before do
+        allow(presenter).to receive(:monthly_budget_summary).and_return(
+          [{ category_name: 'Test', amount: 100, amount_formatted: '$100.00',
+             progress_percent: 100, status: :danger }]
+        )
+      end
+
+      it 'CA4: retorna true' do
+        expect(presenter.monthly_budget_summary?).to be true
+      end
+    end
+  end
 end

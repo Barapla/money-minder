@@ -1,0 +1,53 @@
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+  <div class="flex items-center mb-4">
+    <div class="w-10 h-10 bg-indigo-500/20 rounded-xl flex items-center justify-center mr-3">
+      <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+      </svg>
+    </div>
+    <h2 class="text-xl font-semibold text-white">Próxima Nómina</h2>
+  </div>
+
+  <% payroll = @presenter.next_payroll_info %>
+  <% if payroll %>
+    <div class="mb-4">
+      <div class="flex items-center gap-3">
+        <div class="text-4xl font-bold text-indigo-400">
+          <%= payroll[:net_amount_formatted] %>
+        </div>
+        <% if payroll[:coming_soon] %>
+          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            Próximamente
+          </span>
+        <% end %>
+      </div>
+      <div class="text-bunker-400 text-sm mt-1">Salario neto estimado</div>
+    </div>
+
+    <div class="space-y-2 border-t border-bunker-700/50 pt-4">
+      <div class="flex justify-between items-center">
+        <span class="text-bunker-300 text-sm">Fecha de pago</span>
+        <span class="text-white font-medium text-sm"><%= payroll[:payment_date].strftime('%d/%m/%Y') %></span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-bunker-300 text-sm">Días restantes</span>
+        <% days = payroll[:days_until] %>
+        <% days_class = days <= 3 ? 'text-red-300' : days <= 7 ? 'text-amber-300' : 'text-white' %>
+        <span class="font-medium text-sm <%= days_class %>">
+          <% if days == 0 %>Hoy<% elsif days == 1 %>Mañana<% else %><%= days %> días<% end %>
+        </span>
+      </div>
+    </div>
+  <% else %>
+    <div class="text-center py-6">
+      <div class="w-12 h-12 bg-bunker-800/60 rounded-xl flex items-center justify-center mx-auto mb-3">
+        <svg class="w-6 h-6 text-bunker-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+      </div>
+      <p class="text-bunker-400 text-sm mb-3">Configura tu información laboral para ver tu próxima nómina</p>
+      <%= link_to "Configurar información laboral", new_employment_information_path,
+            class: "text-indigo-400 text-sm hover:text-indigo-300 underline" %>
+    </div>
+  <% end %>
+</div>
