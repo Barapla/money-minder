@@ -102,7 +102,6 @@ class BudgetsController < ApplicationController
   end
 
   def destroy
-    @budget = Budget.find(params[:id])
     @budget.destroy
     redirect_to budgets_path, notice: 'Presupuesto eliminado exitosamente'
   end
@@ -111,7 +110,7 @@ class BudgetsController < ApplicationController
 
   def budget_params
     params.require(:budget).permit(
-      :name, :budget_type_id, :current_amount, :icon_id, :color_id, :user_id,
+      :name, :budget_type_id, :current_amount, :icon_id, :color_id,
       credit_card_attributes: %i[initial_debt limit_amount cutting_day payment_due_days],
       savings_fund_attributes: %i[goal_amount target_date monthly_contribution interest_rate compound_frequency_id
                                   account_type_id minimum_balance max_balance]
@@ -119,9 +118,7 @@ class BudgetsController < ApplicationController
   end
 
   def set_budget
-    @budget = Budget.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
-    redirect_to budgets_path, alert: 'Presupuesto no encontrado.'
+    @budget = current_user.budgets.find(params[:id])
   end
 
   def turbo_stream_for_budget_type(budget_type)

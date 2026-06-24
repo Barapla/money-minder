@@ -168,6 +168,49 @@ curl -X POST http://localhost:3000/api/v1/tickets/{id}/complete \
 
 ---
 
+## Security Patterns (FEAT-009)
+
+### UserScoped concern
+
+`app/controllers/concerns/user_scoped.rb` — incluido en ApplicationController. Provee `authorize_resource(resource)` para verificar ownership cuando ya se tiene el recurso.
+
+### Query scoping
+
+Todas las queries en controladores deben ir a traves de la asociacion del usuario:
+
+```ruby
+# Correcto
+current_user.transactions.find(params[:id])
+current_user.budgets.where(...)
+current_user.obligatory_payments.includes(...)
+
+# Incorrecto
+Transaction.find(params[:id])
+Budget.all
+```
+
+### rescue_from en ApplicationController
+
+`rescue_from ActiveRecord::RecordNotFound` esta configurado en ApplicationController. Cuando `current_user.transactions.find(id)` no encuentra el registro (porque no pertenece al usuario), lanza RecordNotFound que devuelve HTTP 404 automaticamente.
+
+### ReportFilter con user
+
+`ReportFilter` acepta `user:` en el constructor. Siempre pasar `current_user`:
+
+```ruby
+ReportFilter.new(report_filter_params.merge(user: current_user))
+```
+
+Sin `user:`, el filtro consulta todos los budgets/transacciones de la DB (comportamiento legacy para tests sin autenticacion).
+
+### Factories de test
+
+Para crear transacciones en specs, usar las factories:
+- `:transaction` — requiere `:user`, `:budget`, `:category`, `:currency`, `:catalog` para color/icon/transaction_type
+- `:budget` — requiere `:user` y catalogs para `:budget_type`, `:color`, `:icon`
+
+---
+
 ## Engineering Standards
 
 Standards live in the `.claude/` folder:

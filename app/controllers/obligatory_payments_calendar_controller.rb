@@ -2,17 +2,18 @@
 
 # ObligatoryPaymentsCalendarController
 class ObligatoryPaymentsCalendarController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_payroll_reminders_for_month, only: %i[index set_month]
 
   def index
     @date = Date.today
-    @obligatory_payments = ObligatoryPayment.includes(:recurrence, :category, :icon, :color)
+    @obligatory_payments = current_user.obligatory_payments.includes(:recurrence, :category, :icon, :color)
     @payment_occurrences = generate_payment_occurrences(@date)
   end
 
   def set_month
     @date = safe_parse_date(params[:date])
-    @obligatory_payments = ObligatoryPayment.includes(:recurrence, :category, :icon, :color)
+    @obligatory_payments = current_user.obligatory_payments.includes(:recurrence, :category, :icon, :color)
     @payment_occurrences = generate_payment_occurrences(@date)
 
     render layout: false if turbo_frame_request?
@@ -20,7 +21,7 @@ class ObligatoryPaymentsCalendarController < ApplicationController
 
   def day_details
     @date = safe_parse_date(params[:date])
-    @obligatory_payments = ObligatoryPayment.includes(:category, :icon, :color)
+    @obligatory_payments = current_user.obligatory_payments.includes(:category, :icon, :color)
     @day_payments = payments_for_date(@date, @obligatory_payments)
     @total_amount = @day_payments.sum(&:amount)
     @payroll_reminders = payroll_reminders_for_date(@date)
@@ -58,8 +59,6 @@ class ObligatoryPaymentsCalendarController < ApplicationController
   end
 
   def set_payroll_reminders_for_month
-    return unless current_user
-
     date = safe_parse_date(params[:date]) || Date.today
     reminders = reminder_generator.generate(from_date: date.beginning_of_month, to_date: date.end_of_month)
     @payroll_reminders_by_date = reminders.group_by(&:date)
@@ -69,8 +68,6 @@ class ObligatoryPaymentsCalendarController < ApplicationController
   end
 
   def payroll_reminders_for_date(date)
-    return [] unless current_user
-
     reminder_generator.generate(from_date: date, to_date: date)
   rescue StandardError => e
     Rails.logger.error("PayrollReminder error for date #{date}: #{e.message}")

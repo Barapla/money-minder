@@ -1,14 +1,17 @@
+# frozen_string_literal: true
+
+# ObligatoryPaymentsController maneja los pagos obligatorios del usuario autenticado.
 class ObligatoryPaymentsController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_obligatory_payment, only: %i[show edit update destroy]
 
   # GET /obligatory_payments or /obligatory_payments.json
   def index
-    @obligatory_payments = ObligatoryPayment.includes(:category, :color, :icon, :recurrence).all
+    @obligatory_payments = current_user.obligatory_payments.includes(:category, :color, :icon, :recurrence)
   end
 
   # GET /obligatory_payments/1 or /obligatory_payments/1.json
-  def show
-  end
+  def show; end
 
   # GET /obligatory_payments/new
   def new
@@ -61,12 +64,10 @@ class ObligatoryPaymentsController < ApplicationController
 
   private
 
-  # Use callbacks to share common setup or constraints between actions.
   def set_obligatory_payment
-    @obligatory_payment = ObligatoryPayment.find(params[:id])
+    @obligatory_payment = current_user.obligatory_payments.find(params[:id])
   end
 
-  # Only allow a list of trusted parameters through.
   def obligatory_payment_params
     params.require(:obligatory_payment).permit(
       :name, :amount, :category_id, :description, :color_id, :icon_id,
