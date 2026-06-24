@@ -23,24 +23,24 @@ module Calendar
     end
 
     def build_dates_array
-        # Agrupar PRIMERO las transacciones por fecha (más eficiente)
-        grouped_transactions = transactions.group_by(&:transaction_date)
-
-        (1..last_day).map do |day|
-          current_date = date.change(day: day)
-          day_transactions = grouped_transactions[current_date] || []
-
-          {
-              date: current_date,
-              objects: day_transactions,
-              has_income: day_transactions.any? { |t| t.transaction_type.code == 'income' },
-              has_expenses: day_transactions.any? { |t| t.transaction_type.code == 'expense' },
-              day_balance: calculate_balance(day_transactions)
-          }
+      grouped_transactions = transactions.group_by(&:transaction_date)
+      (1..last_day).map do |day|
+        current_date = date.change(day: day)
+        build_day_entry(current_date, grouped_transactions[current_date] || [])
       end
     end
 
     private
+
+    def build_day_entry(current_date, day_transactions)
+      {
+        date: current_date,
+        objects: day_transactions,
+        has_income: day_transactions.any? { |t| t.transaction_type.code == 'income' },
+        has_expenses: day_transactions.any? { |t| t.transaction_type.code == 'expense' },
+        day_balance: calculate_balance(day_transactions)
+      }
+    end
 
     def calculate_balance(day_transactions)
       day_transactions.sum do |t|

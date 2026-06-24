@@ -92,6 +92,34 @@ Gemas clave: `devise`, `httparty`, `sidekiq-cron`, `brakeman`, `bundler-audit`
 
 ---
 
+## Recordatorios de Nomina en Calendario (FEAT-007)
+
+Los recordatorios de quincena se generan on-the-fly sin tabla persistente usando dos clases:
+
+### PayrollReminder (PORO)
+
+`app/models/payroll_reminder.rb` — representa un pago proyectado con atributos: `date`, `net_amount`, `calculation_breakdown`, `periodicity`.
+
+### PayrollServices::ReminderGenerator
+
+`app/services/payroll_services/reminder_generator.rb` — genera recordatorios para un rango de fechas:
+
+```ruby
+generator = PayrollServices::ReminderGenerator.new(user)
+reminders = generator.generate(from_date: Date.today.beginning_of_month, to_date: Date.today.end_of_month)
+```
+
+- Requiere que el usuario tenga `EmploymentInformation` y `PayrollProfile` configurados.
+- Soporta todas las periodicidades del enum: `daily`, `weekly`, `biweekly`, `monthly`, `yearly`.
+- El ciclo de pagos se calcula desde `EmploymentInformation.start_date`.
+- El monto neto se calcula usando `PayrollServices::Calculator` en cada llamada (siempre refleja cambios en PayrollProfile).
+
+### Integracion en CalendarController
+
+`CalendarController` usa `before_action :set_payroll_reminders_for_month` para los actions `index` y `set_month`, y llama a `payroll_reminders_for_date` en `day_details`. Los resultados se pasan al componente `Calendar::MainComponent` via `payroll_reminders:` y se visualizan con un indicador amber en el dia del calendario.
+
+---
+
 ## Conventions
 
 Service objects, RSpec, Presenters, FactoryBot

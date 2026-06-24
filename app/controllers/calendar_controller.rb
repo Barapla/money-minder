@@ -2,45 +2,43 @@
 
 # CalendarController
 class CalendarController < ApplicationController
-
   def index
     @transactions = Transaction.report.where(transaction_date: Date.today.beginning_of_month..Date.today.end_of_month)
     set_income_and_expense_transactions
   end
 
   def set_month
-      @date = params[:date] ? Date.parse(params[:date]) : Date.today
+    @date = safe_parse_date(params[:date])
 
-      # Optimización: Pre-cargar asociaciones y hacer el cálculo en SQL
-      @transactions = Transaction
-        .includes(:transaction_type, :category, :icon, :color)
-        .where(transaction_date: @date.beginning_of_month..@date.end_of_month)
+    @transactions = Transaction
+      .includes(:transaction_type, :category, :icon, :color)
+      .where(transaction_date: @date.beginning_of_month..@date.end_of_month)
 
-      @transactions = filter_transactions(@transactions, params[:filter])
+    @transactions = filter_transactions(@transactions, params[:filter])
 
-      set_income_and_expense_transactions
+    set_income_and_expense_transactions
 
-      render layout: false if turbo_frame_request?
+    render layout: false if turbo_frame_request?
   end
 
   def day_details
-      @date = params[:date] ? Date.parse(params[:date]) : Date.today
+    @date = safe_parse_date(params[:date])
 
-      @transactions = Transaction
-          .includes(:transaction_type, :category, :icon, :color) # Pre-cargar asociaciones
-          .where(transaction_date: @date.all_day)
-          .order(transaction_date: :desc, created_at: :desc)
+    @transactions = Transaction
+      .includes(:transaction_type, :category, :icon, :color)
+      .where(transaction_date: @date.all_day)
+      .order(transaction_date: :desc, created_at: :desc)
 
-      @transactions = filter_transactions(@transactions, params[:filter])
+    @transactions = filter_transactions(@transactions, params[:filter])
 
-      @expensed_total = @transactions.expense.sum(&:amount)
-      @earned_total = @transactions.income.sum(&:amount)
+    @expensed_total = @transactions.expense.sum(&:amount)
+    @earned_total = @transactions.income.sum(&:amount)
 
-      render layout: false if turbo_frame_request?
+    render layout: false if turbo_frame_request?
   end
 
   def advanced_search
-    @date = params[:date] ? Date.parse(params[:date]) : Date.today
+    @date = safe_parse_date(params[:date])
 
     @filter = params[:filter]
 
@@ -58,6 +56,14 @@ class CalendarController < ApplicationController
   end
 
   private
+
+  def safe_parse_date(date_param)
+    return Date.today unless date_param
+
+    Date.parse(date_param)
+  rescue ArgumentError
+    Date.today
+  end
 
   def filter_transactions(transactions, filter)
     if filter.present?

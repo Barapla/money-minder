@@ -1,4 +1,4 @@
 <%= turbo_stream.update "calendar", partial: "calendar/index/month", locals: { date: @date, transactions: @transactions } %>
-<%= turbo_stream.update "summary", partial: "calendar/index/summary", locals: { 
+<%= turbo_stream.update "summary", partial: "calendar/index/summary", locals: {
     transactions: @transactions, income_transactions: @income_transactions, expense_transactions: @expense_transactions } %>
 <%= turbo_stream.update "advanced_options", partial: "calendar/index/advanced_options", locals: { date: @date, filter: params[:filter] } %>

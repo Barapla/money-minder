@@ -1,7 +1,9 @@
 <%
     date = component.date
     has_payments = component.has_payments
+    has_payroll = component.has_payroll
     objects = component.objects
+    payroll_reminders = component.payroll_reminders
     day_total = component.day_total
     payment_count = component.payment_count
     is_today = date == Date.today
@@ -14,11 +16,10 @@
                     } do %>
     <div class="flex justify-between items-start mb-2">
         <span class="text-sm font-medium <%= is_today ? 'text-orange-300' : 'text-white' %>"><%= date.day %></span>
-        <% if has_payments %>
-            <div class="flex gap-1">
-                <div class="w-2 h-2 bg-orange-400 rounded-full"></div>
-            </div>
-        <% end %>
+        <div class="flex gap-1">
+            <%= has_payments ? '<div class="w-2 h-2 bg-orange-400 rounded-full"></div>'.html_safe : '' %>
+            <%= has_payroll ? '<div class="w-2 h-2 bg-amber-400 rounded-full" title="Quincena"></div>'.html_safe : '' %>
+        </div>
     </div>
     <div class="space-y-1">
         <% if has_payments %>
@@ -43,6 +44,12 @@
             <% if payment_count > 2 %>
                 <div class="text-xs text-bunker-400">+<%= payment_count - 2 %> más</div>
             <% end %>
+        <% end %>
+        <% payroll_reminders.first(1).each do |reminder| %>
+            <div class="text-xs px-2 py-1 rounded bg-amber-500/20 text-amber-300 truncate flex items-center gap-1">
+                <span>💰</span>
+                <span class="truncate"><%= reminder.periodicity_label %></span>
+            </div>
         <% end %>
     </div>
 <% end %>
