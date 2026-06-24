@@ -13,7 +13,7 @@
 
   <% payments = @presenter.upcoming_obligatory_payments %>
   <% if payments.any? %>
-    <% total_count = @presenter.upcoming_obligatory_payments.size %>
+    <% total_count = payments.size %>
     <div class="overflow-y-auto max-h-72 space-y-2 flex-1">
       <% payments.first(10).each do |payment| %>
         <% days_away = (payment[:date] - Date.current).to_i %>
@@ -40,7 +40,7 @@
   <% else %>
     <div class="text-center py-6 flex-1">
       <p class="text-bunker-400 text-sm mb-2">Sin pagos próximos</p>
-      <%= link_to "Crear transacción recurrente", new_transaction_path, class: "text-red-400 text-xs hover:text-red-300 underline" %>
+      <%= link_to "Crear pago obligatorio", new_obligatory_payment_path, class: "text-red-400 text-xs hover:text-red-300 underline" %>
     </div>
   <% end %>
 </div>

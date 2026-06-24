@@ -118,11 +118,14 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     active_recurring_expenses.any?
   end
 
-  # Próximas instancias de gastos recurrentes en los siguientes 30 días (máx. 10)
+  # Próximos pagos obligatorios en los siguientes 30 días (máx. 10)
   def upcoming_obligatory_payments
-    end_date = Date.current + 30.days
-    instances = active_recurring_expenses.flat_map { |rt| generate_upcoming_instances(rt, end_date) }
-    instances.sort_by { |i| i[:date] }.take(10)
+    @upcoming_obligatory_payments ||= begin
+      end_date = Date.current + 30.days
+      ops = user.obligatory_payments.includes(recurrence: :frequency_type)
+      instances = ops.flat_map { |op| obligatory_payment_instances(op, end_date) }
+      instances.sort_by { |i| i[:date] }.take(10)
+    end
   end
 
   private
@@ -336,12 +339,6 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     'annually' => (1.0 / 12)
   }.freeze
 
-  FREQUENCY_ADVANCE = {
-    'daily' => 1.day, 'weekly' => 1.week, 'bi_weekly' => 2.weeks, 'monthly' => 1.month,
-    'bi_monthly' => 2.months, 'quarterly' => 3.months, 'semi_annually' => 6.months,
-    'annually' => 1.year
-  }.freeze
-
   def active_recurring_expenses
     @active_recurring_expenses ||= begin
       type_id = expense_transaction_type_id
@@ -365,32 +362,18 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     end
   end
 
-  def generate_upcoming_instances(recurrence, end_date)
-    instances = []
-    return instances unless recurrence.can_execute?
+  def obligatory_payment_instances(payment, end_date)
+    recurrence = payment.recurrence
+    return [] if recurrence.nil?
 
-    current_date = recurrence.next_execution_date
-    return instances if current_date.nil? || current_date > end_date
-
-    while current_date <= end_date
-      instances << build_payment_instance(recurrence, current_date)
-      current_date = advance_by_frequency(current_date, recurrence.frequency)
-    end
-
-    instances
+    recurrence.occurrences_in_range(Date.current, end_date)
+              .map { |date| build_obligatory_instance(payment, date) }
   end
 
-  def build_payment_instance(recurrence, date)
-    opts = recurrence.transaction_options
+  def build_obligatory_instance(payment, date)
     { date: date,
-      description: opts['description'].to_s,
-      amount: opts['amount'].to_f,
-      amount_formatted: format_currency(opts['amount'].to_f),
-      category_id: opts['category_id']&.to_i,
-      frequency: recurrence.frequency }
-  end
-
-  def advance_by_frequency(date, frequency)
-    date + FREQUENCY_ADVANCE.fetch(frequency, 1.month)
+      description: payment.name.to_s,
+      amount: payment.amount.to_f,
+      amount_formatted: format_currency(payment.amount.to_f) }
   end
 end

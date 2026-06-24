@@ -608,94 +608,92 @@ RSpec.describe DashboardPresenter do
   end
 
   describe '#upcoming_obligatory_payments' do
-    def rt_for_upcoming(next_execution_date:, frequency:, amount: 100, description: 'Netflix')
-      instance_double(RecurringTransaction,
-                      next_execution_date: next_execution_date,
-                      frequency: frequency,
-                      can_execute?: true,
-                      transaction_options: {
-                        'amount' => amount.to_s,
-                        'description' => description,
-                        'category_id' => '5'
-                      })
+    def op_with_recurrence(name:, amount:, dates:)
+      recurrence = instance_double(Recurrence)
+      allow(recurrence).to receive(:occurrences_in_range).and_return(dates)
+      instance_double(ObligatoryPayment, name: name, amount: amount, recurrence: recurrence)
     end
 
-    context 'CA2: sin transacciones activas' do
-      before { allow(presenter).to receive(:active_recurring_expenses).and_return([]) }
+    def op_without_recurrence(name: 'Pago', amount: 100)
+      instance_double(ObligatoryPayment, name: name, amount: amount, recurrence: nil)
+    end
 
-      it 'CA2: retorna array vacío' do
+    def stub_obligatory_payments(ops)
+      relation = instance_double(ActiveRecord::Relation)
+      allow(relation).to receive(:includes).and_return(ops)
+      allow(user).to receive(:obligatory_payments).and_return(relation)
+    end
+
+    context 'sin pagos obligatorios' do
+      before { stub_obligatory_payments([]) }
+
+      it 'retorna array vacío' do
         expect(presenter.upcoming_obligatory_payments).to be_empty
       end
     end
 
-    context 'CA2: con una transacción mensual próxima' do
-      let(:rt) { rt_for_upcoming(next_execution_date: Date.current + 5, frequency: 'monthly') }
+    context 'con un pago mensual próximo' do
+      let(:date_in_range) { Date.current + 5 }
+      let(:op) { op_with_recurrence(name: 'Renta', amount: 5000, dates: [date_in_range]) }
 
-      before { allow(presenter).to receive(:active_recurring_expenses).and_return([rt]) }
+      before { stub_obligatory_payments([op]) }
 
-      it 'CA2: incluye la instancia con campos requeridos' do
-        payments = presenter.upcoming_obligatory_payments
-        expect(payments.first).to include(:date, :description, :amount, :amount_formatted, :category_id)
+      it 'incluye los campos requeridos' do
+        payment = presenter.upcoming_obligatory_payments.first
+        expect(payment).to include(:date, :description, :amount, :amount_formatted)
       end
 
-      it 'CA2: la fecha está dentro de los próximos 30 días' do
-        payments = presenter.upcoming_obligatory_payments
-        expect(payments.first[:date]).to be <= Date.current + 30
+      it 'la fecha está dentro de los próximos 30 días' do
+        expect(presenter.upcoming_obligatory_payments.first[:date]).to be <= Date.current + 30
+      end
+
+      it 'usa el nombre del pago obligatorio como descripción' do
+        expect(presenter.upcoming_obligatory_payments.first[:description]).to eq('Renta')
       end
     end
 
-    context 'CA2: ordena cronológicamente' do
+    context 'ordena cronológicamente' do
       before do
-        rts = [
-          rt_for_upcoming(next_execution_date: Date.current + 20, frequency: 'monthly', description: 'Ultimo'),
-          rt_for_upcoming(next_execution_date: Date.current + 3, frequency: 'monthly', description: 'Primero'),
-          rt_for_upcoming(next_execution_date: Date.current + 10, frequency: 'monthly', description: 'Medio')
+        ops = [
+          op_with_recurrence(name: 'Ultimo', amount: 100, dates: [Date.current + 20]),
+          op_with_recurrence(name: 'Primero', amount: 200, dates: [Date.current + 3]),
+          op_with_recurrence(name: 'Medio', amount: 150, dates: [Date.current + 10])
         ]
-        allow(presenter).to receive(:active_recurring_expenses).and_return(rts)
+        stub_obligatory_payments(ops)
       end
 
-      it 'CA2: ordena por fecha ascendente' do
-        payments = presenter.upcoming_obligatory_payments
-        dates = payments.map { |p| p[:date] }
+      it 'ordena por fecha ascendente' do
+        dates = presenter.upcoming_obligatory_payments.map { |p| p[:date] }
         expect(dates).to eq(dates.sort)
       end
     end
 
-    context 'CA4: con más de 10 pagos en 30 días' do
+    context 'con más de 10 ocurrencias en 30 días' do
       before do
-        rts = Array.new(3) do |i|
-          rt_for_upcoming(next_execution_date: Date.current + 1, frequency: 'weekly',
-                          description: "Pago #{i}")
-        end
-        allow(presenter).to receive(:active_recurring_expenses).and_return(rts)
+        many_dates = (1..15).map { |i| Date.current + i }
+        ops = [op_with_recurrence(name: 'Diario', amount: 50, dates: many_dates)]
+        stub_obligatory_payments(ops)
       end
 
-      it 'CA4: limita a 10 items' do
+      it 'limita a 10 items' do
         expect(presenter.upcoming_obligatory_payments.size).to be <= 10
       end
     end
 
-    context 'transacción con next_execution_date fuera de los 30 días' do
-      let(:rt) { rt_for_upcoming(next_execution_date: Date.current + 45, frequency: 'monthly') }
+    context 'pago sin recurrencia configurada' do
+      before { stub_obligatory_payments([op_without_recurrence]) }
 
-      before { allow(presenter).to receive(:active_recurring_expenses).and_return([rt]) }
-
-      it 'no incluye instancias fuera del rango' do
+      it 'omite el pago sin recurrencia' do
         expect(presenter.upcoming_obligatory_payments).to be_empty
       end
     end
 
-    context 'transacción que no puede ejecutarse' do
-      before do
-        rt = instance_double(RecurringTransaction,
-                             next_execution_date: Date.current + 5,
-                             frequency: 'monthly',
-                             can_execute?: false,
-                             transaction_options: { 'amount' => '100', 'description' => 'Test' })
-        allow(presenter).to receive(:active_recurring_expenses).and_return([rt])
-      end
+    context 'recurrencia sin fechas en el rango' do
+      let(:op) { op_with_recurrence(name: 'Anual', amount: 1000, dates: []) }
 
-      it 'omite transacciones que no pueden ejecutarse' do
+      before { stub_obligatory_payments([op]) }
+
+      it 'retorna array vacío cuando no hay fechas en el rango' do
         expect(presenter.upcoming_obligatory_payments).to be_empty
       end
     end
