@@ -505,6 +505,202 @@ RSpec.describe DashboardPresenter do
     end
   end
 
+  describe '#recurring_expenses_summary' do
+    def rt_double(frequency:, amount:)
+      instance_double(RecurringTransaction,
+                      frequency: frequency,
+                      transaction_options: { 'amount' => amount.to_s })
+    end
+
+    context 'CA1: sin transacciones recurrentes activas' do
+      before { allow(presenter).to receive(:active_recurring_expenses).and_return([]) }
+
+      it 'CA1: retorna count 0 y monthly_total 0' do
+        summary = presenter.recurring_expenses_summary
+        expect(summary[:count]).to eq(0)
+        expect(summary[:monthly_total]).to eq(0)
+      end
+    end
+
+    context 'CA1: con gastos de distintas frecuencias' do
+      before do
+        rts = [
+          rt_double(frequency: 'monthly', amount: 100),
+          rt_double(frequency: 'weekly', amount: 20),
+          rt_double(frequency: 'bi_weekly', amount: 50)
+        ]
+        allow(presenter).to receive(:active_recurring_expenses).and_return(rts)
+      end
+
+      it 'CA1: retorna count correcto' do
+        expect(presenter.recurring_expenses_summary[:count]).to eq(3)
+      end
+
+      it 'CA1: calcula total mensual con factores correctos (100 + 20*4.33 + 50*2.17)' do
+        expected = 100 + (20 * 4.33) + (50 * 2.17)
+        expect(presenter.recurring_expenses_summary[:monthly_total]).to be_within(0.01).of(expected)
+      end
+    end
+
+    context 'CA5: con transacciones de tipo income' do
+      before { allow(presenter).to receive(:active_recurring_expenses).and_return([]) }
+
+      it 'CA5: no cuenta transacciones income (filtradas en active_recurring_expenses)' do
+        expect(presenter.recurring_expenses_summary[:count]).to eq(0)
+      end
+    end
+
+    context 'con frecuencia daily' do
+      before do
+        allow(presenter).to receive(:active_recurring_expenses)
+          .and_return([rt_double(frequency: 'daily', amount: 10)])
+      end
+
+      it 'multiplica por 30 para monthly_total' do
+        expect(presenter.recurring_expenses_summary[:monthly_total]).to be_within(0.01).of(300)
+      end
+    end
+
+    context 'con frecuencia quarterly' do
+      before do
+        allow(presenter).to receive(:active_recurring_expenses)
+          .and_return([rt_double(frequency: 'quarterly', amount: 300)])
+      end
+
+      it 'divide entre 3 para monthly_total' do
+        expect(presenter.recurring_expenses_summary[:monthly_total]).to be_within(0.01).of(100)
+      end
+    end
+
+    context 'con frecuencia annually' do
+      before do
+        allow(presenter).to receive(:active_recurring_expenses)
+          .and_return([rt_double(frequency: 'annually', amount: 1200)])
+      end
+
+      it 'divide entre 12 para monthly_total' do
+        expect(presenter.recurring_expenses_summary[:monthly_total]).to be_within(0.01).of(100)
+      end
+    end
+  end
+
+  describe '#recurring_expenses?' do
+    context 'sin gastos recurrentes' do
+      before { allow(presenter).to receive(:active_recurring_expenses).and_return([]) }
+
+      it 'retorna false' do
+        expect(presenter.recurring_expenses?).to be false
+      end
+    end
+
+    context 'con gastos recurrentes' do
+      before do
+        rt = instance_double(RecurringTransaction,
+                             frequency: 'monthly',
+                             transaction_options: { 'amount' => '100' })
+        allow(presenter).to receive(:active_recurring_expenses).and_return([rt])
+      end
+
+      it 'retorna true' do
+        expect(presenter.recurring_expenses?).to be true
+      end
+    end
+  end
+
+  describe '#upcoming_obligatory_payments' do
+    def rt_for_upcoming(next_execution_date:, frequency:, amount: 100, description: 'Netflix')
+      instance_double(RecurringTransaction,
+                      next_execution_date: next_execution_date,
+                      frequency: frequency,
+                      can_execute?: true,
+                      transaction_options: {
+                        'amount' => amount.to_s,
+                        'description' => description,
+                        'category_id' => '5'
+                      })
+    end
+
+    context 'CA2: sin transacciones activas' do
+      before { allow(presenter).to receive(:active_recurring_expenses).and_return([]) }
+
+      it 'CA2: retorna array vacío' do
+        expect(presenter.upcoming_obligatory_payments).to be_empty
+      end
+    end
+
+    context 'CA2: con una transacción mensual próxima' do
+      let(:rt) { rt_for_upcoming(next_execution_date: Date.current + 5, frequency: 'monthly') }
+
+      before { allow(presenter).to receive(:active_recurring_expenses).and_return([rt]) }
+
+      it 'CA2: incluye la instancia con campos requeridos' do
+        payments = presenter.upcoming_obligatory_payments
+        expect(payments.first).to include(:date, :description, :amount, :amount_formatted, :category_id)
+      end
+
+      it 'CA2: la fecha está dentro de los próximos 30 días' do
+        payments = presenter.upcoming_obligatory_payments
+        expect(payments.first[:date]).to be <= Date.current + 30
+      end
+    end
+
+    context 'CA2: ordena cronológicamente' do
+      before do
+        rts = [
+          rt_for_upcoming(next_execution_date: Date.current + 20, frequency: 'monthly', description: 'Ultimo'),
+          rt_for_upcoming(next_execution_date: Date.current + 3, frequency: 'monthly', description: 'Primero'),
+          rt_for_upcoming(next_execution_date: Date.current + 10, frequency: 'monthly', description: 'Medio')
+        ]
+        allow(presenter).to receive(:active_recurring_expenses).and_return(rts)
+      end
+
+      it 'CA2: ordena por fecha ascendente' do
+        payments = presenter.upcoming_obligatory_payments
+        dates = payments.map { |p| p[:date] }
+        expect(dates).to eq(dates.sort)
+      end
+    end
+
+    context 'CA4: con más de 10 pagos en 30 días' do
+      before do
+        rts = Array.new(3) do |i|
+          rt_for_upcoming(next_execution_date: Date.current + 1, frequency: 'weekly',
+                          description: "Pago #{i}")
+        end
+        allow(presenter).to receive(:active_recurring_expenses).and_return(rts)
+      end
+
+      it 'CA4: limita a 10 items' do
+        expect(presenter.upcoming_obligatory_payments.size).to be <= 10
+      end
+    end
+
+    context 'transacción con next_execution_date fuera de los 30 días' do
+      let(:rt) { rt_for_upcoming(next_execution_date: Date.current + 45, frequency: 'monthly') }
+
+      before { allow(presenter).to receive(:active_recurring_expenses).and_return([rt]) }
+
+      it 'no incluye instancias fuera del rango' do
+        expect(presenter.upcoming_obligatory_payments).to be_empty
+      end
+    end
+
+    context 'transacción que no puede ejecutarse' do
+      before do
+        rt = instance_double(RecurringTransaction,
+                             next_execution_date: Date.current + 5,
+                             frequency: 'monthly',
+                             can_execute?: false,
+                             transaction_options: { 'amount' => '100', 'description' => 'Test' })
+        allow(presenter).to receive(:active_recurring_expenses).and_return([rt])
+      end
+
+      it 'omite transacciones que no pueden ejecutarse' do
+        expect(presenter.upcoming_obligatory_payments).to be_empty
+      end
+    end
+  end
+
   describe '#monthly_budget_summary?' do
     context 'CA5: sin datos' do
       before { allow(presenter).to receive(:monthly_budget_summary).and_return([]) }

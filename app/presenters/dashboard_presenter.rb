@@ -108,6 +108,23 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     active_debit_budgets.any?
   end
 
+  # Cuenta y total mensual de gastos recurrentes activos
+  def recurring_expenses_summary
+    expenses = active_recurring_expenses
+    { count: expenses.size, monthly_total: calculate_monthly_total(expenses) }
+  end
+
+  def recurring_expenses?
+    active_recurring_expenses.any?
+  end
+
+  # Próximas instancias de gastos recurrentes en los siguientes 30 días (máx. 10)
+  def upcoming_obligatory_payments
+    end_date = Date.current + 30.days
+    instances = active_recurring_expenses.flat_map { |rt| generate_upcoming_instances(rt, end_date) }
+    instances.sort_by { |i| i[:date] }.take(10)
+  end
+
   private
 
   attr_reader :user
@@ -311,5 +328,69 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
 
   def format_currency(amount)
     number_to_currency(amount, unit: '$')
+  end
+
+  MONTHLY_FREQUENCY_MULTIPLIERS = {
+    'daily' => 30, 'weekly' => 4.33, 'bi_weekly' => 2.17, 'monthly' => 1,
+    'bi_monthly' => 0.5, 'quarterly' => (1.0 / 3), 'semi_annually' => (1.0 / 6),
+    'annually' => (1.0 / 12)
+  }.freeze
+
+  FREQUENCY_ADVANCE = {
+    'daily' => 1.day, 'weekly' => 1.week, 'bi_weekly' => 2.weeks, 'monthly' => 1.month,
+    'bi_monthly' => 2.months, 'quarterly' => 3.months, 'semi_annually' => 6.months,
+    'annually' => 1.year
+  }.freeze
+
+  def active_recurring_expenses
+    @active_recurring_expenses ||= begin
+      type_id = expense_transaction_type_id
+      return [] if type_id.nil?
+
+      user.recurring_transactions
+          .active
+          .where("transaction_options->>'transaction_type_id' = ?", type_id.to_s)
+    end
+  end
+
+  def expense_transaction_type_id
+    @expense_transaction_type_id ||= Catalog.by_group_and_code('transaction_types', 'expense')&.id
+  end
+
+  def calculate_monthly_total(recurring_transactions)
+    recurring_transactions.sum do |recurrence|
+      amount = recurrence.transaction_options['amount'].to_f
+      multiplier = MONTHLY_FREQUENCY_MULTIPLIERS.fetch(recurrence.frequency, 1)
+      amount * multiplier
+    end
+  end
+
+  def generate_upcoming_instances(recurrence, end_date)
+    instances = []
+    return instances unless recurrence.can_execute?
+
+    current_date = recurrence.next_execution_date
+    return instances if current_date.nil? || current_date > end_date
+
+    while current_date <= end_date
+      instances << build_payment_instance(recurrence, current_date)
+      current_date = advance_by_frequency(current_date, recurrence.frequency)
+    end
+
+    instances
+  end
+
+  def build_payment_instance(recurrence, date)
+    opts = recurrence.transaction_options
+    { date: date,
+      description: opts['description'].to_s,
+      amount: opts['amount'].to_f,
+      amount_formatted: format_currency(opts['amount'].to_f),
+      category_id: opts['category_id']&.to_i,
+      frequency: recurrence.frequency }
+  end
+
+  def advance_by_frequency(date, frequency)
+    date + FREQUENCY_ADVANCE.fetch(frequency, 1.month)
   end
 end
