@@ -42,9 +42,9 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
       .map { |budget| build_alert_entry(budget) }
   end
 
-  # Suma de saldos actuales de todas las tarjetas activas
+  # Suma de deudas actuales de todas las tarjetas activas (ciclo vigente)
   def total_debt
-    credit_card_budgets.sum { |b| b.credit_card.current_balance.to_f }
+    credit_card_budgets.sum { |b| b.credit_card.current_debt.to_f }
   end
 
   def total_debt_formatted
@@ -107,7 +107,7 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
 
   def alert_triggered?(card)
     card.limit_amount.present? && card.limit_amount.positive? &&
-      card.current_balance.to_f.positive? &&
+      card.current_debt.to_f.positive? &&
       utilization_percentage(card) > 30
   end
 
@@ -119,35 +119,38 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     { card_name: budget.name,
       utilization_percentage: utilization,
       utilization_status: utilization_status(utilization),
-      current_balance: card.current_balance,
-      current_balance_formatted: format_currency(card.current_balance),
+      current_balance: card.current_debt,
+      current_balance_formatted: format_currency(card.current_debt),
       suggested_payment: suggested,
       suggested_payment_formatted: format_currency(suggested),
       cutting_date: cutting_date }
   end
 
-  # Siguiente fecha de corte desde hoy para un día de corte dado
+  # Siguiente fecha de corte desde hoy para un día de corte dado.
+  # Usa >> para avanzar al mes siguiente y limita el día al último del mes
+  # para evitar fechas inválidas (ej: 31 en febrero).
   def next_cutting_date_for(card)
+    return nil if card.cutting_day.blank?
+
     today = Date.current
     day = card.cutting_day.to_i
     if today.day < day
       Date.new(today.year, today.month, day)
     else
-      (today + 1.month).change(day: day)
+      next_month = today >> 1
+      Date.new(next_month.year, next_month.month, [day, next_month.end_of_month.day].min)
     end
-  rescue ArgumentError
-    today.end_of_month
   end
 
   def utilization_percentage(card)
     return 0 if card.limit_amount.nil? || card.limit_amount.zero?
 
-    ((card.current_balance.to_f / card.limit_amount) * 100).round(2)
+    ((card.current_debt.to_f / card.limit_amount) * 100).round(2)
   end
 
   # Monto a pagar para reducir la utilización al 30% del límite
   def suggested_payment(card)
-    amount = card.current_balance - (card.limit_amount * 0.30)
+    amount = card.current_debt - (card.limit_amount * 0.30)
     [amount, 0].max
   end
 

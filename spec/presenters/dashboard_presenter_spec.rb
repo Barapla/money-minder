@@ -3,19 +3,21 @@
 require 'rails_helper'
 
 RSpec.describe DashboardPresenter do
+  include ActiveSupport::Testing::TimeHelpers
+
   let(:user) { instance_double(User, id: 1) }
   let(:presenter) { described_class.new(user) }
 
-  def credit_card_double(limit_amount:, current_balance:, cutting_day: 15, payment_due_days: 5)
+  def credit_card_double(limit_amount:, current_debt:, cutting_day: 15, payment_due_days: 5)
     instance_double(CreditCard,
                     limit_amount: limit_amount,
-                    current_balance: current_balance,
+                    current_debt: current_debt,
                     cutting_day: cutting_day,
                     payment_due_days: payment_due_days)
   end
 
-  def budget_with_card(name:, limit_amount:, current_balance:, cutting_day: 15, payment_due_days: 5)
-    card = credit_card_double(limit_amount: limit_amount, current_balance: current_balance,
+  def budget_with_card(name:, limit_amount:, current_debt:, cutting_day: 15, payment_due_days: 5)
+    card = credit_card_double(limit_amount: limit_amount, current_debt: current_debt,
                               cutting_day: cutting_day, payment_due_days: payment_due_days)
     instance_double(Budget, name: name, credit_card: card)
   end
@@ -68,10 +70,10 @@ RSpec.describe DashboardPresenter do
 
   describe '#upcoming_card_due_dates' do
     let(:budget_corte25) do
-      budget_with_card(name: 'Oro', limit_amount: 10_000, current_balance: 2_000, cutting_day: 25)
+      budget_with_card(name: 'Oro', limit_amount: 10_000, current_debt: 2_000, cutting_day: 25)
     end
     let(:budget_corte10) do
-      budget_with_card(name: 'Platinum', limit_amount: 20_000, current_balance: 5_000, cutting_day: 10)
+      budget_with_card(name: 'Platinum', limit_amount: 20_000, current_debt: 5_000, cutting_day: 10)
     end
 
     before do
@@ -99,7 +101,7 @@ RSpec.describe DashboardPresenter do
 
     context 'tarjeta sin día de corte configurado' do
       before do
-        card_sin_dia = credit_card_double(limit_amount: 5_000, current_balance: 0, cutting_day: nil)
+        card_sin_dia = credit_card_double(limit_amount: 5_000, current_debt: 0, cutting_day: nil)
         budget_sin_dia = instance_double(Budget, name: 'Sin corte', credit_card: card_sin_dia)
         allow(presenter).to receive(:credit_card_budgets).and_return([budget_sin_dia])
       end
@@ -108,13 +110,25 @@ RSpec.describe DashboardPresenter do
         expect(presenter.upcoming_card_due_dates).to be_empty
       end
     end
+
+    context 'día de corte 31 en un mes con menos días' do
+      it 'retorna una fecha futura válida (último día del mes siguiente)' do
+        travel_to Date.new(2026, 1, 31) do
+          budget = budget_with_card(name: 'Corte31', limit_amount: 10_000, current_debt: 1_000, cutting_day: 31)
+          allow(presenter).to receive(:credit_card_budgets).and_return([budget])
+          result = presenter.upcoming_card_due_dates.first
+          expect(result[:cutting_date]).to be > Date.current
+          expect(result[:cutting_date]).to eq(Date.new(2026, 2, 28))
+        end
+      end
+    end
   end
 
   describe '#credit_utilization_alerts' do
     context 'CA4: tarjeta con 50% de utilización' do
       before do
         budget = budget_with_card(name: 'Tarjeta Alta', limit_amount: 10_000,
-                                  current_balance: 5_000, cutting_day: 20)
+                                  current_debt: 5_000, cutting_day: 20)
         allow(presenter).to receive(:credit_card_budgets).and_return([budget])
       end
 
@@ -143,7 +157,7 @@ RSpec.describe DashboardPresenter do
     context 'CA5: tarjeta con 25% de utilización' do
       before do
         budget = budget_with_card(name: 'Tarjeta Baja', limit_amount: 10_000,
-                                  current_balance: 2_500, cutting_day: 20)
+                                  current_debt: 2_500, cutting_day: 20)
         allow(presenter).to receive(:credit_card_budgets).and_return([budget])
       end
 
@@ -155,7 +169,7 @@ RSpec.describe DashboardPresenter do
     context 'CA5: tarjeta exactamente al 30%' do
       before do
         budget = budget_with_card(name: 'Justo al limite', limit_amount: 10_000,
-                                  current_balance: 3_000, cutting_day: 20)
+                                  current_debt: 3_000, cutting_day: 20)
         allow(presenter).to receive(:credit_card_budgets).and_return([budget])
       end
 
@@ -167,7 +181,7 @@ RSpec.describe DashboardPresenter do
     context 'tarjeta con más del 70% de utilización' do
       before do
         budget = budget_with_card(name: 'Critica', limit_amount: 10_000,
-                                  current_balance: 8_000, cutting_day: 20)
+                                  current_debt: 8_000, cutting_day: 20)
         allow(presenter).to receive(:credit_card_budgets).and_return([budget])
       end
 
@@ -179,7 +193,7 @@ RSpec.describe DashboardPresenter do
     context 'tarjeta con 50% de utilización (rango warning)' do
       before do
         budget = budget_with_card(name: 'Warning', limit_amount: 10_000,
-                                  current_balance: 5_000, cutting_day: 20)
+                                  current_debt: 5_000, cutting_day: 20)
         allow(presenter).to receive(:credit_card_budgets).and_return([budget])
       end
 
@@ -192,8 +206,8 @@ RSpec.describe DashboardPresenter do
   describe '#total_debt' do
     context 'CA6: con varias tarjetas con saldo' do
       before do
-        b1 = budget_with_card(name: 'Card 1', limit_amount: 10_000, current_balance: 3_500)
-        b2 = budget_with_card(name: 'Card 2', limit_amount: 5_000, current_balance: 1_200)
+        b1 = budget_with_card(name: 'Card 1', limit_amount: 10_000, current_debt: 3_500)
+        b2 = budget_with_card(name: 'Card 2', limit_amount: 5_000, current_debt: 1_200)
         allow(presenter).to receive(:credit_card_budgets).and_return([b1, b2])
       end
 
@@ -232,7 +246,7 @@ RSpec.describe DashboardPresenter do
 
     context 'con al menos una tarjeta' do
       before do
-        budget = budget_with_card(name: 'Card', limit_amount: 10_000, current_balance: 0)
+        budget = budget_with_card(name: 'Card', limit_amount: 10_000, current_debt: 0)
         allow(presenter).to receive(:credit_card_budgets).and_return([budget])
       end
 
