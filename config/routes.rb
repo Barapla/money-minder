@@ -88,6 +88,10 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   end
 
   get 'dashboard', to: 'dashboard#index', as: :dashboard
+  get 'dashboard/saving_goals_recalculate',
+      to: 'dashboard#saving_goals_recalculate',
+      as: :dashboard_saving_goals_recalculate,
+      defaults: { format: :json }
 
   # sidekiq routes
   require 'sidekiq/web'

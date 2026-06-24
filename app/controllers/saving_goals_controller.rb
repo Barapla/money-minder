@@ -8,9 +8,9 @@ class SavingGoalsController < ApplicationController
   before_action :set_saving_goal, only: %i[edit update destroy]
 
   def index
-    @saving_goals = current_user.saving_goals.recent_first
     @active_goals_by_priority = current_user.saving_goals.where(status: :active).order(:priority_order)
-    @calculator = SavingGoalServices::ProgressCalculator.new(current_user)
+    @inactive_goals = current_user.saving_goals.where.not(status: :active).order(created_at: :desc)
+    @allocations = SavingGoalServices::PriorityAllocator.new(current_user).allocate
   end
 
   def new

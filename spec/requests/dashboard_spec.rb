@@ -84,4 +84,57 @@ RSpec.describe '/dashboard', type: :request do
       end
     end
   end
+
+  describe 'GET /dashboard/saving_goals_recalculate' do
+    context 'sin autenticación' do
+      it 'retorna 401' do
+        get dashboard_saving_goals_recalculate_path(format: :json)
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context 'con usuario autenticado y sin metas activas' do
+      before { sign_in user }
+
+      it 'retorna HTTP 200 con lista vacía' do
+        get dashboard_saving_goals_recalculate_path(format: :json)
+        expect(response).to have_http_status(:ok)
+        body = JSON.parse(response.body)
+        expect(body['goals']).to eq([])
+      end
+    end
+
+    context 'con usuario autenticado y metas activas' do
+      let(:saving_goal) { create(:saving_goal, user:, target_amount: 10_000) }
+
+      before do
+        sign_in user
+        goal = saving_goal
+        presenter = instance_double(
+          DashboardPresenter,
+          prioritized_saving_goals: [
+            {
+              saving_goal: goal,
+              allocated_amount: 5_000,
+              allocated_formatted: '$5,000.00',
+              target_amount: 10_000,
+              target_formatted: '$10,000.00',
+              progress_percentage: 50.0
+            }
+          ]
+        )
+        allow(DashboardPresenter).to receive(:new).with(user).and_return(presenter)
+      end
+
+      it 'retorna JSON con metas y montos asignados' do
+        get dashboard_saving_goals_recalculate_path(format: :json)
+        expect(response).to have_http_status(:ok)
+        body = JSON.parse(response.body)
+        expect(body['goals'].size).to eq(1)
+        expect(body['goals'].first['id']).to eq(saving_goal.id)
+        expect(body['goals'].first['allocated_amount']).to eq(5_000)
+        expect(body['goals'].first['percentage']).to eq(50.0)
+      end
+    end
+  end
 end

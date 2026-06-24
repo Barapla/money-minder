@@ -35,6 +35,38 @@ RSpec.describe SavingGoalServices::PriorityAllocator, type: :service do
     )
   end
 
+  describe '#available_balance (private)' do
+    context 'con deuda en tarjetas de crédito' do
+      before do
+        make_cash_budget(amount: 10_000)
+        allow(allocator).to receive(:credit_card_debt).and_return(3_000)
+      end
+
+      it 'resta la deuda al saldo disponible' do
+        expect(allocator.send(:available_balance)).to eq(7_000)
+      end
+    end
+
+    context 'cuando la deuda supera el saldo total' do
+      before do
+        make_cash_budget(amount: 5_000)
+        allow(allocator).to receive(:credit_card_debt).and_return(10_000)
+      end
+
+      it 'retorna cero en lugar de un valor negativo' do
+        expect(allocator.send(:available_balance)).to eq(0)
+      end
+    end
+
+    context 'sin deuda en tarjetas' do
+      before { make_cash_budget(amount: 10_000) }
+
+      it 'retorna el saldo total sin descuentos' do
+        expect(allocator.send(:available_balance)).to eq(10_000)
+      end
+    end
+  end
+
   describe '#allocate' do
     context 'sin saldo disponible' do
       it 'retorna hash vacío' do
@@ -90,6 +122,22 @@ RSpec.describe SavingGoalServices::PriorityAllocator, type: :service do
         expect(result[goal1.id]).to eq(3_000)
         expect(result[goal2.id]).to eq(4_000)
         expect(result[goal3.id]).to eq(5_000)
+      end
+    end
+
+    context 'con deuda en tarjetas que reduce el saldo disponible' do
+      let!(:goal1) { create(:saving_goal, user:, target_amount: 8_000) }
+      let!(:goal2) { create(:saving_goal, user:, target_amount: 5_000) }
+
+      before do
+        make_cash_budget(amount: 10_000)
+        allow(allocator).to receive(:credit_card_debt).and_return(3_000)
+      end
+
+      it 'asigna solo el saldo neto de deuda a metas de mayor prioridad' do
+        result = allocator.allocate
+        expect(result[goal1.id]).to eq(7_000)
+        expect(result[goal2.id]).to be_nil
       end
     end
 

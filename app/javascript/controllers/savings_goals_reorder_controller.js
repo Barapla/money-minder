@@ -51,6 +51,7 @@ export default class extends Controller {
       })
       if (response.ok) {
         this.#updatePriorityNumbers()
+        document.dispatchEvent(new CustomEvent('saving-goals:reordered'))
         this.#showSuccess("Orden guardado correctamente.")
       } else {
         this.#revertOrder()
