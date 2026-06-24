@@ -64,6 +64,16 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     end
   end
 
+  # Metas de ahorro activas con asignación automática de saldo disponible por prioridad
+  def prioritized_saving_goals
+    allocations = SavingGoalServices::PriorityAllocator.new(user).allocate
+    active_saving_goals.map { |goal| build_goal_entry(goal, allocations[goal.id] || 0) }
+  end
+
+  def saving_goals?
+    active_saving_goals.any?
+  end
+
   def credit_cards?
     credit_card_budgets.any?
   end
@@ -79,6 +89,21 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
   private
 
   attr_reader :user
+
+  def active_saving_goals
+    @active_saving_goals ||= user.saving_goals.where(status: :active).order(:priority_order)
+  end
+
+  def build_goal_entry(goal, allocated)
+    {
+      saving_goal: goal,
+      target_amount: goal.target_amount,
+      allocated_amount: allocated,
+      allocated_formatted: format_currency(allocated),
+      target_formatted: format_currency(goal.target_amount),
+      progress_percentage: (allocated.to_f / goal.target_amount * 100).clamp(0, 100).round(1)
+    }
+  end
 
   # Saldo del presupuesto personal (efectivo)
   def cash_balance

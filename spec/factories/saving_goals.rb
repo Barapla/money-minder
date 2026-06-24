@@ -7,5 +7,6 @@ FactoryBot.define do
     deadline { nil }
     status { :active }
     association :user
+    # priority_order se asigna automáticamente via before_validation callback
   end
 end

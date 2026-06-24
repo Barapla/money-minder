@@ -151,4 +151,46 @@ RSpec.describe '/saving_goals', type: :request do
       end
     end
   end
+
+  describe 'PATCH /saving_goals/reorder' do
+    let!(:goal2) { create(:saving_goal, user:, name: 'Segunda') }
+    let!(:goal3) { create(:saving_goal, user:, name: 'Tercera') }
+
+    before { sign_in user }
+
+    it 'sin autenticacion retorna 401' do
+      sign_out user
+      patch reorder_saving_goals_path, params: { order: [goal.id, goal2.id, goal3.id] }, as: :json
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'actualiza el priority_order en el nuevo orden (CA3)' do
+      patch reorder_saving_goals_path,
+            params: { order: [goal3.id.to_s, goal.id.to_s, goal2.id.to_s] },
+            as: :json
+
+      expect(response).to have_http_status(:ok)
+      parsed = response.parsed_body
+      expect(parsed['success']).to be true
+
+      expect(goal3.reload.priority_order).to eq(1)
+      expect(goal.reload.priority_order).to eq(2)
+      expect(goal2.reload.priority_order).to eq(3)
+    end
+
+    context 'cuando otro usuario intenta reordenar metas ajenas' do
+      before { sign_in other_user }
+
+      it 'retorna error 422 sin modificar las metas' do
+        original_order = goal.priority_order
+
+        patch reorder_saving_goals_path,
+              params: { order: [goal.id.to_s] },
+              as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(goal.reload.priority_order).to eq(original_order)
+      end
+    end
+  end
 end

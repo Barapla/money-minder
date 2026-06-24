@@ -2,7 +2,11 @@
 
 Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   resources :obligatory_payments
-  resources :saving_goals, only: %i[index new create edit update destroy]
+  resources :saving_goals, only: %i[index new create edit update destroy] do
+    collection do
+      patch :reorder
+    end
+  end
   devise_for :users, controllers: {
     sessions: 'users/sessions',
     registrations: 'users/registrations',

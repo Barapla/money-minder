@@ -157,6 +157,63 @@
     <% end %>
   </div>
 
+  <!-- Card 5: Metas de Ahorro -->
+  <% if @presenter.saving_goals? %>
+    <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center">
+          <div class="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center mr-3">
+            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-xl font-semibold text-white">Metas de Ahorro</h2>
+            <p class="text-bunker-400 text-xs mt-0.5">Arrastra para reordenar la prioridad</p>
+          </div>
+        </div>
+        <%= link_to saving_goals_path, class: "text-purple-400 text-sm hover:text-purple-300 underline" do %>
+          Ver todas
+        <% end %>
+      </div>
+
+      <div class="space-y-3"
+           data-controller="savings-goals-reorder"
+           data-savings-goals-reorder-url-value="<%= reorder_saving_goals_path %>">
+        <% @presenter.prioritized_saving_goals.each_with_index do |item, index| %>
+          <% goal = item[:saving_goal] %>
+          <div class="bg-bunker-800/40 rounded-xl p-4 cursor-grab active:cursor-grabbing"
+               draggable="true"
+               data-savings-goals-reorder-target="item"
+               data-goal-id="<%= goal.id %>"
+               data-action="dragstart->savings-goals-reorder#dragstart dragover->savings-goals-reorder#dragover dragend->savings-goals-reorder#dragend">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-bunker-500 text-xs font-medium w-5 text-center"><%= index + 1 %></span>
+                <span class="text-white font-medium text-sm"><%= goal.name %></span>
+                <% if goal.deadline %>
+                  <span class="text-bunker-500 text-xs">· <%= goal.deadline.strftime('%d/%m/%Y') %></span>
+                <% end %>
+              </div>
+              <span class="text-emerald-300 text-sm font-semibold"><%= item[:progress_percentage] %>%</span>
+            </div>
+
+            <!-- Barra de progreso -->
+            <div class="w-full bg-bunker-700/60 rounded-full h-2 mb-2">
+              <div class="h-2 rounded-full bg-emerald-500 transition-all duration-300"
+                   style="width: <%= item[:progress_percentage] %>%"></div>
+            </div>
+
+            <div class="flex justify-between text-xs text-bunker-400">
+              <span>Asignado: <span class="text-emerald-400 font-medium"><%= item[:allocated_formatted] %></span></span>
+              <span>Meta: <span class="text-white font-medium"><%= item[:target_formatted] %></span></span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <!-- Card 4: Alertas de utilización -->
   <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
     <div class="flex items-center mb-4">
