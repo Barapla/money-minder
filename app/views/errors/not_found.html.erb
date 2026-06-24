@@ -1,0 +1,23 @@
+<div class="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
+  <div class="max-w-md w-full">
+    <div class="mb-6">
+      <span class="text-9xl font-black bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">404</span>
+    </div>
+
+    <h1 class="text-2xl font-bold text-white mb-3">Recurso no encontrado</h1>
+    <p class="text-bunker-400 mb-8">
+      La página que buscas no existe o no tienes permisos para acceder a ella.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+      <%= link_to "Ir al inicio", root_path,
+            class: "inline-flex items-center justify-center px-6 py-3 rounded-xl
+                    bg-gradient-to-r from-purple-600 to-purple-500 text-white font-semibold
+                    hover:from-purple-500 hover:to-purple-400 transition-all duration-200 shadow-lg shadow-purple-900/40" %>
+      <%= link_to "Volver atrás", "javascript:history.back()",
+            class: "inline-flex items-center justify-center px-6 py-3 rounded-xl
+                    bg-bunker-800 border border-bunker-700 text-bunker-200 font-semibold
+                    hover:bg-bunker-700 transition-all duration-200" %>
+    </div>
+  </div>
+</div>

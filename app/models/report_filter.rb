@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # app/models/report_filter.rb
-class ReportFilter
+class ReportFilter # rubocop:disable Metrics/ClassLength
   include Charteable
   include ActiveModel::Model
   include ActiveModel::Attributes
@@ -30,7 +30,7 @@ class ReportFilter
   def budgets_names
     budget_ids = budget_ids_from_filter
     Budget.joins(:icon).where(id: budget_ids).order(:name)
-      .pluck(Arel.sql("catalogs.value || ' ' || budgets.name"))
+          .pluck(Arel.sql("catalogs.value || ' ' || budgets.name"))
   end
 
   def budgets_pluck_transaction_type(transaction_type)
@@ -41,8 +41,8 @@ class ReportFilter
 
     # Obtener las sumas existentes
     base_query = Budget.joins(:transactions)
-                .where(id: budget_ids, transactions: { transaction_type: Catalog.by_group_and_code('transaction_types', transaction_type),
-                      related_transaction_id: nil })
+                       .where(id: budget_ids, transactions: { transaction_type: Catalog.by_group_and_code('transaction_types', transaction_type), # rubocop:disable Layout/LineLength
+                                                              related_transaction_id: nil })
 
     base_query = apply_date_filters(base_query)
 
@@ -52,7 +52,7 @@ class ReportFilter
     all_budgets.map { |budget_id| sum[budget_id] || 0 }
   end
 
-  def transaction_type_per_frequency(transaction_type, frequency = period)
+  def transaction_type_per_frequency(transaction_type, frequency = period) # rubocop:disable Metrics/MethodLength
     base_query = filtered_transactions.try(transaction_type)
 
     case frequency
@@ -67,14 +67,14 @@ class ReportFilter
     end
   end
 
-  def categories(transaction_type, limit = nil)
-    base_query = if transaction_type == "income"
-      Category.by_parent_category(["Ingresos"])
-                        .joins(:transactions)
-    else
-      Category.exclude_categories_by_parent(["Ingresos", "Transferencias"])
-                        .joins(:transactions)
-    end
+  def categories(transaction_type, limit = nil) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+    base_query = if transaction_type == 'income'
+                   Category.by_parent_category(['Ingresos'])
+                           .joins(:transactions)
+                 else
+                   Category.exclude_categories_by_parent(%w[Ingresos Transferencias])
+                           .joins(:transactions)
+                 end
 
     # Aplicar filtro de budgets (ya scopeados al usuario)
     budget_ids = budget_ids_from_filter
@@ -85,14 +85,14 @@ class ReportFilter
 
     # Hacer el group by y order una sola vez con todos los filtros aplicados
     categories = base_query.group('categories.id')
-                          .having('SUM(transactions.amount) > 0')
-                          .order('SUM(transactions.amount) DESC')
-                          .limit(limit)
+                           .having('SUM(transactions.amount) > 0')
+                           .order('SUM(transactions.amount) DESC')
+                           .limit(limit)
 
     # Devolver hash con sumas ya calculadas
     categories.each_with_object({}) do |category, hash|
       sum = base_query.where(categories: { id: category.id })
-                    .sum('transactions.amount').abs
+                      .sum('transactions.amount').abs
       hash[category.name] = sum.to_f.round(2) if sum.positive?
     end
   end
@@ -131,7 +131,7 @@ class ReportFilter
     end
   end
 
-  def set_default_dates
+  def set_default_dates # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
     case period
     when 'daily'
       self.start_date ||= 30.days.ago.to_date
@@ -146,7 +146,7 @@ class ReportFilter
   end
 
   def set_default_transaction_types
-    self.transaction_types = ['income', 'expense']
+    self.transaction_types = %w[income expense]
   end
 
   def end_date_after_start_date
@@ -156,7 +156,7 @@ class ReportFilter
   end
 
   # Query base con filtros de fecha aplicados, scopeada al usuario
-  def filtered_transactions
+  def filtered_transactions # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     base_query = user_transactions.joins(:budget)
 
     budget_ids = budget_ids_from_filter
@@ -188,21 +188,23 @@ class ReportFilter
   def budget_ids_from_filter
     return user_budget_ids if budgets.blank?
 
+    raw_ids = raw_budget_ids_from_param
+    return user_budget_ids if raw_ids.nil?
+
+    raw_ids & user_budget_ids
+  end
+
+  def raw_budget_ids_from_param
     case budgets
-    when Array
-      budgets.present? ? budgets : user_budget_ids
-    when String
-      budgets.split(',').map(&:to_i)
-    when Budget
-      [budgets.id]
-    else
-      user_budget_ids
+    when Array  then budgets.map(&:to_i)
+    when String then budgets.split(',').map(&:to_i)
+    when Budget then [budgets.id]
     end
   end
 
   def generate_monthly_array(base_query)
     expenses_by_month = base_query.group("TO_CHAR(transaction_date, 'YYYY-MM')")
-                                .sum(:amount)
+                                  .sum(:amount)
 
     result = []
     current_date = start_date.beginning_of_month
@@ -218,7 +220,7 @@ class ReportFilter
 
   def generate_weekly_array(base_query)
     expenses_by_week = base_query.group("TO_CHAR(transaction_date, 'IYYY-IW')")
-                                .sum(:amount)
+                                 .sum(:amount)
 
     result = []
     current_date = start_date.beginning_of_week
@@ -233,8 +235,8 @@ class ReportFilter
   end
 
   def generate_daily_array(base_query)
-    expenses_by_day = base_query.group("DATE(transaction_date)")
-                              .sum(:amount)
+    expenses_by_day = base_query.group('DATE(transaction_date)')
+                                .sum(:amount)
 
     result = []
     (start_date..end_date).each do |date|

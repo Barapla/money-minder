@@ -5,7 +5,7 @@ class CalendarController < ApplicationController
   before_action :authenticate_user!
 
   def index
-    @transactions = current_user.transactions.report.where(transaction_date: Date.today.beginning_of_month..Date.today.end_of_month)
+    @transactions = current_user.transactions.report.where(transaction_date: Date.today.beginning_of_month..Date.today.end_of_month) # rubocop:disable Layout/LineLength
     set_income_and_expense_transactions
   end
 
@@ -13,8 +13,8 @@ class CalendarController < ApplicationController
     @date = safe_parse_date(params[:date])
 
     @transactions = current_user.transactions
-      .includes(:transaction_type, :category, :icon, :color)
-      .where(transaction_date: @date.beginning_of_month..@date.end_of_month)
+                                .includes(:transaction_type, :category, :icon, :color)
+                                .where(transaction_date: @date.beginning_of_month..@date.end_of_month)
 
     @transactions = filter_transactions(@transactions, params[:filter])
 
@@ -23,13 +23,13 @@ class CalendarController < ApplicationController
     render layout: false if turbo_frame_request?
   end
 
-  def day_details
+  def day_details # rubocop:disable Metrics/AbcSize
     @date = safe_parse_date(params[:date])
 
     @transactions = current_user.transactions
-      .includes(:transaction_type, :category, :icon, :color)
-      .where(transaction_date: @date.all_day)
-      .order(transaction_date: :desc, created_at: :desc)
+                                .includes(:transaction_type, :category, :icon, :color)
+                                .where(transaction_date: @date.all_day)
+                                .order(transaction_date: :desc, created_at: :desc)
 
     @transactions = filter_transactions(@transactions, params[:filter])
 
@@ -39,7 +39,7 @@ class CalendarController < ApplicationController
     render layout: false if turbo_frame_request?
   end
 
-  def advanced_search
+  def advanced_search # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     @date = safe_parse_date(params[:date])
 
     @filter = params[:filter]
@@ -67,6 +67,7 @@ class CalendarController < ApplicationController
     Date.today
   end
 
+  # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Metrics/BlockNesting
   def filter_transactions(transactions, filter)
     if filter.present?
       if filter[:special].present?
@@ -94,7 +95,8 @@ class CalendarController < ApplicationController
         end
       end
       if filter[:budgets].present? && filter[:budgets].is_a?(Array)
-        transactions = transactions.joins(:budget).where(budgets: { id: current_user.budgets.where(id: filter[:budgets]) })
+        safe_budget_ids = current_user.budgets.where(id: filter[:budgets]).pluck(:id)
+        transactions = transactions.joins(:budget).where(budgets: { id: safe_budget_ids })
       end
       if filter[:icons].present? && filter[:icons].is_a?(Array)
         transactions = transactions.joins(:category).where(categories: { code: filter[:icons] })
@@ -112,6 +114,7 @@ class CalendarController < ApplicationController
     end
     transactions
   end
+  # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Metrics/BlockNesting
 
   def set_income_and_expense_transactions
     @income_transactions = @transactions.select { |t| t.transaction_type.code == 'income' }

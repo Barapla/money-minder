@@ -19,7 +19,7 @@ class ApplicationController < ActionController::Base
 
   def handle_not_found
     respond_to do |format|
-      format.html { render plain: 'Recurso no encontrado.', status: :not_found }
+      format.html { render 'errors/not_found', layout: 'application', status: :not_found }
       format.json do
         render json: { error: { code: 'not_found', message: 'Recurso no encontrado' } },
                status: :not_found
