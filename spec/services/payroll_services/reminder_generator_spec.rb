@@ -44,7 +44,7 @@ RSpec.describe PayrollServices::ReminderGenerator, type: :service do
         expect(reminders).to all(be_a(PayrollReminder))
       end
 
-      it 'genera recordatorios en días hábiles ajustados al ciclo de 15 días' do
+      it 'genera recordatorios en días hábiles (lunes a viernes)' do
         reminders = generator.generate(from_date:, to_date:)
         expect(reminders).not_to be_empty
         reminders.each do |reminder|
@@ -180,14 +180,42 @@ RSpec.describe PayrollServices::ReminderGenerator, type: :service do
       end
     end
 
-    context 'biweekly: ciclo se mantiene respecto al start_date' do
-      let(:start_date) { Date.new(2025, 6, 1) }
-
-      it 'genera fechas respetando el ciclo desde start_date' do
+    context 'biweekly: fechas fijas en el 15 y el 30 de cada mes' do
+      it 'genera exactamente dos recordatorios por mes' do
         reminders = generator.generate(from_date: Date.new(2025, 7, 1), to_date: Date.new(2025, 7, 31))
+        expect(reminders.length).to eq(2)
+      end
+
+      it 'el primer recordatorio cae el 15 (o día hábil anterior si es fin de semana)' do
+        reminders = generator.generate(from_date: Date.new(2025, 7, 1), to_date: Date.new(2025, 7, 31))
+        first_date = reminders.min_by(&:date).date
+        expect(first_date).to be <= Date.new(2025, 7, 15)
+        expect(first_date.wday).to be_between(1, 5)
+      end
+
+      it 'el segundo recordatorio cae el 30 (o día hábil anterior si es fin de semana)' do
+        reminders = generator.generate(from_date: Date.new(2025, 7, 1), to_date: Date.new(2025, 7, 31))
+        second_date = reminders.max_by(&:date).date
+        expect(second_date).to be <= Date.new(2025, 7, 30)
+        expect(second_date.wday).to be_between(1, 5)
+      end
+
+      it 'ajusta el 15 de marzo 2025 (sábado) al viernes anterior' do
+        reminders = generator.generate(from_date: Date.new(2025, 3, 1), to_date: Date.new(2025, 3, 15))
+        first_date = reminders.first.date
+        expect(first_date).to eq(Date.new(2025, 3, 14))
+      end
+
+      it 'nunca ajusta hacia adelante del 15 o del 30' do
+        reminders = generator.generate(from_date: Date.new(2025, 1, 1), to_date: Date.new(2025, 12, 31))
         reminders.each do |reminder|
-          elapsed = (reminder.date - start_date).to_i
-          expect(elapsed % 15).to eq(0)
+          date = reminder.date
+          if date.day <= 15
+            expect(date.day).to be <= 15, "Primera quincena #{date} supera el día 15"
+          else
+            max_day = [30, Date.new(date.year, date.month, -1).day].min
+            expect(date.day).to be <= max_day, "Segunda quincena #{date} supera el día #{max_day}"
+          end
         end
       end
     end

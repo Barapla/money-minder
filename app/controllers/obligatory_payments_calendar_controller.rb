@@ -63,6 +63,9 @@ class ObligatoryPaymentsCalendarController < ApplicationController
     date = safe_parse_date(params[:date]) || Date.today
     reminders = reminder_generator.generate(from_date: date.beginning_of_month, to_date: date.end_of_month)
     @payroll_reminders_by_date = reminders.group_by(&:date)
+  rescue StandardError => e
+    Rails.logger.error("PayrollReminder mes #{date}: #{e.message}")
+    @payroll_reminders_by_date = {}
   end
 
   def payroll_reminders_for_date(date)
@@ -75,7 +78,7 @@ class ObligatoryPaymentsCalendarController < ApplicationController
   end
 
   def reminder_generator
-    @reminder_generator ||= PayrollServices::ReminderGenerator.new(current_user)
+    PayrollServices::ReminderGenerator.new(current_user)
   end
 
   def generate_payment_occurrences(date)

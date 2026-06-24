@@ -13,7 +13,10 @@ module PayrollServices
       return [] unless employment_info && payroll_profile
 
       result = PayrollServices::Calculator.new(payroll_profile).call
-      return [] unless result.success?
+      unless result.success?
+        Rails.logger.warn("PayrollServices::Calculator falló para usuario #{user.id}: #{result.error}")
+        return []
+      end
 
       build_reminders(payment_dates(from_date, to_date), result.data)
     end
@@ -38,7 +41,7 @@ module PayrollServices
       case employment_info.salary_periodicity
       when 'daily' then daily_dates(start, from_date, to_date)
       when 'weekly' then weekly_dates(from_date, to_date)
-      when 'biweekly' then biweekly_dates(start, from_date, to_date)
+      when 'biweekly' then biweekly_dates(from_date, to_date)
       when 'monthly' then monthly_dates(start, from_date, to_date)
       when 'yearly' then yearly_dates(start, from_date, to_date)
       else []
@@ -62,37 +65,39 @@ module PayrollServices
       dates
     end
 
-    # La quincena se ajusta al día hábil anterior si cae en fin de semana (nunca se pasa de la fecha calculada).
-    def biweekly_dates(start, from_date, to_date)
-      fixed_interval_dates(start, from_date, to_date, 15).map { |d| adjust_to_business_day(d) }
+    # Quincena fija: días 15 y 30 (o último del mes), ajustados al día hábil anterior; nunca hacia adelante.
+    def biweekly_dates(from_date, to_date)
+      months_in_range(from_date, to_date)
+        .flat_map { |m| quincenal_targets(m) }
+        .select { |d| d >= from_date && d <= to_date }
+        .sort.uniq
     end
 
-    def fixed_interval_dates(start, from_date, to_date, interval)
-      dates = []
-      current = first_occurrence_on_or_after(start, from_date, interval)
+    def months_in_range(from_date, to_date)
+      months = []
+      current = Date.new(from_date.year, from_date.month, 1)
       while current <= to_date
-        dates << current
-        current += interval
+        months << current
+        current >>= 1
       end
-      dates
+      months
     end
 
-    # Calcula la primera fecha de pago en o después de from_date, manteniendo el ciclo desde start.
-    def first_occurrence_on_or_after(start, from_date, interval)
-      return start if start >= from_date
-
-      elapsed_days = (from_date - start).to_i
-      cycles = (elapsed_days.to_f / interval).ceil
-      start + (cycles * interval)
+    def quincenal_targets(month_start)
+      year = month_start.year
+      month = month_start.month
+      last_day = month_start.end_of_month.day
+      [
+        adjust_to_business_day(Date.new(year, month, 15)),
+        adjust_to_business_day(Date.new(year, month, [30, last_day].min))
+      ]
     end
 
-    # Ajusta al día hábil anterior si cae en sábado o domingo.
     def adjust_to_business_day(date)
-      case date.wday
-      when 6 then date - 1  # sábado -> viernes
-      when 0 then date - 2  # domingo -> viernes
-      else date
-      end
+      return date - 1 if date.saturday?
+      return date - 2 if date.sunday?
+
+      date
     end
 
     def monthly_dates(start, from_date, to_date)
