@@ -36,7 +36,7 @@ class SavingGoal < ApplicationRecord
 
   def renumber_priorities
     user.saving_goals.order(:priority_order).each_with_index do |goal, index|
-      goal.update_column(:priority_order, index + 1)
+      goal.update!(priority_order: index + 1)
     end
   end
 end

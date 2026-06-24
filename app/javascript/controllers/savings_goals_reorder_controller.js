@@ -6,10 +6,12 @@ export default class extends Controller {
 
   connect() {
     this.draggedItem = null
+    this.savedOrder = null
   }
 
   dragstart(event) {
     this.draggedItem = event.currentTarget
+    this.savedOrder = [...this.itemTargets]
     event.dataTransfer.effectAllowed = "move"
     event.currentTarget.classList.add("opacity-50")
   }
@@ -48,10 +50,29 @@ export default class extends Controller {
         body: JSON.stringify({ order: ids })
       })
       if (response.ok) {
-        window.location.reload()
+        Turbo.visit(window.location.href, { action: "replace" })
+      } else {
+        this.#revertOrder()
+        this.#showError("No se pudo guardar el orden. Intenta de nuevo.")
       }
     } catch (e) {
       console.error("Error al reordenar metas de ahorro:", e)
+      this.#revertOrder()
+      this.#showError("Error de conexión al guardar el orden.")
     }
+  }
+
+  #revertOrder() {
+    const container = this.itemTargets[0]?.parentNode
+    if (!container || !this.savedOrder) return
+    this.savedOrder.forEach(item => container.appendChild(item))
+  }
+
+  #showError(message) {
+    const el = document.createElement("div")
+    el.className = "fixed top-4 right-4 bg-red-500/90 text-white px-4 py-2 rounded-xl text-sm z-50 shadow-lg"
+    el.textContent = message
+    document.body.appendChild(el)
+    setTimeout(() => el.remove(), 3000)
   }
 }

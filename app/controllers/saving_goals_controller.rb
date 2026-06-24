@@ -40,7 +40,9 @@ class SavingGoalsController < ApplicationController
   end
 
   def reorder
-    new_order = (params[:order] || []).map(&:to_i)
+    new_order = parse_order_params
+    return render json: { error: 'Parámetros inválidos' }, status: :unprocessable_entity if new_order.nil?
+
     apply_reorder(new_order)
     render json: { success: true }
   rescue ActiveRecord::RecordNotFound => e
@@ -51,14 +53,29 @@ class SavingGoalsController < ApplicationController
 
   def apply_reorder(new_order)
     SavingGoal.transaction do
-      user_goal_ids = current_user.saving_goals.pluck(:id)
-      raise ActiveRecord::RecordNotFound, 'Meta de ahorro no encontrada' unless (new_order - user_goal_ids).empty?
-
-      # Fase 1: desplazar a valores temporales para evitar conflictos transitorios en el índice único
+      verify_goal_ownership!(new_order)
       current_user.saving_goals.update_all('priority_order = priority_order + 10000')
-      # Fase 2: asignar el nuevo orden final
-      new_order.each_with_index { |id, i| current_user.saving_goals.find(id).update_column(:priority_order, i + 1) }
+      assign_final_priorities(new_order)
     end
+  end
+
+  def verify_goal_ownership!(new_order)
+    user_goal_ids = current_user.saving_goals.lock.pluck(:id)
+    raise ActiveRecord::RecordNotFound, 'Meta de ahorro no encontrada' unless (new_order - user_goal_ids).empty?
+  end
+
+  def assign_final_priorities(new_order)
+    new_order.each_with_index do |id, i|
+      current_user.saving_goals.find(id).update!(priority_order: i + 1)
+    end
+  end
+
+  def parse_order_params
+    order = params[:order]
+    return nil unless order.is_a?(Array) && order.present?
+    return nil unless order.all? { |v| v.to_s.match?(/\A\d+\z/) }
+
+    order.map(&:to_i)
   end
 
   def set_saving_goal
