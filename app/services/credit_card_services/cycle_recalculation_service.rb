@@ -9,28 +9,26 @@ module CreditCardServices
       @credit_card = credit_card
     end
 
-    def find_or_create_cycle_for_date(cutting_date)
+    def find_or_create_cycle_for_date(cutting_date) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
       out_amount = get_out_amount_transactions_by_date_range(cutting_date - 30.days, cutting_date)
       in_amount = get_in_amount_transactions_by_date_range(cutting_date - 30.days, cutting_date)
 
       cycle_status = calculate_cycle_status(cutting_date, out_amount, in_amount)
 
       main_cycle = credit_card.credit_card_cycles.find_or_create_by(cutting_date:) do |cycle|
-        initial_debt = cycle.previous_cycle.present? ? 0.0 : credit_card.initial_debt
-
+        prev_cycle = cycle.previous_cycle
         cycle.payment_due_date = cutting_date + credit_card.payment_due_days.days
         cycle.cycle_balance = 0
-        cycle.historical_balance = cycle.previous_cycle.present? ? cycle.previous_cycle.closing_balance : 0.0
-        cycle.closing_balance = cycle.historical_balance + initial_debt
+        cycle.historical_balance = if prev_cycle.present?
+                                     prev_cycle.closing_balance || 0.0
+                                   else
+                                     credit_card.initial_debt || 0.0
+                                   end
         cycle.purchases = 0
         cycle.payments = 0
         cycle.fees = 0.0
-
-        # Cálculo correcto del pago mínimo
         cycle.minimum_payment = 0
-
         cycle.interest = 0.0
-        cycle.fees = 0.0
         cycle.status = cycle_status
       end
 
@@ -65,7 +63,7 @@ module CreditCardServices
       credit_card.transactions.by_transaction_type(['income']).where(transaction_date: start_date..end_date)
     end
 
-    def calculate_cycle_status(cutting_date, out_amount, in_amount)
+    def calculate_cycle_status(cutting_date, out_amount, in_amount) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
       if cutting_date + credit_card.payment_due_days.days < Date.today
         if (out_amount.sum(:amount) - in_amount.sum(:amount)) <= 0
           Status.find_by(code: 'closed')

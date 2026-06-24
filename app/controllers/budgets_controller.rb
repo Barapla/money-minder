@@ -71,7 +71,7 @@ class BudgetsController < ApplicationController
   end
 
   def create
-    @budget = Budget.new(budget_params)
+    @budget = current_user.budgets.new(budget_params)
     if @budget.save
       redirect_to @budget, notice: 'Presupuesto creado exitosamente.'
     else
