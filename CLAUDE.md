@@ -49,6 +49,7 @@ Gemas clave: `devise`, `httparty`, `sidekiq-cron`, `brakeman`, `bundler-audit`
 | Jobs en background | `RecurringTransactionsJob`, `ProcessSingleRecurringTransactionJob`, `RecurringTransactionsCleanupJob` | Completo |
 | Información laboral | `EmploymentInformation` | Completo |
 | Cálculos de nómina | `PayrollProfile`, `Payroll::AguinaldoCalculator`, `Payroll::SavingsFundCalculator`, `PayrollServices::Calculator` | Completo |
+| Metas de ahorro | `SavingGoal`, `SavingGoalServices::ProgressCalculator` | Completo |
 
 ---
 
@@ -208,6 +209,29 @@ Sin `user:`, el filtro consulta todos los budgets/transacciones de la DB (compor
 Para crear transacciones en specs, usar las factories:
 - `:transaction` — requiere `:user`, `:budget`, `:category`, `:currency`, `:catalog` para color/icon/transaction_type
 - `:budget` — requiere `:user` y catalogs para `:budget_type`, `:color`, `:icon`
+
+---
+
+## SavingGoal — Metas de ahorro (FEAT-010)
+
+### Modelo
+
+`app/models/saving_goal.rb` — `belongs_to :user`, enum `status` [:active, :paused, :achieved, :cancelled], validaciones de presencia y numericality.
+
+### Service Object
+
+`app/services/saving_goal_services/progress_calculator.rb` — calcula progreso on-demand:
+
+- `available_money` = efectivo (personal budget) + debito (`debit_card` budgets) + fondos de ahorro (`SavingsFund.budget.current_amount`) - deuda de credito (`credit_card.current_debt`)
+- `progress_percentage` = (available_money / target_amount) * 100
+- Memoiza `total_available_money` para calcular N metas con 4 queries totales (no N*4)
+
+### Decisiones de diseno
+
+- Progreso calculado on-demand, no persistido en BD para evitar inconsistencias
+- `status` como enum con default `:active`; la transicion a `:achieved` es manual por el usuario
+- `deadline` es opcional; si no se establece, la meta no tiene fecha limite
+- Validacion de `deadline` solo en `on: :create` para permitir editar metas con fechas pasadas
 
 ---
 

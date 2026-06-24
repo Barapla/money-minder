@@ -53,7 +53,7 @@
              data-controller="navbar-dropdown"
              data-action="mouseenter->navbar-dropdown#open mouseleave->navbar-dropdown#startCloseTimer keydown->navbar-dropdown#keydown">
           <button type="button"
-                  class="<%= navbar_dropdown_trigger_class([budgets_path, obligatory_payments_path, obligatory_payments_calendar_index_path]) %>"
+                  class="<%= navbar_dropdown_trigger_class([budgets_path, obligatory_payments_path, obligatory_payments_calendar_index_path, saving_goals_path]) %>"
                   data-navbar-dropdown-target="button"
                   data-action="click->navbar-dropdown#toggle"
                   aria-haspopup="true"
@@ -69,6 +69,7 @@
             <%= navbar_dropdown_item_to("Presupuestos", budgets_path) %>
             <%= navbar_dropdown_item_to("Recordatorios", obligatory_payments_path) %>
             <%= navbar_dropdown_item_to("Cal. Recordatorios", obligatory_payments_calendar_index_path) %>
+            <%= navbar_dropdown_item_to("Metas de Ahorro", saving_goals_path) %>
           </div>
         </div>
 
@@ -202,6 +203,7 @@
             <%= navbar_dropdown_item_to("Presupuestos", budgets_path) %>
             <%= navbar_dropdown_item_to("Recordatorios", obligatory_payments_path) %>
             <%= navbar_dropdown_item_to("Cal. Recordatorios", obligatory_payments_calendar_index_path) %>
+            <%= navbar_dropdown_item_to("Metas de Ahorro", saving_goals_path) %>
           </div>
         </div>
       </div>

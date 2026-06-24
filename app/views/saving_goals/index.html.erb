@@ -1,0 +1,147 @@
+<div class="max-w-6xl mx-auto">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-bunker-900/80 to-emerald-900/80 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-4xl font-bold text-white mb-2">
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-300">🎯 Metas de Ahorro</span>
+        </h1>
+        <p class="text-bunker-300">Visualiza el progreso de tus objetivos financieros en tiempo real</p>
+      </div>
+      <%= link_to new_saving_goal_path,
+            class: "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg flex items-center gap-2" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        Nueva Meta
+      <% end %>
+    </div>
+  </div>
+
+  <% if notice.present? %>
+    <div class="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-sm">
+      <%= notice %>
+    </div>
+  <% end %>
+
+  <% if @saving_goals.any? %>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% @saving_goals.each do |goal| %>
+        <% progress_data = @calculator.calculate_for(goal) %>
+        <% bar_width = [progress_data[:progress_percentage], 100].min %>
+        <% achieved = progress_data[:is_achieved] %>
+
+        <div class="bg-bunker-900/50 border <%= achieved ? 'border-emerald-500/50' : 'border-bunker-800/50' %> rounded-2xl p-6 hover:bg-bunker-900/60 transition-all duration-200 flex flex-col">
+
+          <!-- Status badge + name -->
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <% badge_class = case goal.status
+                                 when 'active'    then 'bg-emerald-500/20 text-emerald-300'
+                                 when 'paused'    then 'bg-yellow-500/20 text-yellow-300'
+                                 when 'achieved'  then 'bg-blue-500/20 text-blue-300'
+                                 when 'cancelled' then 'bg-red-500/20 text-red-300'
+                                 end %>
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium <%= badge_class %>">
+                  <%= goal.status.humanize %>
+                </span>
+                <% if achieved && goal.active? %>
+                  <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/30 text-emerald-200">✓ Alcanzada</span>
+                <% end %>
+              </div>
+              <h3 class="font-semibold text-white text-lg leading-tight"><%= goal.name %></h3>
+            </div>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="mb-4">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm text-bunker-400">Progreso</span>
+              <span class="text-sm font-bold <%= achieved ? 'text-emerald-400' : 'text-white' %>">
+                <%= progress_data[:progress_percentage] %>%
+              </span>
+            </div>
+            <div class="w-full bg-bunker-800 rounded-full h-3 overflow-hidden">
+              <div class="h-3 rounded-full transition-all duration-500 <%= achieved ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-emerald-600 to-emerald-500' %>"
+                   style="width: <%= bar_width %>%">
+              </div>
+            </div>
+          </div>
+
+          <!-- Amounts -->
+          <div class="mb-4 space-y-1">
+            <div class="flex justify-between text-sm">
+              <span class="text-bunker-400">Disponible actual</span>
+              <span class="font-medium <%= progress_data[:available_money] >= 0 ? 'text-white' : 'text-red-400' %>">
+                <%= number_to_currency(progress_data[:available_money]) %>
+              </span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-bunker-400">Objetivo</span>
+              <span class="font-medium text-white"><%= number_to_currency(goal.target_amount) %></span>
+            </div>
+          </div>
+
+          <!-- Deadline / days remaining -->
+          <% if goal.deadline %>
+            <% days = progress_data[:days_remaining] %>
+            <div class="flex items-center gap-2 text-sm mb-4 <%= days && days < 0 ? 'text-red-400' : 'text-bunker-300' %>">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <% if days.nil? %>
+                Fecha: <%= goal.deadline.strftime('%d/%m/%Y') %>
+              <% elsif days > 0 %>
+                <%= days %> días restantes (<%= goal.deadline.strftime('%d/%m/%Y') %>)
+              <% elsif days == 0 %>
+                Vence hoy
+              <% else %>
+                Venció hace <%= days.abs %> días
+              <% end %>
+            </div>
+          <% end %>
+
+          <!-- Actions -->
+          <div class="flex gap-2 pt-4 mt-auto border-t border-bunker-800/50">
+            <% if achieved && goal.active? %>
+              <%= button_to saving_goal_path(goal),
+                    method: :patch,
+                    params: { saving_goal: { status: :achieved } },
+                    data: { turbo_confirm: "¿Marcar esta meta como completada?" },
+                    class: "flex-1 px-3 py-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-xl text-sm font-medium hover:bg-emerald-500/30 transition-all" do %>
+                ✓ Completar
+              <% end %>
+            <% end %>
+            <%= link_to edit_saving_goal_path(goal),
+                  class: "flex-1 px-3 py-2 bg-bunker-800/60 text-white border border-bunker-700/50 rounded-xl text-sm font-medium hover:bg-bunker-700/60 transition-all text-center" do %>
+              Editar
+            <% end %>
+            <%= button_to saving_goal_path(goal),
+                  method: :delete,
+                  data: { turbo_confirm: "¿Estás seguro de eliminar esta meta?" },
+                  class: "flex-1 px-3 py-2 bg-red-500/20 text-red-300 border border-red-500/30 rounded-xl text-sm font-medium hover:bg-red-500/30 transition-all" do %>
+              Eliminar
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <!-- Empty State -->
+    <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-12 text-center">
+      <svg class="w-24 h-24 mx-auto mb-6 text-bunker-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+      </svg>
+      <h3 class="text-2xl font-bold text-white mb-2">No tienes metas de ahorro</h3>
+      <p class="text-bunker-300 mb-6">Crea tu primera meta para visualizar tu progreso automáticamente</p>
+      <%= link_to new_saving_goal_path,
+            class: "inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        Crear primera meta
+      <% end %>
+    </div>
+  <% end %>
+</div>

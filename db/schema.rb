@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_24_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_24_051025) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -386,6 +386,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_24_000001) do
     t.index ["uuid"], name: "index_roles_on_uuid", unique: true
   end
 
+  create_table "saving_goals", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.decimal "target_amount", precision: 15, scale: 2, null: false
+    t.date "deadline"
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "status"], name: "index_saving_goals_on_user_id_and_status"
+    t.index ["user_id"], name: "index_saving_goals_on_user_id"
+  end
+
   create_table "savings_funds", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
@@ -533,6 +545,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_24_000001) do
   add_foreign_key "recurrences", "catalogs", column: "frequency_type_id", name: "fk_recurrences_frequency_type"
   add_foreign_key "recurrences", "catalogs", column: "recurrenceable_type_id", name: "fk_recurrences_recurrenceable_type"
   add_foreign_key "recurring_transactions", "users", name: "fk_recurring_transactions_user"
+  add_foreign_key "saving_goals", "users"
   add_foreign_key "savings_funds", "budgets", name: "fk_savings_funds_budget"
   add_foreign_key "savings_funds", "catalogs", column: "account_type_id", name: "fk_savings_funds_account_type"
   add_foreign_key "savings_funds", "catalogs", column: "compound_frequency_id", name: "fk_savings_funds_compound_frequency"
