@@ -72,3 +72,6 @@ application.register("recurring-transaction-form", RecurringTransactionFormContr
 
 import SelectToController from "./select_to_controller"
 application.register("select-to", SelectToController)
+
+import SavingsGoalsReorderController from "./savings_goals_reorder_controller"
+application.register("savings-goals-reorder", SavingsGoalsReorderController)

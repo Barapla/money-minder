@@ -19,8 +19,28 @@
       "file": ".ruby-version",
       "line": 1,
       "note": "Upgrade pendiente — Ruby 3.2.2 EOL conocido, se actualizará en FEAT separado"
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "4ce4b13f914358c21fd62695bd0c07996a45c03a674c0a0b51ef9bf415965891",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/controllers/saving_goals_controller.rb",
+      "line": 80,
+      "note": "Falso positivo: when_placeholders contiene solo marcadores literales '?' sin datos de usuario. Los IDs son validados como enteros via regex y confirmados como propiedad del usuario antes de esta llamada. Los valores se pasan como bind parameters via update_all([sql, *binds])."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "76bcb02a7f9deebe6a7ec601cff17c5dda96a43b263fa2a82b082774e77a4d56",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/models/saving_goal.rb",
+      "line": 44,
+      "note": "Falso positivo: goal_ids proviene de pluck(:id) — enteros de la base de datos, no input de usuario. Los valores se pasan como bind parameters via update_all([sql, *binds])."
     }
   ],
-  "updated": "2026-06-22",
+  "updated": "2026-06-24",
   "brakeman_version": "8.0.5"
 }

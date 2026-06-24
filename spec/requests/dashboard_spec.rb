@@ -33,7 +33,8 @@ RSpec.describe '/dashboard', type: :request do
                                     debt_breakdown: [],
                                     credit_cards?: false,
                                     savings_funds?: false,
-                                    debit_cards?: false)
+                                    debit_cards?: false,
+                                    saving_goals?: false)
         allow(DashboardPresenter).to receive(:new).with(user).and_return(presenter)
       end
 
@@ -72,7 +73,8 @@ RSpec.describe '/dashboard', type: :request do
                                     debt_breakdown: [],
                                     credit_cards?: false,
                                     savings_funds?: false,
-                                    debit_cards?: false)
+                                    debit_cards?: false,
+                                    saving_goals?: false)
         allow(DashboardPresenter).to receive(:new).with(user).and_return(presenter)
       end
 
