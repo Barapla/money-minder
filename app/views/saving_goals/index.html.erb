@@ -24,6 +24,44 @@
     </div>
   <% end %>
 
+  <% if @active_goals_by_priority.size > 1 %>
+    <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6 mb-8">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-lg font-semibold text-white">Prioridad de asignación</h2>
+          <p class="text-bunker-400 text-xs">Arrastra para reordenar · El saldo disponible se asigna en este orden</p>
+        </div>
+      </div>
+
+      <div class="space-y-2"
+           data-controller="savings-goals-reorder"
+           data-savings-goals-reorder-url-value="<%= reorder_saving_goals_path %>">
+        <% @active_goals_by_priority.each_with_index do |goal, index| %>
+          <div class="flex items-center gap-3 bg-bunker-800/40 rounded-xl px-4 py-3 cursor-grab active:cursor-grabbing"
+               draggable="true"
+               data-savings-goals-reorder-target="item"
+               data-goal-id="<%= goal.id %>"
+               data-action="dragstart->savings-goals-reorder#dragstart dragover->savings-goals-reorder#dragover dragend->savings-goals-reorder#dragend">
+            <span class="text-bunker-500 text-xs font-bold w-5 text-center shrink-0" data-priority-number><%= index + 1 %></span>
+            <svg class="w-4 h-4 text-bunker-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
+            </svg>
+            <span class="text-white text-sm font-medium flex-1 truncate"><%= goal.name %></span>
+            <span class="text-bunker-400 text-xs shrink-0"><%= number_to_currency(goal.target_amount) %></span>
+            <% if goal.deadline %>
+              <span class="text-bunker-500 text-xs shrink-0"><%= goal.deadline.strftime('%d/%m/%Y') %></span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <% if @saving_goals.any? %>
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       <% @saving_goals.each do |goal| %>

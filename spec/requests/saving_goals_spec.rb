@@ -164,6 +164,24 @@ RSpec.describe '/saving_goals', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
+    it 'retorna 422 con array vacio' do
+      patch reorder_saving_goals_path, params: { order: [] }, as: :json
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it 'retorna 403 cuando el orden enviado omite metas activas (race condition)' do
+      original_orders = [goal.priority_order, goal2.priority_order, goal3.priority_order]
+
+      patch reorder_saving_goals_path,
+            params: { order: [goal.id.to_s] },
+            as: :json
+
+      expect(response).to have_http_status(:forbidden)
+      expect(goal.reload.priority_order).to eq(original_orders[0])
+      expect(goal2.reload.priority_order).to eq(original_orders[1])
+      expect(goal3.reload.priority_order).to eq(original_orders[2])
+    end
+
     it 'actualiza el priority_order en el nuevo orden (CA3)' do
       patch reorder_saving_goals_path,
             params: { order: [goal3.id.to_s, goal.id.to_s, goal2.id.to_s] },
@@ -181,14 +199,14 @@ RSpec.describe '/saving_goals', type: :request do
     context 'cuando otro usuario intenta reordenar metas ajenas' do
       before { sign_in other_user }
 
-      it 'retorna error 422 sin modificar las metas' do
+      it 'retorna 403 sin modificar las metas' do
         original_order = goal.priority_order
 
         patch reorder_saving_goals_path,
               params: { order: [goal.id.to_s] },
               as: :json
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:forbidden)
         expect(goal.reload.priority_order).to eq(original_order)
       end
     end

@@ -50,7 +50,8 @@ export default class extends Controller {
         body: JSON.stringify({ order: ids })
       })
       if (response.ok) {
-        Turbo.visit(window.location.href, { action: "replace" })
+        this.#updatePriorityNumbers()
+        this.#showSuccess("Orden guardado correctamente.")
       } else {
         this.#revertOrder()
         this.#showError("No se pudo guardar el orden. Intenta de nuevo.")
@@ -63,14 +64,30 @@ export default class extends Controller {
   }
 
   #revertOrder() {
+    if (!this.savedOrder) return
     const container = this.itemTargets[0]?.parentNode
-    if (!container || !this.savedOrder) return
+    if (!container) return
     this.savedOrder.forEach(item => container.appendChild(item))
   }
 
+  #updatePriorityNumbers() {
+    this.itemTargets.forEach((item, index) => {
+      const badge = item.querySelector("[data-priority-number]")
+      if (badge) badge.textContent = index + 1
+    })
+  }
+
+  #showSuccess(message) {
+    this.#showToast(message, "bg-emerald-500/90")
+  }
+
   #showError(message) {
+    this.#showToast(message, "bg-red-500/90")
+  }
+
+  #showToast(message, colorClass) {
     const el = document.createElement("div")
-    el.className = "fixed top-4 right-4 bg-red-500/90 text-white px-4 py-2 rounded-xl text-sm z-50 shadow-lg"
+    el.className = `fixed top-4 right-4 ${colorClass} text-white px-4 py-2 rounded-xl text-sm z-50 shadow-lg`
     el.textContent = message
     document.body.appendChild(el)
     setTimeout(() => el.remove(), 3000)

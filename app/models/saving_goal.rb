@@ -35,8 +35,12 @@ class SavingGoal < ApplicationRecord
   end
 
   def renumber_priorities
-    user.saving_goals.order(:priority_order).each_with_index do |goal, index|
-      goal.update!(priority_order: index + 1)
-    end
+    goal_ids = user.saving_goals.order(:priority_order).pluck(:id)
+    return if goal_ids.empty?
+
+    when_placeholders = (['WHEN ? THEN ?'] * goal_ids.size).join(' ')
+    binds = goal_ids.each_with_index.flat_map { |id, i| [id, i + 1] }
+    user.saving_goals.where(id: goal_ids)
+        .update_all(["priority_order = CASE id #{when_placeholders} END", *binds])
   end
 end
