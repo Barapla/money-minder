@@ -387,7 +387,9 @@ RSpec.describe DashboardPresenter do
       let(:reminder) do
         instance_double(PayrollReminder,
                         date: Date.current + 15,
-                        net_amount: 25_000.0)
+                        net_amount: 25_000.0,
+                        periodicity_label: 'Quincena',
+                        next_period_label: 'Próxima quincena')
       end
       let(:generator) { instance_double(PayrollServices::ReminderGenerator) }
 
@@ -410,13 +412,69 @@ RSpec.describe DashboardPresenter do
       it 'incluye monto formateado con símbolo de moneda' do
         expect(presenter.next_payroll_info[:net_amount_formatted]).to include('$')
       end
+
+      it 'CA2: incluye periodicity_label de la quincena' do
+        expect(presenter.next_payroll_info[:periodicity_label]).to eq('Quincena')
+      end
+
+      it 'CA2: incluye next_period_label de la quincena' do
+        expect(presenter.next_payroll_info[:next_period_label]).to eq('Próxima quincena')
+      end
+    end
+
+    context 'CA1: usuario con pago semanal' do
+      let(:reminder) do
+        instance_double(PayrollReminder,
+                        date: Date.current + 4,
+                        net_amount: 7_000.0,
+                        periodicity_label: 'Pago semanal',
+                        next_period_label: 'Próximo pago semanal')
+      end
+      let(:generator) { instance_double(PayrollServices::ReminderGenerator) }
+
+      before do
+        allow(presenter).to receive(:payroll_configured?).and_return(true)
+        allow(PayrollServices::ReminderGenerator).to receive(:new).with(user).and_return(generator)
+        allow(generator).to receive(:generate).and_return([reminder])
+      end
+
+      it 'CA1: incluye next_period_label semanal' do
+        expect(presenter.next_payroll_info[:next_period_label]).to eq('Próximo pago semanal')
+      end
+
+      it 'CA1: incluye periodicity_label semanal' do
+        expect(presenter.next_payroll_info[:periodicity_label]).to eq('Pago semanal')
+      end
+    end
+
+    context 'CA3: usuario con pago mensual' do
+      let(:reminder) do
+        instance_double(PayrollReminder,
+                        date: Date.current + 20,
+                        net_amount: 30_000.0,
+                        periodicity_label: 'Pago mensual',
+                        next_period_label: 'Próximo pago mensual')
+      end
+      let(:generator) { instance_double(PayrollServices::ReminderGenerator) }
+
+      before do
+        allow(presenter).to receive(:payroll_configured?).and_return(true)
+        allow(PayrollServices::ReminderGenerator).to receive(:new).with(user).and_return(generator)
+        allow(generator).to receive(:generate).and_return([reminder])
+      end
+
+      it 'CA3: incluye next_period_label mensual' do
+        expect(presenter.next_payroll_info[:next_period_label]).to eq('Próximo pago mensual')
+      end
     end
 
     context 'CA8: con pago en 5 días o menos' do
       let(:reminder) do
         instance_double(PayrollReminder,
                         date: Date.current + 5,
-                        net_amount: 25_000.0)
+                        net_amount: 25_000.0,
+                        periodicity_label: 'Quincena',
+                        next_period_label: 'Próxima quincena')
       end
       let(:generator) { instance_double(PayrollServices::ReminderGenerator) }
 

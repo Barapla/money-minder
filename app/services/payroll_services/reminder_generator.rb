@@ -26,13 +26,10 @@ module PayrollServices
     attr_reader :user, :employment_info, :payroll_profile
 
     def build_reminders(dates, breakdown)
-      net_amount = breakdown[:net_salary]
       periodicity = employment_info.salary_periodicity
-      dates.map do |date|
-        PayrollReminder.new(
-          date: date, net_amount: net_amount, calculation_breakdown: breakdown, periodicity: periodicity
-        )
-      end
+      period_days = EmploymentInformationServices::Calculator::DAYS_PER_PERIODICITY.fetch(periodicity.to_s, 30)
+      net_amount = (BigDecimal(breakdown[:net_salary].to_s) * period_days / 30).round(2)
+      dates.map { |d| PayrollReminder.new(date: d, net_amount: net_amount, calculation_breakdown: breakdown, periodicity: periodicity) } # rubocop:disable Layout/LineLength
     end
 
     def payment_dates(from_date, to_date)

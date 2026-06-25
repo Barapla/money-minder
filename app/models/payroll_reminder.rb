@@ -10,6 +10,14 @@ class PayrollReminder
     'yearly' => 'Pago anual'
   }.freeze
 
+  NEXT_PERIOD_LABELS = {
+    'daily' => 'Próximo pago diario',
+    'weekly' => 'Próximo pago semanal',
+    'biweekly' => 'Próxima quincena',
+    'monthly' => 'Próximo pago mensual',
+    'yearly' => 'Próximo pago anual'
+  }.freeze
+
   attr_reader :date, :net_amount, :calculation_breakdown, :periodicity
 
   def initialize(date:, net_amount:, calculation_breakdown:, periodicity:)
@@ -21,5 +29,9 @@ class PayrollReminder
 
   def periodicity_label
     PERIODICITY_LABELS.fetch(periodicity.to_s, 'Pago de nómina')
+  end
+
+  def next_period_label
+    NEXT_PERIOD_LABELS.fetch(periodicity.to_s, 'Próxima nómina')
   end
 end
