@@ -14,7 +14,8 @@ RSpec.describe EmploymentInformation, type: :model do
     it { is_expected.to validate_presence_of(:job_title) }
     it { is_expected.to validate_presence_of(:start_date) }
     it { is_expected.to validate_presence_of(:gross_salary_amount) }
-    it { is_expected.to validate_presence_of(:salary_periodicity) }
+    it { is_expected.to validate_presence_of(:calculation_periodicity) }
+    it { is_expected.to validate_presence_of(:payment_frequency) }
   end
 
   describe 'validación de numericidad de salario' do
@@ -61,10 +62,41 @@ RSpec.describe EmploymentInformation, type: :model do
     end
   end
 
-  describe 'enum salary_periodicity' do
-    it 'acepta periodicidades válidas' do
-      %w[daily weekly biweekly monthly yearly].each do |periodicity|
-        employment_information.salary_periodicity = periodicity
+  describe 'enum calculation_periodicity' do
+    it 'acepta valores de periodicidad de cálculo válidos' do
+      %w[daily_calculation weekly_calculation biweekly_calculation monthly_calculation
+         annual_calculation].each do |value|
+        employment_information.calculation_periodicity = value
+        employment_information.payment_frequency = 'monthly_payment'
+        expect(employment_information).to be_valid, "Esperaba válido para #{value}"
+      end
+    end
+  end
+
+  describe 'enum payment_frequency' do
+    it 'acepta valores de frecuencia de pago válidos' do
+      %w[weekly_payment biweekly_payment monthly_payment].each do |value|
+        employment_information.calculation_periodicity = 'monthly_calculation'
+        employment_information.payment_frequency = value
+        expect(employment_information).to be_valid, "Esperaba válido para #{value}"
+      end
+    end
+  end
+
+  describe 'CA1: combinaciones de periodicidad — sin restricciones de compatibilidad' do
+    [
+      %w[daily_calculation weekly_payment],
+      %w[daily_calculation monthly_payment],
+      %w[weekly_calculation weekly_payment],
+      %w[weekly_calculation monthly_payment],
+      %w[biweekly_calculation weekly_payment],
+      %w[monthly_calculation weekly_payment],
+      %w[annual_calculation weekly_payment],
+      %w[annual_calculation biweekly_payment]
+    ].each do |calc, pay|
+      it "acepta #{calc} con #{pay}" do
+        employment_information.calculation_periodicity = calc
+        employment_information.payment_frequency = pay
         expect(employment_information).to be_valid
       end
     end
@@ -98,9 +130,12 @@ RSpec.describe EmploymentInformation, type: :model do
       it 'el PayrollProfile tiene el salario mensual normalizado' do
         employment_information.save!
         profile = user.reload.payroll_profile
+        calc_db_value = EmploymentInformation.calculation_periodicities[
+          employment_information.calculation_periodicity.to_s
+        ]
         expected = EmploymentInformationServices::Calculator.normalize_salary(
           employment_information.gross_salary_amount,
-          employment_information.salary_periodicity
+          calc_db_value
         )[:monthly]
         expect(profile.monthly_gross_salary).to be_within(0.01).of(expected)
       end
@@ -115,7 +150,11 @@ RSpec.describe EmploymentInformation, type: :model do
       before { employment_information.save! }
 
       it 'actualiza el PayrollProfile al modificar el salario' do
-        employment_information.update!(gross_salary_amount: 50_000.0, salary_periodicity: 'monthly')
+        employment_information.update!(
+          gross_salary_amount: 50_000.0,
+          calculation_periodicity: 'monthly_calculation',
+          payment_frequency: 'monthly_payment'
+        )
         expect(user.reload.payroll_profile.monthly_gross_salary).to be_within(0.01).of(50_000.0)
       end
 
@@ -124,6 +163,12 @@ RSpec.describe EmploymentInformation, type: :model do
           employment_information.update!(gross_salary_amount: 60_000.0)
         end.not_to change(PayrollProfile, :count)
       end
+    end
+  end
+
+  describe 'CA6: migración de datos — campo salary_periodicity removido' do
+    it 'no responde a salary_periodicity' do
+      expect(employment_information).not_to respond_to(:salary_periodicity)
     end
   end
 end

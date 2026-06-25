@@ -8,7 +8,9 @@ RSpec.describe PayrollServices::ReminderGenerator, type: :service do
 
   # employment_information auto-crea payroll_profile via after_save :sync_payroll_profile
   let(:employment_info) do
-    create(:employment_information, user:, start_date:, salary_periodicity: 'biweekly',
+    create(:employment_information, user:, start_date:,
+                                    calculation_periodicity: 'biweekly_calculation',
+                                    payment_frequency: 'biweekly_payment',
                                     gross_salary_amount: 30_000)
   end
 
@@ -35,7 +37,7 @@ RSpec.describe PayrollServices::ReminderGenerator, type: :service do
       end
     end
 
-    context 'CA1: usuario con periodicity biweekly' do
+    context 'CA1: usuario con payment_frequency biweekly' do
       let(:from_date) { Date.new(2024, 3, 1) }
       let(:to_date) { Date.new(2024, 3, 31) }
 
@@ -75,17 +77,21 @@ RSpec.describe PayrollServices::ReminderGenerator, type: :service do
         end
       end
 
-      it 'asigna la periodicidad correcta' do
+      it 'asigna la frecuencia de pago correcta' do
         reminders = generator.generate(from_date:, to_date:)
         reminders.each do |reminder|
-          expect(reminder.periodicity).to eq('biweekly')
+          expect(reminder.payment_frequency).to eq('biweekly')
         end
       end
     end
 
-    context 'CA2: usuario con periodicity monthly' do
+    context 'CA2: usuario con payment_frequency monthly' do
       before do
-        employment_info.update!(salary_periodicity: 'monthly', start_date: Date.new(2024, 1, 15))
+        employment_info.update!(
+          calculation_periodicity: 'monthly_calculation',
+          payment_frequency: 'monthly_payment',
+          start_date: Date.new(2024, 1, 15)
+        )
       end
 
       it 'genera exactamente un recordatorio por mes en el rango' do
@@ -104,9 +110,13 @@ RSpec.describe PayrollServices::ReminderGenerator, type: :service do
       end
     end
 
-    context 'CA6: usuario con periodicity weekly' do
+    context 'CA6: usuario con payment_frequency weekly' do
       before do
-        employment_info.update!(salary_periodicity: 'weekly', start_date: Date.new(2024, 1, 1))
+        employment_info.update!(
+          calculation_periodicity: 'weekly_calculation',
+          payment_frequency: 'weekly_payment',
+          start_date: Date.new(2024, 1, 1)
+        )
       end
 
       it 'genera recordatorios siempre en jueves' do
@@ -127,45 +137,6 @@ RSpec.describe PayrollServices::ReminderGenerator, type: :service do
       end
     end
 
-    context 'CA6: usuario con periodicity daily' do
-      before do
-        employment_info.update!(salary_periodicity: 'daily', start_date: Date.new(2024, 3, 1))
-      end
-
-      it 'genera un recordatorio por cada día del rango desde start_date' do
-        from_date = Date.new(2024, 3, 1)
-        to_date = Date.new(2024, 3, 5)
-        reminders = generator.generate(from_date:, to_date:)
-        expect(reminders.length).to eq(5)
-      end
-
-      it 'no genera recordatorios antes del start_date' do
-        from_date = Date.new(2024, 2, 25)
-        to_date = Date.new(2024, 3, 5)
-        reminders = generator.generate(from_date:, to_date:)
-        reminders.each do |reminder|
-          expect(reminder.date).to be >= Date.new(2024, 3, 1)
-        end
-      end
-    end
-
-    context 'CA6: usuario con periodicity yearly' do
-      before do
-        employment_info.update!(salary_periodicity: 'yearly', start_date: Date.new(2023, 6, 15))
-      end
-
-      it 'genera exactamente un recordatorio cuando el aniversario cae en el rango' do
-        reminders = generator.generate(from_date: Date.new(2024, 6, 1), to_date: Date.new(2024, 6, 30))
-        expect(reminders.length).to eq(1)
-        expect(reminders.first.date).to eq(Date.new(2024, 6, 15))
-      end
-
-      it 'no genera recordatorios si el aniversario no cae en el rango' do
-        reminders = generator.generate(from_date: Date.new(2024, 3, 1), to_date: Date.new(2024, 3, 31))
-        expect(reminders).to be_empty
-      end
-    end
-
     context 'CA4: monto neto se recalcula con datos actuales del PayrollProfile' do
       it 'refleja los cambios en el PayrollProfile al regenerar' do
         reminders_before = generator.generate(from_date: Date.new(2024, 3, 1), to_date: Date.new(2024, 3, 31))
@@ -180,28 +151,28 @@ RSpec.describe PayrollServices::ReminderGenerator, type: :service do
       end
     end
 
-    context 'CA1: monto neto escalado por periodicidad — weekly' do
+    context 'CA1: monto neto escalado por payment_frequency — weekly' do
       before do
-        employment_info.update!(salary_periodicity: 'weekly')
+        employment_info.update!(calculation_periodicity: 'weekly_calculation', payment_frequency: 'weekly_payment')
         user.payroll_profile.update!(base_salary: 30_000, monthly_gross_salary: 30_000,
                                      savings_fund_rate: 0, custom_isr_rate: 0, custom_imss_rate: 0)
       end
 
-      it 'CA1: net_amount es la fraccion semanal del salario mensual neto (7/30)' do
+      it 'net_amount es la fraccion semanal del salario mensual neto (7/30)' do
         reminders = generator.generate(from_date: Date.new(2024, 3, 1), to_date: Date.new(2024, 3, 31))
         expected = (BigDecimal('30000') * 7 / 30).round(2)
         expect(reminders.first.net_amount).to eq(expected)
       end
 
-      it 'CA1: net_amount es menor que el salario mensual completo' do
+      it 'net_amount es menor que el salario mensual completo' do
         reminders = generator.generate(from_date: Date.new(2024, 3, 1), to_date: Date.new(2024, 3, 31))
         monthly_net = user.payroll_profile.base_salary.to_d
         expect(reminders.first.net_amount).to be < monthly_net
       end
     end
 
-    context 'CA2: monto neto escalado por periodicidad — biweekly' do
-      it 'CA2: net_amount es la mitad del salario mensual neto (15/30)' do
+    context 'CA2: monto neto escalado por payment_frequency — biweekly' do
+      it 'net_amount es la mitad del salario mensual neto (15/30)' do
         user.payroll_profile.update!(base_salary: 30_000, monthly_gross_salary: 30_000,
                                      savings_fund_rate: 0, custom_isr_rate: 0, custom_imss_rate: 0)
         reminders = generator.generate(from_date: Date.new(2024, 3, 1), to_date: Date.new(2024, 3, 31))
@@ -210,16 +181,68 @@ RSpec.describe PayrollServices::ReminderGenerator, type: :service do
       end
     end
 
-    context 'CA3: monto neto escalado por periodicidad — monthly' do
+    context 'CA3: monto neto escalado por payment_frequency — monthly' do
       before do
-        employment_info.update!(salary_periodicity: 'monthly', start_date: Date.new(2024, 1, 15))
+        employment_info.update!(
+          calculation_periodicity: 'monthly_calculation',
+          payment_frequency: 'monthly_payment',
+          start_date: Date.new(2024, 1, 15)
+        )
         user.payroll_profile.update!(base_salary: 30_000, monthly_gross_salary: 30_000,
                                      savings_fund_rate: 0, custom_isr_rate: 0, custom_imss_rate: 0)
       end
 
-      it 'CA3: net_amount es el salario mensual completo' do
+      it 'net_amount es el salario mensual completo' do
         reminders = generator.generate(from_date: Date.new(2024, 3, 1), to_date: Date.new(2024, 3, 31))
         expected = BigDecimal('30000')
+        expect(reminders.first.net_amount).to eq(expected)
+      end
+    end
+
+    context 'CA2: calculo mensual con pago quincenal genera dos recordatorios por mes' do
+      before do
+        employment_info.update!(
+          calculation_periodicity: 'monthly_calculation',
+          payment_frequency: 'biweekly_payment',
+          start_date: Date.new(2024, 1, 1)
+        )
+        user.payroll_profile.update!(base_salary: 10_000, monthly_gross_salary: 10_000,
+                                     savings_fund_rate: 0, custom_isr_rate: 0, custom_imss_rate: 0)
+      end
+
+      it 'genera dos recordatorios por mes' do
+        reminders = generator.generate(from_date: Date.new(2025, 7, 1), to_date: Date.new(2025, 7, 31))
+        expect(reminders.length).to eq(2)
+      end
+
+      it 'cada recordatorio es el 50% del salario mensual neto' do
+        reminders = generator.generate(from_date: Date.new(2025, 7, 1), to_date: Date.new(2025, 7, 31))
+        expected = (BigDecimal('10000') * 15 / 30).round(2)
+        reminders.each do |reminder|
+          expect(reminder.net_amount).to eq(expected)
+        end
+      end
+    end
+
+    context 'CA3: calculo anual con pago mensual genera un recordatorio por mes' do
+      before do
+        employment_info.update!(
+          calculation_periodicity: 'annual_calculation',
+          payment_frequency: 'monthly_payment',
+          start_date: Date.new(2024, 1, 15)
+        )
+        user.payroll_profile.update!(base_salary: 5_000, monthly_gross_salary: 5_000,
+                                     savings_fund_rate: 0, custom_isr_rate: 0, custom_imss_rate: 0)
+      end
+
+      it 'genera un recordatorio mensual' do
+        reminders = generator.generate(from_date: Date.new(2024, 3, 1), to_date: Date.new(2024, 5, 31))
+        expect(reminders.length).to eq(3)
+      end
+
+      it 'el monto del recordatorio es el salario mensual completo' do
+        reminders = generator.generate(from_date: Date.new(2024, 3, 1), to_date: Date.new(2024, 3, 31))
+        expected = BigDecimal('5000')
         expect(reminders.first.net_amount).to eq(expected)
       end
     end

@@ -5,12 +5,12 @@ require 'rails_helper'
 RSpec.describe PayrollReminder, type: :model do
   let(:breakdown) { { base_salary: 30_000, net_salary: 30_000 } }
 
-  def build_reminder(periodicity)
+  def build_reminder(payment_frequency)
     described_class.new(
       date: Date.current + 7,
       net_amount: 15_000,
       calculation_breakdown: breakdown,
-      periodicity: periodicity
+      payment_frequency: payment_frequency
     )
   end
 
@@ -27,7 +27,7 @@ RSpec.describe PayrollReminder, type: :model do
       expect(build_reminder('monthly').periodicity_label).to eq('Pago mensual')
     end
 
-    it 'retorna etiqueta generica para periodicidad desconocida' do
+    it 'retorna etiqueta generica para frecuencia desconocida' do
       expect(build_reminder('unknown').periodicity_label).to eq('Pago de nómina')
     end
   end
@@ -45,16 +45,15 @@ RSpec.describe PayrollReminder, type: :model do
       expect(build_reminder('monthly').next_period_label).to eq('Próximo pago mensual')
     end
 
-    it 'retorna etiqueta para daily' do
-      expect(build_reminder('daily').next_period_label).to eq('Próximo pago diario')
-    end
-
-    it 'retorna etiqueta para yearly' do
-      expect(build_reminder('yearly').next_period_label).to eq('Próximo pago anual')
-    end
-
-    it 'retorna etiqueta generica para periodicidad desconocida' do
+    it 'retorna etiqueta generica para frecuencia desconocida' do
       expect(build_reminder('unknown').next_period_label).to eq('Próxima nómina')
+    end
+  end
+
+  describe '#payment_frequency' do
+    it 'expone la frecuencia de pago' do
+      reminder = build_reminder('biweekly')
+      expect(reminder.payment_frequency).to eq('biweekly')
     end
   end
 end

@@ -78,7 +78,12 @@
 
       <div class="text-center py-4">
         <div class="text-4xl font-bold text-emerald-400"><%= @presenter.original_salary_formatted %></div>
-        <div class="text-bunker-400 mt-2 text-sm"><%= @presenter.periodicity_label %></div>
+        <div class="text-bunker-400 mt-2 text-sm">Cálculo: <%= @presenter.calculation_periodicity_label %></div>
+      </div>
+
+      <div class="mt-3 bg-bunker-800/40 border border-bunker-700/30 rounded-lg p-3 flex justify-between text-sm">
+        <span class="text-bunker-400">Frecuencia de pago</span>
+        <span class="text-amber-300 font-medium"><%= @presenter.payment_frequency_label %></span>
       </div>
     </div>
 
@@ -192,11 +197,11 @@
 
         <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-5 text-center">
           <div class="text-3xl font-bold text-amber-400 mb-1"><%= @presenter.next_payment_date_formatted %></div>
-          <% if @employment_information.weekly? %>
+          <% if @employment_information.weekly_payment? %>
             <div class="text-bunker-300 text-sm">Pago semanal — cada <span class="text-amber-300 font-medium"><%= @presenter.weekly_payment_day_name %></span></div>
-          <% elsif @employment_information.biweekly? %>
+          <% elsif @employment_information.biweekly_payment? %>
             <div class="text-bunker-300 text-sm">Pago quincenal — días 15 y fin de mes (último día hábil)</div>
-          <% elsif @employment_information.monthly? %>
+          <% elsif @employment_information.monthly_payment? %>
             <div class="text-bunker-300 text-sm">Pago mensual — último día hábil del mes</div>
           <% end %>
         </div>

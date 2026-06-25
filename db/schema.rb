@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_24_052823) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_25_115749) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -269,9 +269,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_24_052823) do
     t.string "job_title", null: false
     t.date "start_date", null: false
     t.decimal "gross_salary_amount", precision: 15, scale: 2, null: false
-    t.string "salary_periodicity", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "calculation_periodicity", null: false
+    t.string "payment_frequency", null: false
     t.index ["user_id", "start_date"], name: "index_employment_informations_on_user_id_and_start_date"
     t.index ["user_id"], name: "index_employment_informations_on_user_id", unique: true
   end

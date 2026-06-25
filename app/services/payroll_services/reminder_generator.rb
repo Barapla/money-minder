@@ -3,6 +3,12 @@
 module PayrollServices
   # Genera recordatorios de pago de nómina proyectados basados en EmploymentInformation y PayrollProfile del usuario.
   class ReminderGenerator
+    DAYS_PER_PAYMENT = {
+      'weekly' => 7,
+      'biweekly' => 15,
+      'monthly' => 30
+    }.freeze
+
     def initialize(user)
       @user = user
       @employment_info = user.employment_information
@@ -26,28 +32,23 @@ module PayrollServices
     attr_reader :user, :employment_info, :payroll_profile
 
     def build_reminders(dates, breakdown)
-      periodicity = employment_info.salary_periodicity
-      period_days = EmploymentInformationServices::Calculator::DAYS_PER_PERIODICITY.fetch(periodicity.to_s, 30)
+      pay_db = payment_db_value
+      period_days = DAYS_PER_PAYMENT.fetch(pay_db, 30)
       net_amount = (BigDecimal(breakdown[:net_salary].to_s) * period_days / 30).round(2)
-      dates.map { |d| PayrollReminder.new(date: d, net_amount: net_amount, calculation_breakdown: breakdown, periodicity: periodicity) } # rubocop:disable Layout/LineLength
+      dates.map do |d|
+        PayrollReminder.new(date: d, net_amount: net_amount, calculation_breakdown: breakdown,
+                            payment_frequency: pay_db)
+      end
     end
 
     def payment_dates(from_date, to_date)
       start = employment_info.start_date
-
-      case employment_info.salary_periodicity
-      when 'daily' then daily_dates(start, from_date, to_date)
-      when 'weekly' then weekly_dates(from_date, to_date)
+      case payment_db_value
+      when 'weekly'   then weekly_dates(from_date, to_date)
       when 'biweekly' then biweekly_dates(from_date, to_date)
-      when 'monthly' then monthly_dates(start, from_date, to_date)
-      when 'yearly' then yearly_dates(start, from_date, to_date)
+      when 'monthly'  then monthly_dates(start, from_date, to_date)
       else []
       end
-    end
-
-    def daily_dates(start, from_date, to_date)
-      first = [start, from_date].max
-      (first..to_date).to_a
     end
 
     # Los pagos semanales son siempre los jueves (día hábil fijo por convención de nómina).
@@ -108,15 +109,8 @@ module PayrollServices
       dates
     end
 
-    def yearly_dates(start, from_date, to_date)
-      dates = []
-      current = start
-      current >>= 12 while current < from_date
-      while current <= to_date
-        dates << current
-        current >>= 12
-      end
-      dates
+    def payment_db_value
+      EmploymentInformation.payment_frequencies[employment_info.payment_frequency.to_s].to_s
     end
   end
 end

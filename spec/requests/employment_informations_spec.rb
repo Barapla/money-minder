@@ -9,7 +9,8 @@ RSpec.describe '/employment_information', type: :request do
       job_title: 'Desarrollador de Software',
       start_date: Date.current - 2.years,
       gross_salary_amount: 25_000.0,
-      salary_periodicity: 'monthly'
+      calculation_periodicity: 'monthly_calculation',
+      payment_frequency: 'biweekly_payment'
     }
   end
   let(:invalid_attributes) do
@@ -86,7 +87,8 @@ RSpec.describe '/employment_information', type: :request do
     context 'CA5: con atributos válidos' do
       it 'actualiza la información laboral' do
         patch employment_information_path, params: {
-          employment_information: { job_title: 'Nuevo Puesto', salary_periodicity: 'weekly' }
+          employment_information: { job_title: 'Nuevo Puesto', calculation_periodicity: 'weekly_calculation',
+                                    payment_frequency: 'weekly_payment' }
         }
         expect(employment_information.reload.job_title).to eq('Nuevo Puesto')
       end
