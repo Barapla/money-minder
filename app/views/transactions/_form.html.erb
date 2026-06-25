@@ -87,7 +87,7 @@
             <%= render Forms::SelectComponent.new(
                 name: :budget_id,
                 form:,
-                options_collection: Budget.all.pluck(:name, :id),
+                options_collection: @budgets&.pluck(:name, :id) || [],
                 options: { 
                     help_text: "Selecciona el presupuesto al que pertenece esta transacción",
                     required: true,
