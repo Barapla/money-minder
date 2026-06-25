@@ -281,5 +281,150 @@ RSpec.describe Recurrence, type: :model do
                                   ])
       end
     end
+
+    context 'BUG-006: frecuencia semanal (weekly)' do
+      let(:weekly_catalog) { create(:catalog, code: 'weekly', group_catalog: frequency_types_group) }
+
+      def build_weekly_recurrence(start_date:, frequency_value: 1, end_date: nil)
+        create(:recurrence,
+               start_date: start_date,
+               frequency_value: frequency_value,
+               end_date: end_date,
+               frequency_type: weekly_catalog,
+               recurrenceable_type_catalog: recurrenceable_type_catalog)
+      end
+
+      it 'CA1: genera todas las ocurrencias semanales en un mes (inicio en lunes)' do
+        recurrence = build_weekly_recurrence(start_date: Date.new(2025, 1, 6))
+        occurrences = recurrence.occurrences_in_range(Date.new(2025, 1, 1), Date.new(2025, 1, 31))
+        expect(occurrences).to eq([
+                                    Date.new(2025, 1, 6),
+                                    Date.new(2025, 1, 13),
+                                    Date.new(2025, 1, 20),
+                                    Date.new(2025, 1, 27)
+                                  ])
+      end
+
+      it 'CA4: genera 4-5 ocurrencias semanales en un mes típico con diferencia de 7 días' do
+        recurrence = build_weekly_recurrence(start_date: Date.new(2025, 1, 1))
+        occurrences = recurrence.occurrences_in_range(Date.new(2025, 1, 1), Date.new(2025, 1, 31))
+        expect(occurrences.size).to be_between(4, 5)
+        gaps = occurrences.each_cons(2).map { |a, b| (b - a).to_i }
+        expect(gaps).to all(eq(7))
+      end
+
+      it 'no genera ocurrencias antes del start_date' do
+        recurrence = build_weekly_recurrence(start_date: Date.new(2025, 1, 15))
+        occurrences = recurrence.occurrences_in_range(Date.new(2025, 1, 1), Date.new(2025, 1, 31))
+        expect(occurrences.first).to eq(Date.new(2025, 1, 15))
+        expect(occurrences).to all(be >= Date.new(2025, 1, 15))
+      end
+
+      it 'respeta el end_date configurado' do
+        recurrence = build_weekly_recurrence(
+          start_date: Date.new(2025, 1, 6),
+          end_date: Date.new(2025, 1, 20)
+        )
+        occurrences = recurrence.occurrences_in_range(Date.new(2025, 1, 1), Date.new(2025, 1, 31))
+        expect(occurrences).to eq([
+                                    Date.new(2025, 1, 6),
+                                    Date.new(2025, 1, 13),
+                                    Date.new(2025, 1, 20)
+                                  ])
+      end
+
+      it 'con frequency_value=2 genera ocurrencias cada 2 semanas' do
+        recurrence = build_weekly_recurrence(start_date: Date.new(2025, 1, 1), frequency_value: 2)
+        occurrences = recurrence.occurrences_in_range(Date.new(2025, 1, 1), Date.new(2025, 1, 31))
+        expect(occurrences).to eq([
+                                    Date.new(2025, 1, 1),
+                                    Date.new(2025, 1, 15),
+                                    Date.new(2025, 1, 29)
+                                  ])
+      end
+    end
+
+    context 'BUG-006: frecuencia quincenal (biweekly)' do
+      let(:biweekly_catalog) { create(:catalog, code: 'biweekly', group_catalog: frequency_types_group) }
+
+      def build_biweekly_recurrence(start_date:, end_date: nil)
+        create(:recurrence,
+               start_date: start_date,
+               frequency_value: 1,
+               end_date: end_date,
+               frequency_type: biweekly_catalog,
+               recurrenceable_type_catalog: recurrenceable_type_catalog)
+      end
+
+      it 'genera ocurrencias cada 14 días' do
+        recurrence = build_biweekly_recurrence(start_date: Date.new(2025, 1, 1))
+        occurrences = recurrence.occurrences_in_range(Date.new(2025, 1, 1), Date.new(2025, 1, 31))
+        expect(occurrences).to eq([
+                                    Date.new(2025, 1, 1),
+                                    Date.new(2025, 1, 15),
+                                    Date.new(2025, 1, 29)
+                                  ])
+      end
+    end
+
+    context 'BUG-006: frecuencia anual (yearly)' do
+      let(:yearly_catalog) { create(:catalog, code: 'yearly', group_catalog: frequency_types_group) }
+
+      def build_yearly_recurrence(start_date:, frequency_value: 1, end_date: nil)
+        create(:recurrence,
+               start_date: start_date,
+               frequency_value: frequency_value,
+               end_date: end_date,
+               frequency_type: yearly_catalog,
+               recurrenceable_type_catalog: recurrenceable_type_catalog)
+      end
+
+      it 'CA2: aparece el mismo día del mismo mes el siguiente año' do
+        recurrence = build_yearly_recurrence(start_date: Date.new(2024, 3, 15))
+        occurrences = recurrence.occurrences_in_range(Date.new(2025, 3, 1), Date.new(2025, 3, 31))
+        expect(occurrences).to eq([Date.new(2025, 3, 15)])
+      end
+
+      it 'CA3: 29 de febrero cae en 28 de febrero en año no bisiesto' do
+        recurrence = build_yearly_recurrence(start_date: Date.new(2024, 2, 29))
+        occurrences = recurrence.occurrences_in_range(Date.new(2025, 2, 1), Date.new(2025, 2, 28))
+        expect(occurrences).to eq([Date.new(2025, 2, 28)])
+      end
+
+      it '29 de febrero cae en 29 de febrero en año bisiesto' do
+        recurrence = build_yearly_recurrence(start_date: Date.new(2024, 2, 29))
+        occurrences = recurrence.occurrences_in_range(Date.new(2028, 2, 1), Date.new(2028, 2, 29))
+        expect(occurrences).to eq([Date.new(2028, 2, 29)])
+      end
+
+      it 'no genera ocurrencias en meses distintos al de inicio' do
+        recurrence = build_yearly_recurrence(start_date: Date.new(2024, 3, 15))
+        expect(recurrence.occurrences_in_range(Date.new(2025, 1, 1), Date.new(2025, 2, 28))).to be_empty
+        expect(recurrence.occurrences_in_range(Date.new(2025, 4, 1), Date.new(2025, 12, 31))).to be_empty
+      end
+
+      it 'no genera ocurrencias antes del start_date' do
+        recurrence = build_yearly_recurrence(start_date: Date.new(2024, 6, 10))
+        expect(recurrence.occurrences_in_range(Date.new(2023, 6, 1), Date.new(2023, 6, 30))).to be_empty
+      end
+
+      it 'respeta el end_date configurado' do
+        recurrence = build_yearly_recurrence(
+          start_date: Date.new(2024, 3, 15),
+          end_date: Date.new(2025, 3, 31)
+        )
+        within_end = recurrence.occurrences_in_range(Date.new(2025, 3, 1), Date.new(2025, 3, 31))
+        after_end = recurrence.occurrences_in_range(Date.new(2026, 3, 1), Date.new(2026, 3, 31))
+        expect(within_end).to eq([Date.new(2025, 3, 15)])
+        expect(after_end).to be_empty
+      end
+
+      it 'con frequency_value=2 genera ocurrencias cada 2 años' do
+        recurrence = build_yearly_recurrence(start_date: Date.new(2024, 5, 10), frequency_value: 2)
+        expect(recurrence.occurrences_in_range(Date.new(2025, 5, 1), Date.new(2025, 5, 31))).to be_empty
+        expect(recurrence.occurrences_in_range(Date.new(2026, 5, 1), Date.new(2026, 5, 31)))
+          .to eq([Date.new(2026, 5, 10)])
+      end
+    end
   end
 end

@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 # Modelo de recurrencia para pagos y transacciones periódicas.
-# Soporta frecuencias: daily, weekly, monthly, yearly.
+# Soporta frecuencias: daily, weekly, biweekly, monthly, yearly.
 # frequency_value indica cada cuántas unidades (ej: 2 para "cada 2 meses").
+# rubocop:disable Metrics/ClassLength -- clase cohesiva: todos los métodos calculan ocurrencias de una recurrencia
 class Recurrence < ApplicationRecord
   belongs_to :recurrenceable, polymorphic: true, optional: true
   belongs_to :recurrenceable_type_catalog, class_name: 'Catalog', foreign_key: 'recurrenceable_type_id'
@@ -13,10 +14,11 @@ class Recurrence < ApplicationRecord
 
   def next_occurrence_from(date = Date.current)
     case frequency_type.code
-    when 'monthly'
-      calculate_next_monthly_occurrence(date)
-    when 'daily'
-      calculate_next_daily_occurrence(date)
+    when 'monthly' then calculate_next_monthly_occurrence(date)
+    when 'daily' then calculate_next_interval_occurrence(date, frequency_value)
+    when 'weekly' then calculate_next_interval_occurrence(date, frequency_value * 7)
+    when 'biweekly' then calculate_next_interval_occurrence(date, 14)
+    when 'yearly' then calculate_next_yearly_occurrence(date)
     end
   end
 
@@ -96,16 +98,46 @@ class Recurrence < ApplicationRecord
     next_valid_monthly_occurrence(effective_from, remainder)
   end
 
-  def calculate_next_daily_occurrence(from_date)
+  def calculate_next_interval_occurrence(from_date, days)
     effective_from = valid_from_date(from_date)
-    days_difference = (effective_from - start_date).to_i
-    intervals_passed = (days_difference / frequency_value.to_f).ceil
-    next_occurrence = start_date + (intervals_passed * frequency_value).days
+    periods = ((effective_from - start_date).to_i / days.to_f).ceil
+    next_occurrence = start_date + (periods * days).days
+    next_occurrence += days.days unless next_occurrence >= effective_from
+    return nil if end_date.present? && next_occurrence > end_date
 
-    next_occurrence >= effective_from ? next_occurrence : next_occurrence + frequency_value.days
+    next_occurrence
+  end
+
+  def calculate_next_yearly_occurrence(from_date)
+    effective_from = valid_from_date(from_date)
+    candidate = candidate_yearly_occurrence(effective_from)
+    return nil if end_date.present? && candidate > end_date
+
+    candidate
+  end
+
+  def candidate_yearly_occurrence(from_date)
+    years_offset = from_date.year - start_date.year
+    remainder = years_offset % frequency_value
+
+    if remainder.zero?
+      current = yearly_occurrence_date(from_date.year)
+      return current if current >= from_date
+    end
+
+    years_ahead = remainder.zero? ? frequency_value : (frequency_value - remainder)
+    yearly_occurrence_date(from_date.year + years_ahead)
+  end
+
+  def yearly_occurrence_date(year)
+    day = start_date.day
+    month = start_date.month
+    day = 28 if month == 2 && day == 29 && !Date.leap?(year)
+    Date.new(year, month, day)
   end
 
   def valid_from_date(from_date)
     [from_date, start_date].max
   end
 end
+# rubocop:enable Metrics/ClassLength
