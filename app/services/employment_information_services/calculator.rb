@@ -8,7 +8,8 @@ module EmploymentInformationServices
       'weekly' => 7,
       'biweekly' => 15,
       'monthly' => 30,
-      'yearly' => 365
+      'yearly' => 365,
+      'annual' => 365
     }.freeze
 
     def self.calculate_seniority(start_date)

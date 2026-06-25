@@ -11,7 +11,8 @@ RSpec.describe EmploymentInformationPresenter do
            job_title: 'Desarrollador Senior',
            start_date: Date.new(2020, 1, 15),
            gross_salary_amount: 30_000.0,
-           salary_periodicity: 'monthly')
+           calculation_periodicity: 'monthly_calculation',
+           payment_frequency: 'monthly_payment')
   end
   let(:presenter) { described_class.new(employment_information) }
 
@@ -27,18 +28,49 @@ RSpec.describe EmploymentInformationPresenter do
     end
   end
 
-  describe '#periodicity_label' do
+  describe '#calculation_periodicity_label' do
     it 'retorna la etiqueta en español para mensual' do
-      expect(presenter.periodicity_label).to eq('Mensual')
+      expect(presenter.calculation_periodicity_label).to eq('Mensual')
     end
 
-    it 'retorna la etiqueta correcta para cada periodicidad' do
-      labels = { 'daily' => 'Diario', 'weekly' => 'Semanal', 'biweekly' => 'Quincenal',
-                 'monthly' => 'Mensual', 'yearly' => 'Anual' }
-      labels.each do |periodicity, label|
-        info = create(:employment_information, user: create(:user), salary_periodicity: periodicity)
-        expect(described_class.new(info).periodicity_label).to eq(label)
+    it 'retorna la etiqueta correcta para cada periodicidad de cálculo' do
+      {
+        'weekly_calculation'   => 'Semanal',
+        'biweekly_calculation' => 'Quincenal',
+        'monthly_calculation'  => 'Mensual',
+        'annual_calculation'   => 'Anual'
+      }.each do |calc, label|
+        info = create(:employment_information, user: create(:user),
+                                               calculation_periodicity: calc,
+                                               payment_frequency: 'monthly_payment')
+        expect(described_class.new(info).calculation_periodicity_label).to eq(label)
       end
+    end
+  end
+
+  describe '#payment_frequency_label' do
+    it 'retorna la etiqueta en español para mensual' do
+      expect(presenter.payment_frequency_label).to eq('Mensual')
+    end
+
+    it 'retorna la etiqueta correcta para cada frecuencia de pago' do
+      {
+        'weekly_payment'   => 'Semanal',
+        'biweekly_payment' => 'Quincenal',
+        'monthly_payment'  => 'Mensual'
+      }.each do |pay, label|
+        calc = pay == 'weekly_payment' ? 'weekly_calculation' : 'monthly_calculation'
+        info = create(:employment_information, user: create(:user),
+                                               calculation_periodicity: calc,
+                                               payment_frequency: pay)
+        expect(described_class.new(info).payment_frequency_label).to eq(label)
+      end
+    end
+  end
+
+  describe '#periodicity_label' do
+    it 'delega a calculation_periodicity_label' do
+      expect(presenter.periodicity_label).to eq(presenter.calculation_periodicity_label)
     end
   end
 

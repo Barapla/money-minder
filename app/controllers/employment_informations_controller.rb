@@ -45,7 +45,7 @@ class EmploymentInformationsController < ApplicationController
 
   def employment_information_params
     params.require(:employment_information).permit(
-      :job_title, :start_date, :gross_salary_amount, :salary_periodicity
+      :job_title, :start_date, :gross_salary_amount, :calculation_periodicity, :payment_frequency
     )
   end
 

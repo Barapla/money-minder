@@ -1,15 +1,20 @@
 # frozen_string_literal: true
 
 # Presentation layer for EmploymentInformation: formatea antigüedad y salarios normalizados.
-class EmploymentInformationPresenter < ApplicationPresenter
+class EmploymentInformationPresenter < ApplicationPresenter # rubocop:disable Metrics/ClassLength
   include ActionView::Helpers::NumberHelper
 
-  PERIODICITY_LABELS = {
-    'daily' => 'Diario',
+  CALCULATION_PERIODICITY_LABELS = {
     'weekly' => 'Semanal',
     'biweekly' => 'Quincenal',
     'monthly' => 'Mensual',
-    'yearly' => 'Anual'
+    'annual' => 'Anual'
+  }.freeze
+
+  PAYMENT_FREQUENCY_LABELS = {
+    'weekly' => 'Semanal',
+    'biweekly' => 'Quincenal',
+    'monthly' => 'Mensual'
   }.freeze
 
   DAY_NAMES_ES = %w[Domingo Lunes Martes Miércoles Jueves Viernes Sábado].freeze
@@ -17,9 +22,10 @@ class EmploymentInformationPresenter < ApplicationPresenter
   def initialize(employment_information)
     super(employment_information)
     @seniority = EmploymentInformationServices::Calculator.calculate_seniority(@resource.start_date)
+    calc_db_value = EmploymentInformation.calculation_periodicities[@resource.calculation_periodicity.to_s].to_s
     @normalized = EmploymentInformationServices::Calculator.normalize_salary(
       @resource.gross_salary_amount,
-      @resource.salary_periodicity
+      calc_db_value
     )
   end
 
@@ -31,12 +37,22 @@ class EmploymentInformationPresenter < ApplicationPresenter
     parts.join(', ')
   end
 
-  def seniority_years   = @seniority[:years]
-  def seniority_months  = @seniority[:months]
-  def days_in_current_year = @seniority[:days_in_current_year]
+  def seniority_years        = @seniority[:years]
+  def seniority_months       = @seniority[:months]
+  def days_in_current_year   = @seniority[:days_in_current_year]
+
+  def calculation_periodicity_label
+    db_val = EmploymentInformation.calculation_periodicities[@resource.calculation_periodicity.to_s].to_s
+    CALCULATION_PERIODICITY_LABELS.fetch(db_val, @resource.calculation_periodicity.to_s)
+  end
+
+  def payment_frequency_label
+    db_val = EmploymentInformation.payment_frequencies[@resource.payment_frequency.to_s].to_s
+    PAYMENT_FREQUENCY_LABELS.fetch(db_val, @resource.payment_frequency.to_s)
+  end
 
   def periodicity_label
-    PERIODICITY_LABELS.fetch(@resource.salary_periodicity, @resource.salary_periodicity)
+    calculation_periodicity_label
   end
 
   def formatted_salary(periodicity)
@@ -62,7 +78,8 @@ class EmploymentInformationPresenter < ApplicationPresenter
   end
 
   def next_payment_date
-    case @resource.salary_periodicity
+    pay_db_val = EmploymentInformation.payment_frequencies[@resource.payment_frequency.to_s].to_s
+    case pay_db_val
     when 'weekly'   then next_weekly_payment
     when 'biweekly' then next_biweekly_payment
     when 'monthly'  then next_monthly_payment
@@ -77,7 +94,7 @@ class EmploymentInformationPresenter < ApplicationPresenter
   end
 
   def show_payment_reminder?
-    %w[weekly biweekly monthly].include?(@resource.salary_periodicity)
+    @resource.payment_frequency.present?
   end
 
   private
@@ -88,7 +105,6 @@ class EmploymentInformationPresenter < ApplicationPresenter
     return nil unless @resource.start_date
 
     today = Date.current
-    # days_ahead=0 means the payment day is today, so the next one is in 7 days
     days_ahead = (@resource.start_date.wday - today.wday) % 7
     days_ahead = 7 if days_ahead.zero?
     today + days_ahead

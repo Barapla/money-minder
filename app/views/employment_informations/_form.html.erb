@@ -47,48 +47,110 @@
           min: 0.01,
           placeholder: "0.00",
           prefix: "$",
-          help_text: "Monto bruto de tu salario",
+          help_text: "Monto bruto de tu salario según la periodicidad de cálculo",
           required: true
         }
       ) %>
 
       <%= render Forms::SelectComponent.new(
-        name: :salary_periodicity,
+        name: :calculation_periodicity,
         form:,
         options_collection: [
-          ["Diario", "daily"],
-          ["Semanal", "weekly"],
-          ["Quincenal", "biweekly"],
-          ["Mensual", "monthly"],
-          ["Anual", "yearly"]
+          ["Semanal", "weekly_calculation"],
+          ["Quincenal", "biweekly_calculation"],
+          ["Mensual", "monthly_calculation"],
+          ["Anual", "annual_calculation"]
         ],
         options: {
-          help_text: "Periodicidad con la que recibes tu salario",
+          label: "Periodicidad de cálculo",
+          help_text: "Base temporal sobre la que se cotiza tu salario (ej: $5,000 mensuales)",
           required: true,
-          selected: employment_information.salary_periodicity
+          selected: employment_information.calculation_periodicity
+        }
+      ) %>
+
+      <%= render Forms::SelectComponent.new(
+        name: :payment_frequency,
+        form:,
+        options_collection: [
+          ["Semanal", "weekly_payment"],
+          ["Quincenal", "biweekly_payment"],
+          ["Mensual", "monthly_payment"]
+        ],
+        options: {
+          label: "Frecuencia de pago",
+          help_text: "Con qué frecuencia recibes efectivamente tu salario",
+          required: true,
+          selected: employment_information.payment_frequency
         }
       ) %>
     </div>
 
     <!-- Right Column: Info Panel -->
     <div class="space-y-6">
+      <!-- Combinaciones válidas -->
       <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-6">
         <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
           <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
-          Acerca de la normalización salarial
+          Combinaciones válidas
         </h3>
-        <div class="space-y-3 text-sm text-bunker-300">
-          <p>El sistema calculará automáticamente tu salario en todas las periodicidades basándose en la siguiente conversión:</p>
-          <ul class="space-y-1 list-disc list-inside text-bunker-400">
-            <li>Salario diario base = Monto ingresado / Días de periodicidad</li>
-            <li>Semanal = Diario × 7</li>
-            <li>Quincenal = Diario × 15</li>
-            <li>Mensual = Diario × 30</li>
-            <li>Anual = Diario × 365</li>
-          </ul>
+        <div class="space-y-2 text-sm">
+          <div class="grid grid-cols-4 gap-1 text-xs text-bunker-400 mb-2">
+            <div></div>
+            <div class="text-center">Semanal</div>
+            <div class="text-center">Quincenal</div>
+            <div class="text-center">Mensual</div>
+          </div>
+          <% [
+            ["Semanal", %w[✓ ✓ ✓]],
+            ["Quincenal", %w[✗ ✓ ✓]],
+            ["Mensual", %w[✗ ✓ ✓]],
+            ["Anual", %w[✗ ✗ ✓]]
+          ].each do |calc_label, compat| %>
+            <div class="grid grid-cols-4 gap-1 text-xs items-center">
+              <div class="text-bunker-300 font-medium"><%= calc_label %></div>
+              <% compat.each do |v| %>
+                <div class="text-center <%= v == '✓' ? 'text-emerald-400' : 'text-red-400' %>"><%= v %></div>
+              <% end %>
+            </div>
+          <% end %>
+          <p class="text-bunker-400 text-xs mt-3">Cálculo (filas) × Pago (columnas)</p>
         </div>
+      </div>
+
+      <!-- Previsualización del esquema de pagos -->
+      <div class="bg-bunker-800/60 border border-amber-500/20 rounded-xl p-6">
+        <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Ejemplo de cálculo
+        </h3>
+        <% if employment_information.persisted? && employment_information.gross_salary_amount.present? %>
+          <%
+            calc_key = employment_information.read_attribute(:calculation_periodicity).to_s
+            pay_key  = employment_information.read_attribute(:payment_frequency).to_s
+            calc_days = { 'weekly' => 7, 'biweekly' => 15, 'monthly' => 30, 'annual' => 365 }
+            pay_days  = { 'weekly' => 7, 'biweekly' => 15, 'monthly' => 30 }
+            daily_rate = employment_information.gross_salary_amount.to_d / (calc_days[calc_key] || 30)
+            monthly_gross = (daily_rate * 30).round(2)
+            pay_amount = (monthly_gross * (pay_days[pay_key] || 30) / 30).round(2)
+          %>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between items-center py-1 border-b border-bunker-700/30">
+              <span class="text-bunker-400">Salario bruto mensual equivalente</span>
+              <span class="text-white font-medium"><%= number_to_currency(monthly_gross, unit: '$') %></span>
+            </div>
+            <div class="flex justify-between items-center py-1">
+              <span class="text-bunker-400">Monto por pago (<%= { 'weekly' => 'semanal', 'biweekly' => 'quincenal', 'monthly' => 'mensual' }[pay_key] %>)</span>
+              <span class="text-amber-400 font-bold"><%= number_to_currency(pay_amount, unit: '$') %></span>
+            </div>
+          </div>
+        <% else %>
+          <p class="text-bunker-400 text-sm">Guarda tu información para ver la previsualización.</p>
+        <% end %>
       </div>
 
       <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-6">

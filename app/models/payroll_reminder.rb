@@ -2,36 +2,32 @@
 
 # Representa un recordatorio de pago de nómina proyectado calculado a partir de EmploymentInformation y PayrollProfile.
 class PayrollReminder
-  PERIODICITY_LABELS = {
-    'daily' => 'Pago diario',
+  PAYMENT_FREQUENCY_LABELS = {
     'weekly' => 'Pago semanal',
     'biweekly' => 'Quincena',
-    'monthly' => 'Pago mensual',
-    'yearly' => 'Pago anual'
+    'monthly' => 'Pago mensual'
   }.freeze
 
   NEXT_PERIOD_LABELS = {
-    'daily' => 'Próximo pago diario',
     'weekly' => 'Próximo pago semanal',
     'biweekly' => 'Próxima quincena',
-    'monthly' => 'Próximo pago mensual',
-    'yearly' => 'Próximo pago anual'
+    'monthly' => 'Próximo pago mensual'
   }.freeze
 
-  attr_reader :date, :net_amount, :calculation_breakdown, :periodicity
+  attr_reader :date, :net_amount, :calculation_breakdown, :payment_frequency
 
-  def initialize(date:, net_amount:, calculation_breakdown:, periodicity:)
+  def initialize(date:, net_amount:, calculation_breakdown:, payment_frequency:)
     @date = date
     @net_amount = net_amount
     @calculation_breakdown = calculation_breakdown
-    @periodicity = periodicity
+    @payment_frequency = payment_frequency
   end
 
   def periodicity_label
-    PERIODICITY_LABELS.fetch(periodicity.to_s, 'Pago de nómina')
+    PAYMENT_FREQUENCY_LABELS.fetch(payment_frequency.to_s, 'Pago de nómina')
   end
 
   def next_period_label
-    NEXT_PERIOD_LABELS.fetch(periodicity.to_s, 'Próxima nómina')
+    NEXT_PERIOD_LABELS.fetch(payment_frequency.to_s, 'Próxima nómina')
   end
 end

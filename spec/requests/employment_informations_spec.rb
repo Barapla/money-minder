@@ -9,7 +9,8 @@ RSpec.describe '/employment_information', type: :request do
       job_title: 'Desarrollador de Software',
       start_date: Date.current - 2.years,
       gross_salary_amount: 25_000.0,
-      salary_periodicity: 'monthly'
+      calculation_periodicity: 'monthly_calculation',
+      payment_frequency: 'biweekly_payment'
     }
   end
   let(:invalid_attributes) do
@@ -51,6 +52,19 @@ RSpec.describe '/employment_information', type: :request do
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
+
+    context 'CA1: con combinacion incompatible de periodicidades' do
+      it 'no crea el registro y renderiza formulario con error' do
+        invalid_combo = valid_attributes.merge(
+          calculation_periodicity: 'annual_calculation',
+          payment_frequency: 'weekly_payment'
+        )
+        expect do
+          post employment_information_path, params: { employment_information: invalid_combo }
+        end.not_to change(EmploymentInformation, :count)
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
   end
 
   describe 'GET /show' do
@@ -86,7 +100,8 @@ RSpec.describe '/employment_information', type: :request do
     context 'CA5: con atributos válidos' do
       it 'actualiza la información laboral' do
         patch employment_information_path, params: {
-          employment_information: { job_title: 'Nuevo Puesto', salary_periodicity: 'weekly' }
+          employment_information: { job_title: 'Nuevo Puesto', calculation_periodicity: 'weekly_calculation',
+                                    payment_frequency: 'weekly_payment' }
         }
         expect(employment_information.reload.job_title).to eq('Nuevo Puesto')
       end

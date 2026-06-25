@@ -6,6 +6,7 @@ FactoryBot.define do
     job_title { Faker::Job.title }
     start_date { Faker::Date.between(from: 5.years.ago, to: Date.current) }
     gross_salary_amount { Faker::Number.decimal(l_digits: 4, r_digits: 2) }
-    salary_periodicity { 'monthly' }
+    calculation_periodicity { 'monthly_calculation' }
+    payment_frequency { 'monthly_payment' }
   end
 end
