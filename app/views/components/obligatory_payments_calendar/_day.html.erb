@@ -18,7 +18,9 @@
         <span class="text-sm font-medium <%= is_today ? 'text-orange-300' : 'text-white' %>"><%= date.day %></span>
         <div class="flex gap-1">
             <%= has_payments ? '<div class="w-2 h-2 bg-orange-400 rounded-full"></div>'.html_safe : '' %>
-            <%= has_payroll ? '<div class="w-2 h-2 bg-amber-400 rounded-full" title="Quincena"></div>'.html_safe : '' %>
+            <% if has_payroll %>
+              <div class="w-2 h-2 bg-amber-400 rounded-full" title="<%= payroll_reminders.first&.periodicity_label || 'Quincena' %>"></div>
+            <% end %>
         </div>
     </div>
     <div class="space-y-1">

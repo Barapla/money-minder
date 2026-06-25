@@ -180,6 +180,50 @@ RSpec.describe PayrollServices::ReminderGenerator, type: :service do
       end
     end
 
+    context 'CA1: monto neto escalado por periodicidad — weekly' do
+      before do
+        employment_info.update!(salary_periodicity: 'weekly')
+        user.payroll_profile.update!(base_salary: 30_000, monthly_gross_salary: 30_000,
+                                     savings_fund_rate: 0, custom_isr_rate: 0, custom_imss_rate: 0)
+      end
+
+      it 'CA1: net_amount es la fraccion semanal del salario mensual neto (7/30)' do
+        reminders = generator.generate(from_date: Date.new(2024, 3, 1), to_date: Date.new(2024, 3, 31))
+        expected = (BigDecimal('30000') * 7 / 30).round(2)
+        expect(reminders.first.net_amount).to eq(expected)
+      end
+
+      it 'CA1: net_amount es menor que el salario mensual completo' do
+        reminders = generator.generate(from_date: Date.new(2024, 3, 1), to_date: Date.new(2024, 3, 31))
+        monthly_net = user.payroll_profile.base_salary.to_d
+        expect(reminders.first.net_amount).to be < monthly_net
+      end
+    end
+
+    context 'CA2: monto neto escalado por periodicidad — biweekly' do
+      it 'CA2: net_amount es la mitad del salario mensual neto (15/30)' do
+        user.payroll_profile.update!(base_salary: 30_000, monthly_gross_salary: 30_000,
+                                     savings_fund_rate: 0, custom_isr_rate: 0, custom_imss_rate: 0)
+        reminders = generator.generate(from_date: Date.new(2024, 3, 1), to_date: Date.new(2024, 3, 31))
+        expected = (BigDecimal('30000') * 15 / 30).round(2)
+        expect(reminders.first.net_amount).to eq(expected)
+      end
+    end
+
+    context 'CA3: monto neto escalado por periodicidad — monthly' do
+      before do
+        employment_info.update!(salary_periodicity: 'monthly', start_date: Date.new(2024, 1, 15))
+        user.payroll_profile.update!(base_salary: 30_000, monthly_gross_salary: 30_000,
+                                     savings_fund_rate: 0, custom_isr_rate: 0, custom_imss_rate: 0)
+      end
+
+      it 'CA3: net_amount es el salario mensual completo' do
+        reminders = generator.generate(from_date: Date.new(2024, 3, 1), to_date: Date.new(2024, 3, 31))
+        expected = BigDecimal('30000')
+        expect(reminders.first.net_amount).to eq(expected)
+      end
+    end
+
     context 'biweekly: fechas fijas en el 15 y el 30 de cada mes' do
       it 'genera exactamente dos recordatorios por mes' do
         reminders = generator.generate(from_date: Date.new(2025, 7, 1), to_date: Date.new(2025, 7, 31))

@@ -277,6 +277,8 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
       net_amount_formatted: format_currency(reminder.net_amount),
       payment_date: reminder.date,
       days_until: days,
+      periodicity_label: reminder.periodicity_label,
+      next_period_label: reminder.next_period_label,
       coming_soon: days <= 7 }
   end
 
