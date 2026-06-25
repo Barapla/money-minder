@@ -51,6 +51,7 @@ class TransactionsController < ApplicationController
   def new
     @transaction = Transaction.new
     @transaction.budget_id = params[:budget_id] if params[:budget_id].present?
+    @budgets = current_user.budgets.order(:name)
   end
 
   def change_categories
@@ -65,6 +66,7 @@ class TransactionsController < ApplicationController
 
   # GET /transactions/1/edit
   def edit
+    @budgets = current_user.budgets.order(:name)
   end
 
   # POST /transactions or /transactions.json

@@ -21,6 +21,8 @@ class Transaction < ApplicationRecord
 
   before_validation :set_default_values
 
+  validate :budget_belongs_to_user, if: :budget_id?
+
   scope :by_category, lambda { |category|
     joins(:category).where(categories: { name: category })
   }
@@ -41,5 +43,13 @@ class Transaction < ApplicationRecord
     budget.transactions
           .joins(:category)
           .where(category:)
+  end
+
+  private
+
+  def budget_belongs_to_user
+    return if budget&.user_id == user_id
+
+    errors.add(:budget_id, 'debe pertenecer al mismo usuario')
   end
 end
