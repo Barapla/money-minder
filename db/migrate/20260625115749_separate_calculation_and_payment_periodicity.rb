@@ -3,7 +3,7 @@
 # Migra salary_periodicity a calculation_periodicity y payment_frequency independientes.
 class SeparateCalculationAndPaymentPeriodicity < ActiveRecord::Migration[7.2]
   SALARY_TO_CALCULATION = {
-    'daily' => 'weekly',
+    'daily' => 'daily',
     'weekly' => 'weekly',
     'biweekly' => 'biweekly',
     'monthly' => 'monthly',
@@ -43,7 +43,7 @@ class SeparateCalculationAndPaymentPeriodicity < ActiveRecord::Migration[7.2]
     EmploymentInformation.reset_column_information
     EmploymentInformation.find_each do |ei|
       cp = ei.read_attribute(:calculation_periodicity).to_s
-      salary_periodicity = cp == 'annual' ? 'yearly' : cp
+      salary_periodicity = { 'annual' => 'yearly' }.fetch(cp, cp)
       ei.update_columns(salary_periodicity: salary_periodicity)
     end
 

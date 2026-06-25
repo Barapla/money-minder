@@ -64,7 +64,8 @@ RSpec.describe EmploymentInformation, type: :model do
 
   describe 'enum calculation_periodicity' do
     it 'acepta valores de periodicidad de cálculo válidos' do
-      %w[weekly_calculation biweekly_calculation monthly_calculation annual_calculation].each do |value|
+      %w[daily_calculation weekly_calculation biweekly_calculation monthly_calculation
+         annual_calculation].each do |value|
         employment_information.calculation_periodicity = value
         employment_information.payment_frequency = 'monthly_payment'
         expect(employment_information).to be_valid, "Esperaba válido para #{value}"
@@ -74,47 +75,29 @@ RSpec.describe EmploymentInformation, type: :model do
 
   describe 'enum payment_frequency' do
     it 'acepta valores de frecuencia de pago válidos' do
-      employment_information.calculation_periodicity = 'monthly_calculation'
-      %w[biweekly_payment monthly_payment].each do |value|
+      %w[weekly_payment biweekly_payment monthly_payment].each do |value|
+        employment_information.calculation_periodicity = 'monthly_calculation'
         employment_information.payment_frequency = value
         expect(employment_information).to be_valid, "Esperaba válido para #{value}"
       end
     end
   end
 
-  describe 'CA1: validación de compatibilidad entre periodicidad de cálculo y frecuencia de pago' do
-    context 'combinaciones válidas' do
-      [
-        %w[weekly_calculation weekly_payment],
-        %w[weekly_calculation biweekly_payment],
-        %w[weekly_calculation monthly_payment],
-        %w[biweekly_calculation biweekly_payment],
-        %w[biweekly_calculation monthly_payment],
-        %w[monthly_calculation biweekly_payment],
-        %w[monthly_calculation monthly_payment],
-        %w[annual_calculation monthly_payment]
-      ].each do |calc, pay|
-        it "acepta #{calc} con #{pay}" do
-          employment_information.calculation_periodicity = calc
-          employment_information.payment_frequency = pay
-          expect(employment_information).to be_valid
-        end
-      end
-    end
-
-    context 'combinaciones inválidas' do
-      [
-        %w[biweekly_calculation weekly_payment],
-        %w[monthly_calculation weekly_payment],
-        %w[annual_calculation weekly_payment],
-        %w[annual_calculation biweekly_payment]
-      ].each do |calc, pay|
-        it "rechaza #{calc} con #{pay}" do
-          employment_information.calculation_periodicity = calc
-          employment_information.payment_frequency = pay
-          expect(employment_information).not_to be_valid
-          expect(employment_information.errors[:payment_frequency]).to be_present
-        end
+  describe 'CA1: combinaciones de periodicidad — sin restricciones de compatibilidad' do
+    [
+      %w[daily_calculation weekly_payment],
+      %w[daily_calculation monthly_payment],
+      %w[weekly_calculation weekly_payment],
+      %w[weekly_calculation monthly_payment],
+      %w[biweekly_calculation weekly_payment],
+      %w[monthly_calculation weekly_payment],
+      %w[annual_calculation weekly_payment],
+      %w[annual_calculation biweekly_payment]
+    ].each do |calc, pay|
+      it "acepta #{calc} con #{pay}" do
+        employment_information.calculation_periodicity = calc
+        employment_information.payment_frequency = pay
+        expect(employment_information).to be_valid
       end
     end
   end
@@ -149,7 +132,7 @@ RSpec.describe EmploymentInformation, type: :model do
         profile = user.reload.payroll_profile
         calc_db_value = EmploymentInformation.calculation_periodicities[
           employment_information.calculation_periodicity.to_s
-        ].to_s
+        ]
         expected = EmploymentInformationServices::Calculator.normalize_salary(
           employment_information.gross_salary_amount,
           calc_db_value

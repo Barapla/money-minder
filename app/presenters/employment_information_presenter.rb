@@ -5,6 +5,7 @@ class EmploymentInformationPresenter < ApplicationPresenter # rubocop:disable Me
   include ActionView::Helpers::NumberHelper
 
   CALCULATION_PERIODICITY_LABELS = {
+    'daily' => 'Diario',
     'weekly' => 'Semanal',
     'biweekly' => 'Quincenal',
     'monthly' => 'Mensual',
@@ -22,7 +23,7 @@ class EmploymentInformationPresenter < ApplicationPresenter # rubocop:disable Me
   def initialize(employment_information)
     super(employment_information)
     @seniority = EmploymentInformationServices::Calculator.calculate_seniority(@resource.start_date)
-    calc_db_value = EmploymentInformation.calculation_periodicities[@resource.calculation_periodicity.to_s].to_s
+    calc_db_value = EmploymentInformation.calculation_periodicities[@resource.calculation_periodicity.to_s]
     @normalized = EmploymentInformationServices::Calculator.normalize_salary(
       @resource.gross_salary_amount,
       calc_db_value
@@ -42,7 +43,7 @@ class EmploymentInformationPresenter < ApplicationPresenter # rubocop:disable Me
   def days_in_current_year   = @seniority[:days_in_current_year]
 
   def calculation_periodicity_label
-    db_val = EmploymentInformation.calculation_periodicities[@resource.calculation_periodicity.to_s].to_s
+    db_val = EmploymentInformation.calculation_periodicities[@resource.calculation_periodicity.to_s]
     CALCULATION_PERIODICITY_LABELS.fetch(db_val, @resource.calculation_periodicity.to_s)
   end
 

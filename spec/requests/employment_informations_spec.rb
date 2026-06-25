@@ -52,19 +52,6 @@ RSpec.describe '/employment_information', type: :request do
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
-
-    context 'CA1: con combinacion incompatible de periodicidades' do
-      it 'no crea el registro y renderiza formulario con error' do
-        invalid_combo = valid_attributes.merge(
-          calculation_periodicity: 'annual_calculation',
-          payment_frequency: 'weekly_payment'
-        )
-        expect do
-          post employment_information_path, params: { employment_information: invalid_combo }
-        end.not_to change(EmploymentInformation, :count)
-        expect(response).to have_http_status(:unprocessable_entity)
-      end
-    end
   end
 
   describe 'GET /show' do

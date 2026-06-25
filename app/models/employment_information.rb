@@ -5,6 +5,7 @@ class EmploymentInformation < ApplicationRecord
   belongs_to :user
 
   enum :calculation_periodicity, {
+    daily_calculation: 'daily',
     weekly_calculation: 'weekly',
     biweekly_calculation: 'biweekly',
     monthly_calculation: 'monthly',
@@ -17,13 +18,6 @@ class EmploymentInformation < ApplicationRecord
     monthly_payment: 'monthly'
   }
 
-  COMPATIBLE_PAYMENT_FREQUENCIES = {
-    'weekly_calculation' => %w[weekly_payment biweekly_payment monthly_payment],
-    'biweekly_calculation' => %w[biweekly_payment monthly_payment],
-    'monthly_calculation' => %w[biweekly_payment monthly_payment],
-    'annual_calculation' => %w[monthly_payment]
-  }.freeze
-
   validates :job_title, presence: true
   validates :start_date, presence: true
   validates :gross_salary_amount, presence: true, numericality: { greater_than: 0 }
@@ -31,16 +25,15 @@ class EmploymentInformation < ApplicationRecord
   validates :payment_frequency, presence: true
   validates :user_id, uniqueness: true
   validate :start_date_not_in_future
-  validate :payment_frequency_compatible_with_calculation
 
   after_save :sync_payroll_profile
 
   private
 
   def sync_payroll_profile
-    calc_db_value = self.class.calculation_periodicities[calculation_periodicity.to_s]
+    db_val = self.class.calculation_periodicities[calculation_periodicity.to_s]
     monthly_salary = EmploymentInformationServices::Calculator.normalize_salary(
-      gross_salary_amount, calc_db_value.to_s
+      gross_salary_amount, db_val
     )[:monthly]
     return if monthly_salary.nil? || monthly_salary <= 0
 
@@ -54,15 +47,6 @@ class EmploymentInformation < ApplicationRecord
     else
       user.create_payroll_profile!(attrs)
     end
-  end
-
-  def payment_frequency_compatible_with_calculation
-    return if calculation_periodicity.blank? || payment_frequency.blank?
-
-    allowed = COMPATIBLE_PAYMENT_FREQUENCIES.fetch(calculation_periodicity.to_s, [])
-    return if allowed.include?(payment_frequency.to_s)
-
-    errors.add(:payment_frequency, 'no es compatible con la periodicidad de cálculo seleccionada')
   end
 
   def start_date_not_in_future

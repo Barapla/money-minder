@@ -35,10 +35,11 @@ RSpec.describe EmploymentInformationPresenter do
 
     it 'retorna la etiqueta correcta para cada periodicidad de cálculo' do
       {
-        'weekly_calculation'   => 'Semanal',
+        'daily_calculation' => 'Diario',
+        'weekly_calculation' => 'Semanal',
         'biweekly_calculation' => 'Quincenal',
-        'monthly_calculation'  => 'Mensual',
-        'annual_calculation'   => 'Anual'
+        'monthly_calculation' => 'Mensual',
+        'annual_calculation' => 'Anual'
       }.each do |calc, label|
         info = create(:employment_information, user: create(:user),
                                                calculation_periodicity: calc,
@@ -55,9 +56,9 @@ RSpec.describe EmploymentInformationPresenter do
 
     it 'retorna la etiqueta correcta para cada frecuencia de pago' do
       {
-        'weekly_payment'   => 'Semanal',
+        'weekly_payment' => 'Semanal',
         'biweekly_payment' => 'Quincenal',
-        'monthly_payment'  => 'Mensual'
+        'monthly_payment' => 'Mensual'
       }.each do |pay, label|
         calc = pay == 'weekly_payment' ? 'weekly_calculation' : 'monthly_calculation'
         info = create(:employment_information, user: create(:user),
