@@ -56,6 +56,7 @@
         name: :calculation_periodicity,
         form:,
         options_collection: [
+          ["Diario", "daily_calculation"],
           ["Semanal", "weekly_calculation"],
           ["Quincenal", "biweekly_calculation"],
           ["Mensual", "monthly_calculation"],
@@ -104,6 +105,7 @@
             <div class="text-center">Mensual</div>
           </div>
           <% [
+            ["Diario", %w[✓ ✓ ✓]],
             ["Semanal", %w[✓ ✓ ✓]],
             ["Quincenal", %w[✗ ✓ ✓]],
             ["Mensual", %w[✗ ✓ ✓]],
@@ -132,7 +134,7 @@
           <%
             calc_key = employment_information.read_attribute(:calculation_periodicity).to_s
             pay_key  = employment_information.read_attribute(:payment_frequency).to_s
-            calc_days = { 'weekly' => 7, 'biweekly' => 15, 'monthly' => 30, 'annual' => 365 }
+            calc_days = { 'daily' => 1, 'weekly' => 7, 'biweekly' => 15, 'monthly' => 30, 'annual' => 365 }
             pay_days  = { 'weekly' => 7, 'biweekly' => 15, 'monthly' => 30 }
             daily_rate = employment_information.gross_salary_amount.to_d / (calc_days[calc_key] || 30)
             monthly_gross = (daily_rate * 30).round(2)
