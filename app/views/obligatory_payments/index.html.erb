@@ -4,16 +4,18 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-4xl font-bold text-white mb-2">
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-300">💳 Pagos Obligatorios</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-300">💳 <%= t('.title') %></span>
                 </h1>
-                <p class="text-bunker-300">Administra tus pagos recurrentes y obligaciones financieras</p>
+                <p class="text-bunker-300"><%= t('.subtitle') %></p>
             </div>
-            <%= render Buttons::LinkComponent.new(content: '
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                Nuevo Pago
-                ', href: new_obligatory_payment_path,
+            <%= render Buttons::LinkComponent.new(
+                content: <<~HTML,
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    #{t('.new_button')}
+                HTML
+                href: new_obligatory_payment_path,
                 options: {
                     class: "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg flex items-center"
                 })
@@ -51,16 +53,16 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
-                            <span>Cada <%= rec.frequency_value %> <%= rec.frequency_type.value.downcase %>(es) - Día <%= rec.day_of_month %></span>
+                            <span><%= t('.every_prefix') %> <%= rec.frequency_value %> <%= rec.frequency_type.value.downcase %>(es) - <%= t('.day_prefix') %> <%= rec.day_of_month %></span>
                         </div>
                         <div class="flex items-center gap-2 mb-4 text-sm">
                             <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <span class="text-orange-300">Próximo: <%= payment.next_due_date&.strftime('%d/%m/%Y') || 'Sin fecha' %></span>
+                            <span class="text-orange-300"><%= t('.next_due_prefix') %> <%= payment.next_due_date&.strftime('%d/%m/%Y') || t('.no_due_date') %></span>
                         </div>
                     <% else %>
-                        <div class="text-sm text-red-400 mb-4">Sin recurrencia configurada</div>
+                        <div class="text-sm text-red-400 mb-4"><%= t('.no_recurrence') %></div>
                     <% end %>
 
                     <!-- Actions -->
@@ -70,15 +72,15 @@
                             <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                             </svg>
-                            Editar
+                            <%= t('.edit_button') %>
                         <% end %>
                         <%= button_to obligatory_payment_path(payment), method: :delete,
-                            data: { turbo_confirm: "¿Estás seguro de eliminar este pago?" },
+                            data: { turbo_confirm: t('.confirm_delete') },
                             class: "flex-1 px-4 py-2 bg-red-500/20 text-red-300 border border-red-500/30 rounded-xl font-medium hover:bg-red-500/30 transition-all duration-200" do %>
                             <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>
-                            Eliminar
+                            <%= t('.delete_button') %>
                         <% end %>
                     </div>
                 </div>
@@ -90,9 +92,9 @@
             <svg class="w-24 h-24 mx-auto mb-6 text-bunker-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <h3 class="text-2xl font-bold text-white mb-2">No hay pagos obligatorios</h3>
-            <p class="text-bunker-300 mb-6">Crea tu primer pago recurrente para llevar control de tus obligaciones financieras</p>
-            <%= render Buttons::LinkComponent.new(content: 'Crear Primer Pago', href: new_obligatory_payment_path,
+            <h3 class="text-2xl font-bold text-white mb-2"><%= t('.empty_title') %></h3>
+            <p class="text-bunker-300 mb-6"><%= t('.empty_subtitle') %></p>
+            <%= render Buttons::LinkComponent.new(content: t('.empty_button'), href: new_obligatory_payment_path,
                 options: {
                     class: "inline-flex items-center bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200"
                 })

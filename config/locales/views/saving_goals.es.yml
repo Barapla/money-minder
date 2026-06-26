@@ -1,0 +1,43 @@
+es:
+  saving_goals:
+    index:
+      title: "Metas de Ahorro"
+      subtitle: "Visualiza el progreso de tus objetivos financieros en tiempo real"
+      new_button: "Nueva Meta"
+      priority_title: "Prioridad de asignación"
+      priority_subtitle: "Arrastra para reordenar · El saldo disponible se asigna en este orden"
+      progress_label: "Progreso"
+      assigned_label: "Asignado"
+      target_label: "Objetivo"
+      achieved_badge: "Alcanzada"
+      complete_button: "Completar"
+      edit_button: "Editar"
+      delete_button: "Eliminar"
+      confirm_complete: "¿Marcar esta meta como completada?"
+      confirm_delete: "¿Estás seguro de eliminar esta meta?"
+      days_remaining: "%{count} días restantes"
+      expires_today: "Vence hoy"
+      expired_days_ago: "Venció hace %{count} días"
+      empty_title: "No tienes metas de ahorro"
+      empty_subtitle: "Crea tu primera meta para visualizar tu progreso automáticamente"
+      empty_button: "Crear primera meta"
+    new:
+      title: "Nueva Meta de Ahorro"
+      subtitle: "Define un objetivo financiero concreto y visualiza tu progreso automáticamente"
+      form_section: "Información de la meta"
+    edit:
+      title: "Editar Meta de Ahorro"
+      form_section: "Modificar información"
+    form:
+      name_label: "Nombre de la meta"
+      name_placeholder: "Ej: Enganche auto, Laptop nueva"
+      target_amount_label: "Monto objetivo"
+      deadline_label: "Fecha límite (opcional)"
+      deadline_help: "Deja vacío si la meta no tiene fecha límite"
+      status_label: "Estado"
+      submit_create: "Crear meta"
+      submit_update: "Guardar cambios"
+      cancel: "Cancelar"
+      error_count:
+        one: "1 error al guardar la meta:"
+        other: "%{count} errores al guardar la meta:"

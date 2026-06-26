@@ -76,9 +76,10 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :request
 
   config.before(:suite) do
-    # Configura I18n y Faker a inglés ANTES de todos los tests
-    I18n.locale = :en
-    I18n.default_locale = :en
+    # Faker usa :en internamente via I18n; desactivar enforce para evitar InvalidLocale
+    I18n.enforce_available_locales = false
+    I18n.locale = :es
+    I18n.default_locale = :es
     Faker::Config.locale = :en
 
     # Limpia la BD una vez
@@ -86,8 +87,7 @@ RSpec.configure do |config|
   end
 
   config.before(:each) do
-    # Asegura que cada test use inglés
-    I18n.locale = :en
+    I18n.locale = :es
   end
 
   config.before(:each, type: :view) do

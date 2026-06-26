@@ -1,0 +1,5 @@
+es:
+  recurring_transactions:
+    new_modal:
+      title: "Nuevas transacciones recurrentes"
+      subtitle: "Configura una transacción que se repita automáticamente"

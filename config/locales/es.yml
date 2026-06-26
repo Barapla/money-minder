@@ -95,7 +95,7 @@ es:
         interest_rate: "Tasa de interés"
         compound_frequency_id: "Frecuencia de capitalización"
         minimum_balance: "Saldo mínimo"
-        max_balance: "Saldo máximo"    
+        max_balance: "Saldo máximo"
       transaction:
         amount: "Monto"
         transaction_date: "Fecha"
@@ -105,15 +105,36 @@ es:
         icon_id: "Icono"
         color_id: "Color"
         related_budget_id: "Presupuesto destino"
-        budget_id: "Presupuesto afectado"  
+        budget_id: "Presupuesto afectado"
+      saving_goal:
+        name: "Nombre"
+        target_amount: "Monto objetivo"
+        deadline: "Fecha límite"
+        status: "Estado"
+        priority_order: "Orden de prioridad"
+      payroll_profile:
+        base_salary: "Sueldo base"
+        monthly_gross_salary: "Salario bruto mensual"
+        savings_fund_rate: "Tasa de fondo de ahorro"
+        savings_fund_percentage: "Porcentaje de fondo de ahorro"
+        custom_isr_rate: "Tasa ISR personalizada"
+        custom_imss_rate: "Tasa IMSS personalizada"
+        hire_date: "Fecha de contratación"
     models:
       user: "Usuario"
       budget: "Presupuesto"
       credit_card: "Tarjeta de Crédito"
+      transaction: "Transacción"
+      saving_goal: "Meta de Ahorro"
+      obligatory_payment: "Pago Obligatorio"
+      employment_information: "Información Laboral"
+      payroll_profile: "Perfil de Nómina"
     errors:
       messages:
         blank: "no puede estar vacío"
         required: "es requerido"
+        greater_than: "debe ser mayor que %{count}"
+        less_than_or_equal_to: "debe ser menor o igual que %{count}"
   
   recurring_transactions:
     create:

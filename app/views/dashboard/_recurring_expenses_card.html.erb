@@ -6,9 +6,9 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
         </svg>
       </div>
-      <h2 class="text-base font-semibold text-white">Gastos Recurrentes</h2>
+      <h2 class="text-base font-semibold text-white"><%= t('.title') %></h2>
     </div>
-    <%= link_to "Ver todos", recurring_transactions_path, class: "text-orange-400 text-xs hover:text-orange-300 underline" %>
+    <%= link_to t('.see_all'), recurring_transactions_path, class: "text-orange-400 text-xs hover:text-orange-300 underline" %>
   </div>
 
   <% summary = @presenter.recurring_expenses_summary %>
@@ -17,21 +17,21 @@
       <div class="grid grid-cols-2 gap-3 mb-4">
         <div class="bg-bunker-800/40 rounded-xl p-4 text-center">
           <div class="text-2xl font-bold text-white"><%= summary[:count] %></div>
-          <div class="text-bunker-400 text-xs mt-1">transacciones activas</div>
+          <div class="text-bunker-400 text-xs mt-1"><%= t('.active_count_label') %></div>
         </div>
         <div class="bg-bunker-800/40 rounded-xl p-4 text-center">
           <div class="text-lg font-bold text-orange-300 leading-tight"><%= number_to_currency(summary[:monthly_total], unit: '$') %></div>
-          <div class="text-bunker-400 text-xs mt-1">total mensual</div>
+          <div class="text-bunker-400 text-xs mt-1"><%= t('.monthly_total_label') %></div>
         </div>
       </div>
       <div class="bg-orange-500/10 border border-orange-500/20 rounded-xl p-3">
-        <p class="text-orange-300 text-xs">Compromisos de gasto mensuales estimados.</p>
+        <p class="text-orange-300 text-xs"><%= t('.monthly_commitment_note') %></p>
       </div>
     </div>
   <% else %>
     <div class="text-center py-6 flex-1">
-      <p class="text-bunker-400 text-sm mb-2">Sin gastos recurrentes activos</p>
-      <%= link_to "Crear gasto recurrente", new_transaction_path, class: "text-orange-400 text-xs hover:text-orange-300 underline" %>
+      <p class="text-bunker-400 text-sm mb-2"><%= t('.no_expenses') %></p>
+      <%= link_to t('.new_expense'), new_transaction_path, class: "text-orange-400 text-xs hover:text-orange-300 underline" %>
     </div>
   <% end %>
 </div>

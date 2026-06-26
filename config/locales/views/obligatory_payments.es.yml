@@ -1,0 +1,25 @@
+es:
+  obligatory_payments:
+    index:
+      title: "Pagos Obligatorios"
+      subtitle: "Administra tus pagos recurrentes y obligaciones financieras"
+      new_button: "Nuevo Pago"
+      next_due_prefix: "Próximo:"
+      no_due_date: "Sin fecha"
+      no_recurrence: "Sin recurrencia configurada"
+      every_prefix: "Cada"
+      day_prefix: "Día"
+      edit_button: "Editar"
+      delete_button: "Eliminar"
+      confirm_delete: "¿Estás seguro de eliminar este pago?"
+      empty_title: "No hay pagos obligatorios"
+      empty_subtitle: "Crea tu primer pago recurrente para llevar control de tus obligaciones financieras"
+      empty_button: "Crear Primer Pago"
+    new:
+      title: "Nuevo Pago Obligatorio"
+      subtitle: "Crea un nuevo pago recurrente para mantener control de tus obligaciones financieras"
+      form_section: "Información del Pago Obligatorio"
+    edit:
+      title: "Editar Pago Obligatorio"
+      subtitle: "Actualiza la información del pago recurrente"
+      form_section: "Información del Pago Obligatorio"

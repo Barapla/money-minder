@@ -18,7 +18,7 @@ class EmploymentInformationsController < ApplicationController
   def create
     @employment_information = current_user.build_employment_information(employment_information_params)
     if @employment_information.save
-      redirect_to employment_information_path, notice: 'Información laboral guardada exitosamente.'
+      redirect_to employment_information_path, notice: t('employment_informations.create.success')
     else
       render :new, status: :unprocessable_entity
     end
@@ -28,7 +28,7 @@ class EmploymentInformationsController < ApplicationController
 
   def update
     if @employment_information.update(employment_information_params)
-      redirect_to employment_information_path, notice: 'Información laboral actualizada exitosamente.'
+      redirect_to employment_information_path, notice: t('employment_informations.update.success')
     else
       render :edit, status: :unprocessable_entity
     end
@@ -40,7 +40,8 @@ class EmploymentInformationsController < ApplicationController
     @employment_information = EmploymentInformation.find_by(user_id: current_user.id)
     return unless @employment_information.nil?
 
-    redirect_to new_employment_information_path, alert: 'No tienes información laboral registrada.'
+    redirect_to new_employment_information_path,
+                alert: t('employment_informations.set_employment_information.not_found')
   end
 
   def employment_information_params

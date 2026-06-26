@@ -1,0 +1,9 @@
+es:
+  reports:
+    index:
+      title: "Dashboard de Análisis"
+      subtitle: "Análisis detallado de tus finanzas personales"
+      export_button: "Exportar Datos"
+      generate_report_button: "Generar Reporte"
+      filters_title: "Filtros de Análisis"
+      clear_filters: "Limpiar filtros"
