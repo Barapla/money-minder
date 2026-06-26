@@ -77,7 +77,7 @@ RSpec.describe GroupCatalog, type: :model do
           duplicate = build(:group_catalog, code: 'DUPLICATE')
           
           expect(duplicate).not_to be_valid
-          expect(duplicate.errors[:code]).to include("has already been taken")
+          expect(duplicate.errors[:code]).to include("ya ha sido tomado")
         end
       end
     end

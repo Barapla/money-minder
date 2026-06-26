@@ -105,7 +105,7 @@
           { key: :yearly, icon_color: "text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/20" }
         ].each do |period| %>
           <div class="<%= period[:bg] %> border <%= period[:border] %> rounded-xl p-4 text-center">
-            <div class="text-xs text-bunker-400 mb-2"><%= t(".periods.#{period[:key]}") %></div>
+            <div class="text-xs text-bunker-400 mb-2"><%= t(".periods.#{period[:key]}", default: period[:key].to_s.humanize) %></div>
             <div class="text-lg font-bold <%= period[:icon_color] %>"><%= @presenter.formatted_salary(period[:key]) %></div>
           </div>
         <% end %>

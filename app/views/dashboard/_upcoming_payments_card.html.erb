@@ -21,8 +21,9 @@
           <div class="flex items-center justify-between mb-1">
             <span class="text-white text-sm font-medium line-clamp-1"><%= payment[:description].presence || t('.no_description') %></span>
             <% badge_class = days_away <= 3 ? 'bg-red-500/20 text-red-300' : days_away <= 7 ? 'bg-amber-500/20 text-amber-300' : 'bg-bunker-700/60 text-bunker-300' %>
+            <% badge_text = days_away.zero? ? t('.today_badge') : days_away == 1 ? t('.tomorrow_badge') : "#{days_away}d" %>
             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-2 shrink-0 <%= badge_class %>">
-              <% if days_away == 0 %><%= t('.today_badge') %><% elsif days_away == 1 %><%= t('.tomorrow_badge') %><% else %><%= days_away %>d<% end %>
+              <%= badge_text %>
             </span>
           </div>
           <div class="flex items-center justify-between text-xs text-bunker-400">

@@ -90,7 +90,7 @@
                                  when 'cancelled' then 'bg-red-500/20 text-red-300'
                                  end %>
                 <span class="px-2 py-0.5 rounded-full text-xs font-medium <%= badge_class %>">
-                  <%= t("activerecord.attributes.saving_goal.status.#{goal.status}") %>
+                  <%= t("activerecord.attributes.saving_goal.status.#{goal.status}", default: goal.status.to_s.humanize) %>
                 </span>
                 <% if achieved && goal.active? %>
                   <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/30 text-emerald-200">✓ <%= t('.achieved_badge') %></span>
