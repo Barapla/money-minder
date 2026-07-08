@@ -1,0 +1,29 @@
+es:
+  activerecord:
+    models:
+      financial_product_benefit_requirement: "Requisito de Beneficio"
+    attributes:
+      financial_product_benefit_requirement:
+        requirement_type: "Tipo de requisito"
+        min_transactions_count: "Cantidad minima de transacciones"
+        min_amount_per_transaction: "Monto minimo por transaccion"
+        min_accumulated_amount: "Monto acumulado minimo"
+        monthly_fee_amount: "Monto de cuota mensual"
+        active: "Activo"
+    errors:
+      models:
+        financial_product_benefit_requirement:
+          attributes:
+            min_transactions_count:
+              blank: "es requerida para este tipo de requisito"
+              not_an_integer: "debe ser un numero entero"
+              greater_than: "debe ser mayor que %{count}"
+            min_amount_per_transaction:
+              blank: "es requerida para este tipo de requisito"
+              greater_than: "debe ser mayor que %{count}"
+            min_accumulated_amount:
+              blank: "es requerido para este tipo de requisito"
+              greater_than: "debe ser mayor que %{count}"
+            monthly_fee_amount:
+              blank: "es requerido para este tipo de requisito"
+              greater_than: "debe ser mayor que %{count}"

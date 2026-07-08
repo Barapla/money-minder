@@ -1,0 +1,133 @@
+<div class="max-w-4xl mx-auto">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-bunker-900/80 to-purple-900/80 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <%= link_to admin_financial_product_path(@financial_product),
+              class: "text-bunker-400 hover:text-white transition-colors" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+        <% end %>
+        <div>
+          <h1 class="text-2xl font-bold text-white">
+            <%= t("enums.financial_product_benefit.benefit_type.#{@benefit.benefit_type}") %>
+          </h1>
+          <div class="flex items-center gap-3 mt-2">
+            <span class="text-bunker-300 text-sm"><%= @financial_product.name %></span>
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium <%= benefit_type_badge_class(@benefit.benefit_type) %>">
+              <%= t("enums.financial_product_benefit.benefit_type.#{@benefit.benefit_type}") %>
+            </span>
+            <% unless @benefit.active? %>
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-bunker-700/50 text-bunker-400">
+                <%= t('admin.financial_product_benefits.item.inactive') %>
+              </span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+      <%= link_to edit_admin_financial_product_benefit_path(@financial_product, @benefit),
+            class: "px-4 py-2 bg-bunker-800/60 text-bunker-300 border border-bunker-700/50 rounded-xl text-sm font-medium hover:bg-bunker-700/60 hover:text-white transition-all" do %>
+        <%= t('admin.financial_product_benefits.show.edit_benefit') %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if notice.present? %>
+    <div class="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-sm">
+      <%= notice %>
+    </div>
+  <% end %>
+
+  <!-- Valor del beneficio -->
+  <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6 mb-6">
+    <h2 class="text-base font-semibold text-white mb-4"><%= t('admin.financial_product_benefits.show.value_title') %></h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-bunker-800/30 rounded-xl p-4">
+        <p class="text-xs text-bunker-400 mb-1"><%= t('admin.financial_product_benefits.form.base_value_label') %></p>
+        <p class="text-lg font-bold text-white"><%= benefit_display_value(@benefit) %></p>
+      </div>
+      <% if @benefit.reduced_value.present? %>
+        <div class="bg-bunker-800/30 rounded-xl p-4">
+          <p class="text-xs text-bunker-400 mb-1"><%= t('admin.financial_product_benefits.form.reduced_value_label') %></p>
+          <p class="text-lg font-bold text-bunker-300"><%= benefit_display_value(@benefit, :reduced) %></p>
+        </div>
+      <% end %>
+      <% if @benefit.amount_cap.present? %>
+        <div class="bg-bunker-800/30 rounded-xl p-4">
+          <p class="text-xs text-bunker-400 mb-1"><%= t('admin.financial_product_benefits.form.amount_cap_label') %></p>
+          <p class="text-lg font-bold text-amber-300">
+            <%= number_to_currency(@benefit.amount_cap, unit: '$', delimiter: ',', separator: '.') %>
+          </p>
+        </div>
+      <% end %>
+    </div>
+    <% if @benefit.description.present? %>
+      <p class="mt-4 text-sm text-bunker-400"><%= @benefit.description %></p>
+    <% end %>
+  </div>
+
+  <!-- Seccion de requisitos -->
+  <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-bunker-800/50 flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-semibold text-white"><%= t('admin.financial_product_benefits.show.requirements_title') %></h2>
+        <p class="text-xs text-bunker-400 mt-0.5">
+          <%= t('admin.financial_product_benefits.show.requirements_count', count: @requirements.size) %>
+        </p>
+      </div>
+      <%= link_to new_admin_financial_product_benefit_requirement_path(@financial_product, @benefit),
+            class: "flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        <%= t('admin.financial_product_benefits.show.add_requirement') %>
+      <% end %>
+    </div>
+
+    <div class="p-6">
+      <% if @requirements.any? %>
+        <!-- Indicador logica AND/OR -->
+        <% if @requirements.size > 1 %>
+          <div class="mb-4 flex items-center gap-2">
+            <% if @benefit.requirements_all? %>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-lg text-xs font-medium text-blue-300">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <%= t('admin.financial_product_benefits.show.logic_all') %>
+              </span>
+            <% else %>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs font-medium text-amber-300">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                </svg>
+                <%= t('admin.financial_product_benefits.show.logic_any') %>
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+
+        <div class="space-y-3">
+          <% @requirements.each do |requirement| %>
+            <%= render 'admin/financial_product_benefit_requirements/requirement',
+                  requirement: requirement,
+                  financial_product: @financial_product,
+                  benefit: @benefit %>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center py-10">
+          <svg class="w-12 h-12 mx-auto mb-3 text-bunker-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          <p class="text-bunker-400 text-sm"><%= t('admin.financial_product_benefits.show.no_requirements') %></p>
+          <%= link_to new_admin_financial_product_benefit_requirement_path(@financial_product, @benefit),
+                class: "inline-flex items-center gap-2 mt-3 text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors" do %>
+            <%= t('admin.financial_product_benefits.show.add_first_requirement') %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

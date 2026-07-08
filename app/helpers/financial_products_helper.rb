@@ -33,4 +33,43 @@ module FinancialProductsHelper
     else value.to_s
     end
   end
+
+  def requirement_type_badge_class(requirement_type)
+    case requirement_type.to_s
+    when 'min_transactions'             then 'bg-blue-500/20 text-blue-300'
+    when 'min_transactions_with_amount' then 'bg-purple-500/20 text-purple-300'
+    when 'accumulated_amount'           then 'bg-emerald-500/20 text-emerald-300'
+    when 'monthly_fee'                  then 'bg-amber-500/20 text-amber-300'
+    else 'bg-bunker-700/50 text-bunker-400'
+    end
+  end
+
+  def format_requirement_description(requirement)
+    type = requirement.requirement_type
+    key = "helpers.format_requirement_description.#{type}"
+    t(key, **requirement_description_params(requirement, type))
+  rescue I18n::MissingTranslationData
+    type.to_s.humanize
+  end
+
+  private
+
+  # rubocop:disable Metrics/MethodLength -- 4 enum branches require a case arm each; extraction would add indirection without clarity
+  def requirement_description_params(requirement, type)
+    cur = { unit: '$', delimiter: ',', separator: '.' }
+    case type
+    when 'min_transactions'
+      { count: requirement.min_transactions_count }
+    when 'min_transactions_with_amount'
+      { count: requirement.min_transactions_count,
+        amount: number_to_currency(requirement.min_amount_per_transaction, **cur) }
+    when 'accumulated_amount'
+      { amount: number_to_currency(requirement.min_accumulated_amount, **cur) }
+    when 'monthly_fee'
+      { amount: number_to_currency(requirement.monthly_fee_amount, **cur) }
+    else
+      {}
+    end
+  end
+  # rubocop:enable Metrics/MethodLength
 end

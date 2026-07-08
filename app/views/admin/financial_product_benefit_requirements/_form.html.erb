@@ -1,0 +1,125 @@
+<% form_url = requirement.persisted? \
+  ? admin_financial_product_benefit_requirement_path(financial_product, benefit, requirement) \
+  : admin_financial_product_benefit_requirements_path(financial_product, benefit) %>
+<%= form_with(model: requirement, url: form_url, local: true, html: {
+      class: "px-8 py-6",
+      data: { controller: "requirement-form" }
+    }) do |form| %>
+  <% if requirement.errors.any? %>
+    <div class="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+      <p class="text-sm font-medium text-red-400 mb-2">
+        <%= t('admin.financial_product_benefit_requirements.form.error_count', count: requirement.errors.count) %>
+      </p>
+      <ul class="list-disc list-inside space-y-1">
+        <% requirement.errors.full_messages.each do |msg| %>
+          <li class="text-sm text-red-300"><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <!-- Tipo de requisito -->
+  <div class="mb-6">
+    <%= form.label :requirement_type,
+          t('admin.financial_product_benefit_requirements.form.requirement_type_label'),
+          class: "block text-sm font-medium text-bunker-300 mb-2" %>
+    <%= form.select :requirement_type,
+          FinancialProductBenefitRequirement.requirement_types.keys.map { |k|
+            [t("enums.financial_product_benefit_requirement.requirement_type.#{k}"), k]
+          },
+          { prompt: t('admin.financial_product_benefit_requirements.form.requirement_type_prompt'),
+            selected: requirement.requirement_type },
+          required: true,
+          data: { action: "change->requirement-form#toggleFields", "requirement-form-target": "typeSelect" },
+          class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" %>
+  </div>
+
+  <!-- Cantidad minima de transacciones (min_transactions y min_transactions_with_amount) -->
+  <div data-requirement-form-target="transactionsCountField"
+       class="mb-6 <%= requirement.min_transactions? || requirement.min_transactions_with_amount? ? '' : 'hidden' %>">
+    <%= form.label :min_transactions_count,
+          t('admin.financial_product_benefit_requirements.form.min_transactions_count_label'),
+          class: "block text-sm font-medium text-bunker-300 mb-2" %>
+    <%= form.number_field :min_transactions_count,
+          min: 1,
+          step: 1,
+          placeholder: '1',
+          data: { "requirement-form-target": "transactionsCountInput" },
+          class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white placeholder-bunker-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" %>
+    <p class="mt-1 text-xs text-bunker-500">
+      <%= t('admin.financial_product_benefit_requirements.form.min_transactions_count_help') %>
+    </p>
+  </div>
+
+  <!-- Monto minimo por transaccion (solo min_transactions_with_amount) -->
+  <div data-requirement-form-target="amountPerTransactionField"
+       class="mb-6 <%= requirement.min_transactions_with_amount? ? '' : 'hidden' %>">
+    <%= form.label :min_amount_per_transaction,
+          t('admin.financial_product_benefit_requirements.form.min_amount_per_transaction_label'),
+          class: "block text-sm font-medium text-bunker-300 mb-2" %>
+    <%= form.number_field :min_amount_per_transaction,
+          step: '0.01',
+          min: '0.01',
+          placeholder: '50.00',
+          data: { "requirement-form-target": "amountPerTransactionInput" },
+          class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white placeholder-bunker-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" %>
+    <p class="mt-1 text-xs text-bunker-500">
+      <%= t('admin.financial_product_benefit_requirements.form.min_amount_per_transaction_help') %>
+    </p>
+  </div>
+
+  <!-- Monto acumulado minimo (solo accumulated_amount) -->
+  <div data-requirement-form-target="accumulatedAmountField"
+       class="mb-6 <%= requirement.accumulated_amount? ? '' : 'hidden' %>">
+    <%= form.label :min_accumulated_amount,
+          t('admin.financial_product_benefit_requirements.form.min_accumulated_amount_label'),
+          class: "block text-sm font-medium text-bunker-300 mb-2" %>
+    <%= form.number_field :min_accumulated_amount,
+          step: '0.01',
+          min: '0.01',
+          placeholder: '2500.00',
+          data: { "requirement-form-target": "accumulatedAmountInput" },
+          class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white placeholder-bunker-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" %>
+    <p class="mt-1 text-xs text-bunker-500">
+      <%= t('admin.financial_product_benefit_requirements.form.min_accumulated_amount_help') %>
+    </p>
+  </div>
+
+  <!-- Cuota mensual (solo monthly_fee) -->
+  <div data-requirement-form-target="monthlyFeeField"
+       class="mb-6 <%= requirement.monthly_fee? ? '' : 'hidden' %>">
+    <%= form.label :monthly_fee_amount,
+          t('admin.financial_product_benefit_requirements.form.monthly_fee_amount_label'),
+          class: "block text-sm font-medium text-bunker-300 mb-2" %>
+    <%= form.number_field :monthly_fee_amount,
+          step: '0.01',
+          min: '0.01',
+          placeholder: '179.00',
+          data: { "requirement-form-target": "monthlyFeeInput" },
+          class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white placeholder-bunker-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" %>
+    <p class="mt-1 text-xs text-bunker-500">
+      <%= t('admin.financial_product_benefit_requirements.form.monthly_fee_amount_help') %>
+    </p>
+  </div>
+
+  <!-- Activo -->
+  <div class="mb-6">
+    <div class="flex items-center gap-3">
+      <%= form.check_box :active,
+            class: "w-5 h-5 rounded border-bunker-600 bg-bunker-800 text-purple-500 focus:ring-purple-500 focus:ring-offset-0 cursor-pointer" %>
+      <%= form.label :active,
+            t('admin.financial_product_benefit_requirements.form.active_label'),
+            class: "text-sm font-medium text-bunker-300 cursor-pointer" %>
+    </div>
+  </div>
+
+  <div class="flex gap-4 pt-6 border-t border-bunker-800/50">
+    <%= form.submit requirement.persisted? \
+          ? t('admin.financial_product_benefit_requirements.form.submit_update') \
+          : t('admin.financial_product_benefit_requirements.form.submit_create'),
+          class: "px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer" %>
+    <%= link_to t('admin.financial_product_benefit_requirements.form.cancel'),
+          admin_financial_product_benefit_path(financial_product, benefit),
+          class: "px-6 py-3 bg-bunker-800/60 text-bunker-300 border border-bunker-700/50 rounded-xl font-medium hover:bg-bunker-700/60 hover:text-white transition-all duration-200" %>
+  </div>
+<% end %>

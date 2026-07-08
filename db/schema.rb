@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_08_030037) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_08_202109) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -293,6 +293,21 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_08_030037) do
     t.index ["uuid"], name: "index_financial_institutions_on_uuid", unique: true
   end
 
+  create_table "financial_product_benefit_requirements", force: :cascade do |t|
+    t.bigint "financial_product_benefit_id", null: false
+    t.integer "requirement_type", default: 0, null: false
+    t.integer "min_transactions_count"
+    t.decimal "min_amount_per_transaction", precision: 10, scale: 2
+    t.decimal "min_accumulated_amount", precision: 10, scale: 2
+    t.decimal "monthly_fee_amount", precision: 10, scale: 2
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_financial_product_benefit_requirements_on_active"
+    t.index ["financial_product_benefit_id"], name: "index_fpbr_on_benefit_id"
+    t.index ["requirement_type"], name: "idx_on_requirement_type_73ed710a9e"
+  end
+
   create_table "financial_product_benefits", force: :cascade do |t|
     t.bigint "financial_product_id", null: false
     t.integer "benefit_type", null: false
@@ -304,8 +319,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_08_030037) do
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "requirements_logic", default: 0, null: false
     t.index ["financial_product_id", "active"], name: "idx_on_financial_product_id_active_b7660022ce"
     t.index ["financial_product_id"], name: "index_financial_product_benefits_on_financial_product_id"
+    t.index ["requirements_logic"], name: "index_financial_product_benefits_on_requirements_logic"
   end
 
   create_table "financial_products", force: :cascade do |t|
@@ -569,6 +586,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_08_030037) do
   add_foreign_key "credit_score_events", "credit_cards", name: "fk_credit_score_events_credit_card"
   add_foreign_key "employment_informations", "users"
   add_foreign_key "financial_institutions", "catalogs", column: "color_id", name: "fk_financial_institutions_color"
+  add_foreign_key "financial_product_benefit_requirements", "financial_product_benefits"
   add_foreign_key "financial_product_benefits", "financial_products"
   add_foreign_key "financial_products", "financial_institutions"
   add_foreign_key "obligatory_payments", "catalogs", column: "color_id", name: "fk_obligatory_payments_color"

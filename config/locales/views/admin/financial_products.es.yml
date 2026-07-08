@@ -30,6 +30,7 @@ es:
         add_benefit: "Agregar beneficio"
         no_benefits: "Este producto no tiene beneficios registrados"
         add_first_benefit: "Agregar el primer beneficio"
+        view_action: "Ver"
       new:
         title: "Nuevo Producto Financiero"
         subtitle: "Agrega un producto al catálogo de una institución"

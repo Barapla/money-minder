@@ -1,0 +1,35 @@
+es:
+  admin:
+    financial_product_benefit_requirements:
+      new:
+        title: "Nuevo Requisito"
+      edit:
+        title: "Editar Requisito"
+      create:
+        success: "Requisito creado exitosamente."
+      update:
+        success: "Requisito actualizado exitosamente."
+      destroy:
+        success: "Requisito desactivado exitosamente."
+      form:
+        requirement_type_label: "Tipo de requisito"
+        requirement_type_prompt: "Selecciona un tipo"
+        min_transactions_count_label: "Cantidad minima de transacciones"
+        min_transactions_count_help: "Numero entero positivo. Ej: 1, 4, 10"
+        min_amount_per_transaction_label: "Monto minimo por transaccion"
+        min_amount_per_transaction_help: "Cada transaccion debe superar este monto. Ej: 50.00"
+        min_accumulated_amount_label: "Monto acumulado minimo en el mes"
+        min_accumulated_amount_help: "Suma total de transacciones que debe alcanzarse. Ej: 2500.00"
+        monthly_fee_amount_label: "Monto de la cuota mensual"
+        monthly_fee_amount_help: "Monto fijo a pagar mensualmente. Ej: 179.00"
+        active_label: "Requisito activo"
+        submit_create: "Crear requisito"
+        submit_update: "Guardar cambios"
+        cancel: "Cancelar"
+        error_count:
+          one: "Se encontro 1 error que impide guardar el requisito:"
+          other: "Se encontraron %{count} errores que impiden guardar el requisito:"
+      item:
+        edit: "Editar"
+        delete: "Desactivar"
+        confirm_delete: "Desactivar este requisito? El registro se conservara pero no estara activo."
