@@ -12,5 +12,9 @@ FactoryBot.define do
     after(:build) do |user|
       user.define_singleton_method(:create_personal_budget) {}
     end
+
+    trait :admin do
+      role { Role.find_or_create_by!(name: 'admin') }
+    end
   end
 end

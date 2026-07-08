@@ -35,6 +35,10 @@ class User < ApplicationRecord
     budgets.find_by(personal: true)
   end
 
+  def admin?
+    role&.name == 'admin'
+  end
+
   private
 
   def set_default_role

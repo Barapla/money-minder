@@ -1,0 +1,42 @@
+es:
+  admin:
+    financial_institutions:
+      index:
+        title: "Instituciones Financieras"
+        subtitle: "Administra el catálogo global de instituciones financieras"
+        new_button: "Nueva Institución"
+        filter_all: "Todas"
+        filter_active: "Solo activas"
+        header_name: "Nombre"
+        header_status: "Estado"
+        header_created: "Creada"
+        header_actions: "Acciones"
+        status_active: "Activa"
+        status_inactive: "Inactiva"
+        edit_action: "Editar"
+        delete_action: "Eliminar"
+        confirm_delete: "¿Eliminar la institución '%{name}'? Esta acción no se puede deshacer."
+        empty_title: "No hay instituciones registradas"
+        empty_subtitle: "Agrega la primera institución financiera al catálogo"
+      new:
+        title: "Nueva Institución Financiera"
+        subtitle: "Agrega una institución al catálogo global"
+      edit:
+        title: "Editar Institución Financiera"
+      create:
+        success: "Institución financiera creada exitosamente."
+      update:
+        success: "Institución financiera actualizada exitosamente."
+      destroy:
+        success: "Institución financiera eliminada exitosamente."
+      form:
+        name_label: "Nombre"
+        name_placeholder: "Ej: BBVA, Nu, Klar, Citibanamex"
+        active_label: "Institución activa"
+        active_help: "Las instituciones inactivas no aparecen en los filtros de búsqueda."
+        submit_create: "Crear institución"
+        submit_update: "Guardar cambios"
+        cancel: "Cancelar"
+        error_count:
+          one: "Se encontró 1 error que impide guardar la institución:"
+          other: "Se encontraron %{count} errores que impiden guardar la institución:"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_25_115749) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_08_015810) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -281,12 +281,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_25_115749) do
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
     t.string "name", null: false
-    t.string "code", null: false
+    t.string "code"
     t.string "country", default: "MX", null: false
     t.string "logo_url"
-    t.bigint "color_id", null: false
+    t.bigint "color_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index "lower((name)::text)", name: "index_financial_institutions_on_lower_name", unique: true
     t.index ["code"], name: "index_financial_institutions_on_code", unique: true
     t.index ["color_id"], name: "index_financial_institutions_on_color_id"
     t.index ["uuid"], name: "index_financial_institutions_on_uuid", unique: true

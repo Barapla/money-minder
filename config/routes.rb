@@ -93,6 +93,10 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
       as: :dashboard_saving_goals_recalculate,
       defaults: { format: :json }
 
+  namespace :admin do
+    resources :financial_institutions, except: [:show]
+  end
+
   # sidekiq routes
   require 'sidekiq/web'
   mount Sidekiq::Web => '/sidekiq'
