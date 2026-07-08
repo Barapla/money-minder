@@ -120,6 +120,11 @@ es:
         custom_isr_rate: "Tasa ISR personalizada"
         custom_imss_rate: "Tasa IMSS personalizada"
         hire_date: "Fecha de contratación"
+      financial_institution:
+        name: "Nombre"
+        active: "Activa"
+        code: "Código"
+        country: "País"
     models:
       user: "Usuario"
       budget: "Presupuesto"
@@ -129,6 +134,7 @@ es:
       obligatory_payment: "Pago Obligatorio"
       employment_information: "Información Laboral"
       payroll_profile: "Perfil de Nómina"
+      financial_institution: "Institución Financiera"
     errors:
       messages:
         blank: "no puede estar vacío"

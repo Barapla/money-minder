@@ -96,6 +96,10 @@
                data-action="mouseenter->navbar-dropdown#cancelCloseTimer mouseleave->navbar-dropdown#startCloseTimer">
             <%= navbar_dropdown_item_to(t('.employment_profile_link'), current_user&.employment_information ? employment_information_path : new_employment_information_path) %>
             <%= navbar_dropdown_item_to(t('.payroll_link'), edit_payroll_profile_path) %>
+            <% if current_user&.admin? %>
+              <div class="border-t border-bunker-700 my-1"></div>
+              <%= navbar_dropdown_item_to(t('.financial_institutions_link'), admin_financial_institutions_path) %>
+            <% end %>
           </div>
         </div>
 
@@ -228,6 +232,9 @@
           <div class="pl-4 py-1 space-y-1">
             <%= navbar_dropdown_item_to(t('.employment_profile_link'), current_user&.employment_information ? employment_information_path : new_employment_information_path) %>
             <%= navbar_dropdown_item_to(t('.payroll_link'), edit_payroll_profile_path) %>
+            <% if current_user&.admin? %>
+              <%= navbar_dropdown_item_to(t('.financial_institutions_link'), admin_financial_institutions_path) %>
+            <% end %>
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 es:
   errors:
+    not_authorized: "No tienes permisos para acceder a esta sección."
     not_found:
       title: "Recurso no encontrado"
       description: "La página que buscas no existe o no tienes permisos para acceder a ella."
