@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_08_023525) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_08_030037) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -293,6 +293,21 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_08_023525) do
     t.index ["uuid"], name: "index_financial_institutions_on_uuid", unique: true
   end
 
+  create_table "financial_product_benefits", force: :cascade do |t|
+    t.bigint "financial_product_id", null: false
+    t.integer "benefit_type", null: false
+    t.decimal "base_value", precision: 10, scale: 2, null: false
+    t.decimal "reduced_value", precision: 10, scale: 2
+    t.decimal "amount_cap", precision: 10, scale: 2
+    t.integer "unit", null: false
+    t.text "description"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["financial_product_id", "active"], name: "idx_on_financial_product_id_active_b7660022ce"
+    t.index ["financial_product_id"], name: "index_financial_product_benefits_on_financial_product_id"
+  end
+
   create_table "financial_products", force: :cascade do |t|
     t.bigint "financial_institution_id", null: false
     t.string "name", null: false
@@ -554,6 +569,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_08_023525) do
   add_foreign_key "credit_score_events", "credit_cards", name: "fk_credit_score_events_credit_card"
   add_foreign_key "employment_informations", "users"
   add_foreign_key "financial_institutions", "catalogs", column: "color_id", name: "fk_financial_institutions_color"
+  add_foreign_key "financial_product_benefits", "financial_products"
   add_foreign_key "financial_products", "financial_institutions"
   add_foreign_key "obligatory_payments", "catalogs", column: "color_id", name: "fk_obligatory_payments_color"
   add_foreign_key "obligatory_payments", "catalogs", column: "icon_id", name: "fk_obligatory_payments_icon"

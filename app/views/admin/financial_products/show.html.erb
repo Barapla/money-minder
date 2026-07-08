@@ -1,0 +1,85 @@
+<div class="max-w-4xl mx-auto">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-bunker-900/80 to-purple-900/80 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <%= link_to admin_financial_products_path,
+              class: "text-bunker-400 hover:text-white transition-colors" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+        <% end %>
+        <div>
+          <h1 class="text-3xl font-bold text-white"><%= @financial_product.name %></h1>
+          <div class="flex items-center gap-3 mt-2">
+            <span class="text-bunker-300 text-sm"><%= @financial_product.financial_institution.name %></span>
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium <%= product_type_badge_class(@financial_product.product_type) %>">
+              <%= t("enums.financial_product.product_type.#{@financial_product.product_type}") %>
+            </span>
+            <% if @financial_product.active? %>
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300">
+                <%= t('admin.financial_products.index.status_active') %>
+              </span>
+            <% else %>
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-bunker-700/50 text-bunker-400">
+                <%= t('admin.financial_products.index.status_inactive') %>
+              </span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+      <%= link_to edit_admin_financial_product_path(@financial_product),
+            class: "px-4 py-2 bg-bunker-800/60 text-bunker-300 border border-bunker-700/50 rounded-xl text-sm font-medium hover:bg-bunker-700/60 hover:text-white transition-all" do %>
+        <%= t('admin.financial_products.show.edit_product') %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if notice.present? %>
+    <div class="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-sm">
+      <%= notice %>
+    </div>
+  <% end %>
+
+  <!-- Seccion de beneficios -->
+  <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-bunker-800/50 flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-semibold text-white"><%= t('admin.financial_products.show.benefits_title') %></h2>
+        <p class="text-xs text-bunker-400 mt-0.5">
+          <%= t('admin.financial_products.show.benefits_count', count: @benefits.size) %>
+        </p>
+      </div>
+      <%= link_to new_admin_financial_product_benefit_path(@financial_product),
+            class: "flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        <%= t('admin.financial_products.show.add_benefit') %>
+      <% end %>
+    </div>
+
+    <div class="p-6">
+      <% if @benefits.any? %>
+        <div class="space-y-3">
+          <% @benefits.each do |benefit| %>
+            <%= render 'admin/financial_product_benefits/benefit_item',
+                  benefit: benefit,
+                  financial_product: @financial_product %>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center py-10">
+          <svg class="w-12 h-12 mx-auto mb-3 text-bunker-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+          </svg>
+          <p class="text-bunker-400 text-sm"><%= t('admin.financial_products.show.no_benefits') %></p>
+          <%= link_to new_admin_financial_product_benefit_path(@financial_product),
+                class: "inline-flex items-center gap-2 mt-3 text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors" do %>
+            <%= t('admin.financial_products.show.add_first_benefit') %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

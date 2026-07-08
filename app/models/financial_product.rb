@@ -3,6 +3,7 @@
 # Producto financiero ofrecido por una institución (debito, credito, efectivo, ahorro).
 class FinancialProduct < ApplicationRecord
   belongs_to :financial_institution
+  has_many :benefits, class_name: 'FinancialProductBenefit', dependent: :destroy
 
   enum :product_type, { cash: 0, debit: 1, credit: 2, savings_fund: 3 }
 

@@ -16,9 +16,20 @@ es:
         header_actions: "Acciones"
         status_active: "Activo"
         status_inactive: "Inactivo"
+        view_action: "Ver"
         edit_action: "Editar"
         empty_title: "No hay productos registrados"
         empty_subtitle: "Agrega el primer producto financiero al catálogo"
+      show:
+        edit_product: "Editar producto"
+        benefits_title: "Beneficios del producto"
+        benefits_count:
+          zero: "Sin beneficios registrados"
+          one: "1 beneficio"
+          other: "%{count} beneficios"
+        add_benefit: "Agregar beneficio"
+        no_benefits: "Este producto no tiene beneficios registrados"
+        add_first_benefit: "Agregar el primer beneficio"
       new:
         title: "Nuevo Producto Financiero"
         subtitle: "Agrega un producto al catálogo de una institución"

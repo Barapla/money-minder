@@ -1,0 +1,113 @@
+<% form_url = benefit.persisted? ? admin_financial_product_benefit_path(financial_product, benefit) : admin_financial_product_benefits_path(financial_product) %>
+<%= form_with(model: benefit, url: form_url, local: true, html: { class: "px-8 py-6" }) do |form| %>
+  <% if benefit.errors.any? %>
+    <div class="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+      <p class="text-sm font-medium text-red-400 mb-2">
+        <%= t('admin.financial_product_benefits.form.error_count', count: benefit.errors.count) %>
+      </p>
+      <ul class="list-disc list-inside space-y-1">
+        <% benefit.errors.full_messages.each do |msg| %>
+          <li class="text-sm text-red-300"><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <!-- Tipo de beneficio -->
+    <div>
+      <%= form.label :benefit_type,
+            t('admin.financial_product_benefits.form.benefit_type_label'),
+            class: "block text-sm font-medium text-bunker-300 mb-2" %>
+      <%= form.select :benefit_type,
+            FinancialProductBenefit.benefit_types.keys.map { |k| [t("enums.financial_product_benefit.benefit_type.#{k}"), k] },
+            { prompt: t('admin.financial_product_benefits.form.benefit_type_prompt') },
+            required: true,
+            class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" %>
+    </div>
+
+    <!-- Unidad -->
+    <div>
+      <%= form.label :unit,
+            t('admin.financial_product_benefits.form.unit_label'),
+            class: "block text-sm font-medium text-bunker-300 mb-2" %>
+      <%= form.select :unit,
+            FinancialProductBenefit.units.keys.map { |k| [t("enums.financial_product_benefit.unit.#{k}"), k] },
+            { prompt: t('admin.financial_product_benefits.form.unit_prompt') },
+            required: true,
+            class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <!-- Valor base -->
+    <div>
+      <%= form.label :base_value,
+            t('admin.financial_product_benefits.form.base_value_label'),
+            class: "block text-sm font-medium text-bunker-300 mb-2" %>
+      <%= form.number_field :base_value,
+            step: '0.01',
+            min: '0',
+            required: true,
+            placeholder: '0.00',
+            class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white placeholder-bunker-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" %>
+      <p class="mt-1 text-xs text-bunker-500"><%= t('admin.financial_product_benefits.form.base_value_help') %></p>
+    </div>
+
+    <!-- Valor reducido -->
+    <div>
+      <%= form.label :reduced_value,
+            t('admin.financial_product_benefits.form.reduced_value_label'),
+            class: "block text-sm font-medium text-bunker-300 mb-2" %>
+      <%= form.number_field :reduced_value,
+            step: '0.01',
+            min: '0',
+            placeholder: '0.00',
+            class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white placeholder-bunker-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" %>
+      <p class="mt-1 text-xs text-bunker-500"><%= t('admin.financial_product_benefits.form.reduced_value_help') %></p>
+    </div>
+  </div>
+
+  <!-- Monto tope -->
+  <div class="mb-6">
+    <%= form.label :amount_cap,
+          t('admin.financial_product_benefits.form.amount_cap_label'),
+          class: "block text-sm font-medium text-bunker-300 mb-2" %>
+    <%= form.number_field :amount_cap,
+          step: '0.01',
+          min: '0',
+          placeholder: '25000.00',
+          class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white placeholder-bunker-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" %>
+    <p class="mt-1 text-xs text-bunker-500"><%= t('admin.financial_product_benefits.form.amount_cap_help') %></p>
+  </div>
+
+  <!-- Descripcion -->
+  <div class="mb-6">
+    <%= form.label :description,
+          t('admin.financial_product_benefits.form.description_label'),
+          class: "block text-sm font-medium text-bunker-300 mb-2" %>
+    <%= form.text_area :description,
+          rows: 3,
+          placeholder: t('admin.financial_product_benefits.form.description_placeholder'),
+          class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white placeholder-bunker-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none" %>
+  </div>
+
+  <!-- Activo -->
+  <div class="mb-6">
+    <div class="flex items-center gap-3">
+      <%= form.check_box :active,
+            class: "w-5 h-5 rounded border-bunker-600 bg-bunker-800 text-purple-500 focus:ring-purple-500 focus:ring-offset-0 cursor-pointer" %>
+      <%= form.label :active,
+            t('admin.financial_product_benefits.form.active_label'),
+            class: "text-sm font-medium text-bunker-300 cursor-pointer" %>
+    </div>
+  </div>
+
+  <div class="flex gap-4 pt-6 border-t border-bunker-800/50">
+    <%= form.submit benefit.persisted? ? t('admin.financial_product_benefits.form.submit_update') : t('admin.financial_product_benefits.form.submit_create'),
+          class: "px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer" %>
+    <%= link_to t('admin.financial_product_benefits.form.cancel'),
+          admin_financial_product_path(financial_product),
+          class: "px-6 py-3 bg-bunker-800/60 text-bunker-300 border border-bunker-700/50 rounded-xl font-medium hover:bg-bunker-700/60 hover:text-white transition-all duration-200" %>
+  </div>
+<% end %>
