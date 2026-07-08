@@ -40,3 +40,11 @@ es:
       paused: "Pausado"
       achieved: "Alcanzada"
       cancelled: "Cancelado"
+
+  enums:
+    financial_product:
+      product_type:
+        cash: "Efectivo"
+        debit: "Debito"
+        credit: "Credito"
+        savings_fund: "Fondo de ahorro"

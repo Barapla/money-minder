@@ -95,6 +95,7 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
 
   namespace :admin do
     resources :financial_institutions, except: [:show]
+    resources :financial_products, except: %i[show destroy]
   end
 
   # sidekiq routes

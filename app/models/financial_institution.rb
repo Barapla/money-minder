@@ -2,6 +2,8 @@
 
 # Catalogo global de instituciones financieras administrable por admins.
 class FinancialInstitution < ApplicationRecord
+  has_many :financial_products, dependent: :destroy
+
   validates :name, presence: true,
                    uniqueness: { case_sensitive: false },
                    length: { minimum: 2 }
