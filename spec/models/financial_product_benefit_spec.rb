@@ -7,6 +7,7 @@ RSpec.describe FinancialProductBenefit, type: :model do
 
   describe 'asociaciones' do
     it { is_expected.to belong_to(:financial_product) }
+    it { is_expected.to have_many(:requirements).class_name('FinancialProductBenefitRequirement').dependent(:destroy) }
   end
 
   describe 'enums' do
@@ -20,6 +21,22 @@ RSpec.describe FinancialProductBenefit, type: :model do
       expect(described_class.units).to eq(
         'percentage' => 0, 'points' => 1, 'fixed_amount' => 2
       )
+    end
+
+    it 'define requirements_logic con los valores correctos' do
+      expect(described_class.requirements_logics).to eq('all' => 0, 'any' => 1)
+    end
+
+    it 'usa requirements_all? como prefijo para all' do
+      benefit.requirements_logic = :all
+      expect(benefit.requirements_all?).to be true
+      expect(benefit.requirements_any?).to be false
+    end
+
+    it 'usa requirements_any? como prefijo para any' do
+      benefit.requirements_logic = :any
+      expect(benefit.requirements_any?).to be true
+      expect(benefit.requirements_all?).to be false
     end
   end
 

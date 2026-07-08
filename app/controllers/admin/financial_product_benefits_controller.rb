@@ -4,10 +4,14 @@ module Admin
   # CRUD de beneficios de productos financieros para administradores.
   class FinancialProductBenefitsController < Admin::ApplicationController
     before_action :set_financial_product
-    before_action :set_benefit, only: %i[edit update destroy]
+    before_action :set_benefit, only: %i[show edit update destroy]
 
     def index
       redirect_to admin_financial_product_path(@financial_product)
+    end
+
+    def show
+      @requirements = @benefit.requirements.active.order(created_at: :asc)
     end
 
     def new
@@ -51,7 +55,8 @@ module Admin
 
     def benefit_params
       params.require(:financial_product_benefit).permit(
-        :benefit_type, :base_value, :reduced_value, :amount_cap, :unit, :description, :active
+        :benefit_type, :base_value, :reduced_value, :amount_cap, :unit, :description,
+        :active, :requirements_logic
       )
     end
   end

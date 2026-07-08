@@ -92,6 +92,20 @@
           class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white placeholder-bunker-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none" %>
   </div>
 
+  <!-- Logica de requisitos -->
+  <div class="mb-6">
+    <%= form.label :requirements_logic,
+          t('admin.financial_product_benefits.form.requirements_logic_label'),
+          class: "block text-sm font-medium text-bunker-300 mb-2" %>
+    <%= form.select :requirements_logic,
+          FinancialProductBenefit.requirements_logics.keys.map { |k|
+            [t("enums.financial_product_benefit.requirements_logic.#{k}"), k]
+          },
+          {},
+          class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" %>
+    <p class="mt-1 text-xs text-bunker-500"><%= t('admin.financial_product_benefits.form.requirements_logic_help') %></p>
+  </div>
+
   <!-- Activo -->
   <div class="mb-6">
     <div class="flex items-center gap-3">

@@ -29,6 +29,10 @@
         <%= t('admin.financial_product_benefits.item.inactive') %>
       </span>
     <% end %>
+    <%= link_to admin_financial_product_benefit_path(@financial_product, benefit),
+          class: "px-3 py-1.5 bg-bunker-800/60 text-bunker-300 border border-bunker-700/50 rounded-lg text-xs font-medium hover:bg-bunker-700/60 hover:text-white transition-all" do %>
+      <%= t('admin.financial_products.show.view_action') %>
+    <% end %>
     <%= link_to edit_admin_financial_product_benefit_path(@financial_product, benefit),
           class: "px-3 py-1.5 bg-bunker-800/60 text-bunker-300 border border-bunker-700/50 rounded-lg text-xs font-medium hover:bg-bunker-700/60 hover:text-white transition-all" do %>
       <%= t('admin.financial_product_benefits.item.edit') %>

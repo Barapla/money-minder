@@ -58,3 +58,12 @@ es:
         percentage: "Porcentaje"
         points: "Puntos"
         fixed_amount: "Monto fijo"
+      requirements_logic:
+        all: "Todos los requisitos (AND)"
+        any: "Cualquier requisito (OR)"
+    financial_product_benefit_requirement:
+      requirement_type:
+        min_transactions: "Numero minimo de transacciones"
+        min_transactions_with_amount: "Transacciones con monto minimo individual"
+        accumulated_amount: "Monto acumulado minimo"
+        monthly_fee: "Cuota mensual fija"

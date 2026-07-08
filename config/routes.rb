@@ -96,7 +96,10 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   namespace :admin do
     resources :financial_institutions, except: [:show]
     resources :financial_products, except: [:destroy] do
-      resources :benefits, controller: 'financial_product_benefits', except: [:show]
+      resources :benefits, controller: 'financial_product_benefits' do
+        resources :requirements, controller: 'financial_product_benefit_requirements',
+                                 except: %i[index show]
+      end
     end
   end
 
