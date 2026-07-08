@@ -1,0 +1,45 @@
+es:
+  admin:
+    financial_products:
+      index:
+        title: "Productos Financieros"
+        subtitle: "Administra el catálogo de productos por institución financiera"
+        new_button: "Nuevo Producto"
+        filter_all: "Todos"
+        filter_active: "Solo activos"
+        products_count:
+          one: "1 producto"
+          other: "%{count} productos"
+        header_name: "Nombre"
+        header_type: "Tipo"
+        header_status: "Estado"
+        header_actions: "Acciones"
+        status_active: "Activo"
+        status_inactive: "Inactivo"
+        edit_action: "Editar"
+        empty_title: "No hay productos registrados"
+        empty_subtitle: "Agrega el primer producto financiero al catálogo"
+      new:
+        title: "Nuevo Producto Financiero"
+        subtitle: "Agrega un producto al catálogo de una institución"
+      edit:
+        title: "Editar Producto Financiero"
+      create:
+        success: "Producto financiero creado exitosamente."
+      update:
+        success: "Producto financiero actualizado exitosamente."
+      form:
+        institution_label: "Institución financiera"
+        institution_prompt: "Selecciona una institución"
+        name_label: "Nombre del producto"
+        name_placeholder: "Ej: Nu Crédito, BBVA Azul, Oro"
+        type_label: "Tipo de producto"
+        type_prompt: "Selecciona un tipo"
+        active_label: "Producto activo"
+        active_help: "Los productos inactivos no aparecen en las opciones de selección para usuarios."
+        submit_create: "Crear producto"
+        submit_update: "Guardar cambios"
+        cancel: "Cancelar"
+        error_count:
+          one: "Se encontró 1 error que impide guardar el producto:"
+          other: "Se encontraron %{count} errores que impiden guardar el producto:"

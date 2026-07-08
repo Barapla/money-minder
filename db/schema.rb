@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_08_015810) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_08_023525) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -293,6 +293,19 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_08_015810) do
     t.index ["uuid"], name: "index_financial_institutions_on_uuid", unique: true
   end
 
+  create_table "financial_products", force: :cascade do |t|
+    t.bigint "financial_institution_id", null: false
+    t.string "name", null: false
+    t.integer "product_type", default: 0, null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "lower((name)::text), financial_institution_id", name: "index_financial_products_on_lower_name_and_institution", unique: true
+    t.index ["active"], name: "index_financial_products_on_active"
+    t.index ["financial_institution_id"], name: "index_financial_products_on_financial_institution_id"
+    t.index ["product_type"], name: "index_financial_products_on_product_type"
+  end
+
   create_table "group_catalogs", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
@@ -541,6 +554,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_08_015810) do
   add_foreign_key "credit_score_events", "credit_cards", name: "fk_credit_score_events_credit_card"
   add_foreign_key "employment_informations", "users"
   add_foreign_key "financial_institutions", "catalogs", column: "color_id", name: "fk_financial_institutions_color"
+  add_foreign_key "financial_products", "financial_institutions"
   add_foreign_key "obligatory_payments", "catalogs", column: "color_id", name: "fk_obligatory_payments_color"
   add_foreign_key "obligatory_payments", "catalogs", column: "icon_id", name: "fk_obligatory_payments_icon"
   add_foreign_key "obligatory_payments", "categories", name: "fk_obligatory_payments_category"

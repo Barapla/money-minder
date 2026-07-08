@@ -125,6 +125,11 @@ es:
         active: "Activa"
         code: "Código"
         country: "País"
+      financial_product:
+        name: "Nombre"
+        active: "Activo"
+        product_type: "Tipo de producto"
+        financial_institution_id: "Institución financiera"
     models:
       user: "Usuario"
       budget: "Presupuesto"
@@ -135,6 +140,7 @@ es:
       employment_information: "Información Laboral"
       payroll_profile: "Perfil de Nómina"
       financial_institution: "Institución Financiera"
+      financial_product: "Producto Financiero"
     errors:
       messages:
         blank: "no puede estar vacío"
