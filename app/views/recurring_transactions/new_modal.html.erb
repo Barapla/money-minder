@@ -1,5 +1,5 @@
 <%= turbo_frame_tag "modal_frame" do %>
-    <%= render Shared::ModalComponent.new(title: "Nuevas transacciones recurrentes", subtitle: "Configura una transacción que se repita automáticamente") do |component| %>
+    <%= render Shared::ModalComponent.new(title: t('.title'), subtitle: t('.subtitle')) do |component| %>
         <%= render "recurring_transactions/modals/form", transaction: @transaction %>
     <% end %>
 <% end %>

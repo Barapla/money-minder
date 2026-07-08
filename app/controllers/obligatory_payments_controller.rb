@@ -30,7 +30,7 @@ class ObligatoryPaymentsController < ApplicationController
 
     respond_to do |format|
       if @obligatory_payment.save
-        format.html { redirect_to obligatory_payments_url, notice: 'Pago obligatorio creado exitosamente.' }
+        format.html { redirect_to obligatory_payments_url, notice: t('obligatory_payments.create.success') }
         format.json { render :show, status: :created, location: @obligatory_payment }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -43,7 +43,7 @@ class ObligatoryPaymentsController < ApplicationController
   def update
     respond_to do |format|
       if @obligatory_payment.update(obligatory_payment_params)
-        format.html { redirect_to obligatory_payments_url, notice: 'Pago obligatorio actualizado exitosamente.' }
+        format.html { redirect_to obligatory_payments_url, notice: t('obligatory_payments.update.success') }
         format.json { render :show, status: :ok, location: @obligatory_payment }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -57,7 +57,7 @@ class ObligatoryPaymentsController < ApplicationController
     @obligatory_payment.destroy
 
     respond_to do |format|
-      format.html { redirect_to obligatory_payments_url, notice: 'Pago obligatorio eliminado exitosamente.' }
+      format.html { redirect_to obligatory_payments_url, notice: t('obligatory_payments.destroy.success') }
       format.json { head :no_content }
     end
   end

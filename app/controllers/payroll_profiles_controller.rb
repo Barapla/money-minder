@@ -9,7 +9,7 @@ class PayrollProfilesController < ApplicationController
 
   def update
     if @payroll_profile.update(payroll_profile_params)
-      redirect_to employment_information_path, notice: 'Configuración de nómina actualizada exitosamente.'
+      redirect_to employment_information_path, notice: t('payroll_profiles.update.success')
     else
       render :edit, status: :unprocessable_entity
     end
@@ -21,7 +21,7 @@ class PayrollProfilesController < ApplicationController
     @payroll_profile = current_user.payroll_profile
     return if @payroll_profile.present?
 
-    redirect_to new_employment_information_path, alert: 'Registra tu información laboral primero.'
+    redirect_to new_employment_information_path, alert: t('payroll_profiles.set_payroll_profile.not_found')
   end
 
   def payroll_profile_params

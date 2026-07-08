@@ -6,9 +6,9 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
         </svg>
       </div>
-      <h2 class="text-base font-semibold text-white">Metas de Ahorro</h2>
+      <h2 class="text-base font-semibold text-white"><%= t('.title') %></h2>
     </div>
-    <%= link_to "Ver todas", saving_goals_path, class: "text-emerald-400 text-xs hover:text-emerald-300 underline" %>
+    <%= link_to t('.see_all'), saving_goals_path, class: "text-emerald-400 text-xs hover:text-emerald-300 underline" %>
   </div>
 
   <% if @presenter.saving_goals? %>
@@ -38,8 +38,8 @@
     </div>
   <% else %>
     <div class="text-center py-6 flex-1">
-      <p class="text-bunker-400 text-sm mb-2">Sin metas de ahorro activas</p>
-      <%= link_to "Crear meta", new_saving_goal_path, class: "text-emerald-400 text-xs hover:text-emerald-300 underline" %>
+      <p class="text-bunker-400 text-sm mb-2"><%= t('.no_goals') %></p>
+      <%= link_to t('.new_goal'), new_saving_goal_path, class: "text-emerald-400 text-xs hover:text-emerald-300 underline" %>
     </div>
   <% end %>
 </div>

@@ -1,0 +1,16 @@
+es:
+  transactions:
+    index:
+      title: "Transacciones"
+      subtitle: "Gestiona todas tus transacciones"
+      new_button: "Nueva Transacción"
+      table_title: "Lista de Transacciones"
+      table_actions: "Acciones"
+    new:
+      title: "Nueva Transacción"
+      subtitle: "Crea una nueva transacción para verificar tus gastos"
+      form_section: "Información de la Transacción"
+    edit:
+      title: "Editar Transacción"
+      subtitle: "Editar transacción para verificar tus gastos"
+      form_section: "Información de la Transacción"

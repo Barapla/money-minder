@@ -1,0 +1,7 @@
+es:
+  errors:
+    not_found:
+      title: "Recurso no encontrado"
+      description: "La página que buscas no existe o no tienes permisos para acceder a ella."
+      go_home: "Ir al inicio"
+      go_back: "Volver atrás"

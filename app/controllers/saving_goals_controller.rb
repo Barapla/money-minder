@@ -21,7 +21,7 @@ class SavingGoalsController < ApplicationController
     @saving_goal = current_user.saving_goals.build(saving_goal_params)
 
     if @saving_goal.save
-      redirect_to saving_goals_path, notice: 'Meta de ahorro creada exitosamente.'
+      redirect_to saving_goals_path, notice: t('saving_goals.create.success')
     else
       render :new, status: :unprocessable_entity
     end
@@ -31,7 +31,7 @@ class SavingGoalsController < ApplicationController
 
   def update
     if @saving_goal.update(saving_goal_params)
-      redirect_to saving_goals_path, notice: 'Meta de ahorro actualizada exitosamente.'
+      redirect_to saving_goals_path, notice: t('saving_goals.update.success')
     else
       render :edit, status: :unprocessable_entity
     end
@@ -39,7 +39,7 @@ class SavingGoalsController < ApplicationController
 
   def destroy
     @saving_goal.destroy
-    redirect_to saving_goals_path, notice: 'Meta de ahorro eliminada exitosamente.'
+    redirect_to saving_goals_path, notice: t('saving_goals.destroy.success')
   end
 
   def reorder

@@ -6,10 +6,10 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
         </svg>
       </div>
-      <h2 class="text-base font-semibold text-white">Fechas de Corte</h2>
+      <h2 class="text-base font-semibold text-white"><%= t('.title') %></h2>
     </div>
     <% if @presenter.credit_cards? %>
-      <span class="text-bunker-400 text-xs">Deuda: <span class="text-red-300 font-medium"><%= @presenter.total_debt_formatted %></span></span>
+      <span class="text-bunker-400 text-xs"><%= t('.debt_label') %> <span class="text-red-300 font-medium"><%= @presenter.total_debt_formatted %></span></span>
     <% end %>
   </div>
 
@@ -23,11 +23,11 @@
             <% days = card[:days_until_cutting] %>
             <% badge_class = days <= 3 ? 'bg-red-500/20 text-red-300' : days <= 7 ? 'bg-amber-500/20 text-amber-300' : 'bg-bunker-700/60 text-bunker-300' %>
             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-2 shrink-0 <%= badge_class %>">
-              <% if days == 0 %>Hoy<% elsif days == 1 %>Mañana<% else %><%= days %>d<% end %>
+              <% if days == 0 %><%= t('.today_badge') %><% elsif days == 1 %><%= t('.tomorrow_badge') %><% else %><%= days %>d<% end %>
             </span>
           </div>
           <div class="text-bunker-400 text-xs">
-            Corte: <%= card[:cutting_date].strftime('%d/%m') %>
+            <%= t('.cutting_date_label') %> <%= card[:cutting_date].strftime('%d/%m') %>
             <% if card[:current_debt].positive? %>
               &bull; <span class="text-red-400"><%= card[:current_debt_formatted] %></span>
             <% end %>
@@ -37,13 +37,13 @@
     </div>
     <% if cutting_dates.size > 5 %>
       <div class="mt-3 pt-3 border-t border-bunker-700/50">
-        <%= link_to "Ver todas (#{cutting_dates.size})", budgets_path, class: "text-blue-400 text-xs hover:text-blue-300" %>
+        <%= link_to t('.see_all', count: cutting_dates.size), budgets_path, class: "text-blue-400 text-xs hover:text-blue-300" %>
       </div>
     <% end %>
   <% else %>
     <div class="text-center py-6 flex-1">
-      <p class="text-bunker-400 text-sm mb-2">Sin tarjetas de crédito</p>
-      <%= link_to "Agregar tarjeta", new_budget_path, class: "text-blue-400 text-xs hover:text-blue-300 underline" %>
+      <p class="text-bunker-400 text-sm mb-2"><%= t('.no_cards_text') %></p>
+      <%= link_to t('.add_card_link'), new_budget_path, class: "text-blue-400 text-xs hover:text-blue-300 underline" %>
     </div>
   <% end %>
 </div>

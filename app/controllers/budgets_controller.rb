@@ -73,9 +73,9 @@ class BudgetsController < ApplicationController
   def create
     @budget = current_user.budgets.new(budget_params)
     if @budget.save
-      redirect_to @budget, notice: 'Presupuesto creado exitosamente.'
+      redirect_to @budget, notice: t('budgets.create.success')
     else
-      flash.now[:alert] = 'Error al crear el presupuesto. Por favor, revisa los datos ingresados.'
+      flash.now[:alert] = t('budgets.create.error')
       render :new
     end
   end
@@ -84,9 +84,9 @@ class BudgetsController < ApplicationController
 
   def update
     if @budget.update(budget_params)
-      redirect_to @budget, notice: 'Presupuesto actualizado exitosamente.'
+      redirect_to @budget, notice: t('budgets.update.success')
     else
-      flash.now[:alert] = 'Error al actualizar el presupuesto. Por favor, revisa los datos ingresados.'
+      flash.now[:alert] = t('budgets.update.error')
       render :edit
     end
   end
@@ -103,7 +103,7 @@ class BudgetsController < ApplicationController
 
   def destroy
     @budget.destroy
-    redirect_to budgets_path, notice: 'Presupuesto eliminado exitosamente'
+    redirect_to budgets_path, notice: t('budgets.destroy.success')
   end
 
   private

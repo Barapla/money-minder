@@ -23,7 +23,7 @@
       <div class="hidden md:flex items-center space-x-1">
 
         <!-- Dashboard (enlace directo) -->
-        <%= navbar_link_to("Dashboard", root_path) %>
+        <%= navbar_link_to(t('.dashboard_link'), root_path) %>
 
         <!-- Dropdown: Transacciones -->
         <div class="relative"
@@ -35,7 +35,7 @@
                   data-action="click->navbar-dropdown#toggle"
                   aria-haspopup="true"
                   aria-expanded="false">
-            Transacciones
+            <%= t('.transactions_dropdown') %>
             <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
@@ -43,8 +43,8 @@
           <div class="hidden absolute left-0 top-full mt-1 w-52 rounded-xl bg-bunker-900 border border-bunker-700 shadow-xl shadow-black/40 overflow-hidden z-50 py-1"
                data-navbar-dropdown-target="dropdown"
                data-action="mouseenter->navbar-dropdown#cancelCloseTimer mouseleave->navbar-dropdown#startCloseTimer">
-            <%= navbar_dropdown_item_to("Todas las transacciones", transactions_path) %>
-            <%= navbar_dropdown_item_to("Calendario financiero", calendar_index_path) %>
+            <%= navbar_dropdown_item_to(t('.all_transactions'), transactions_path) %>
+            <%= navbar_dropdown_item_to(t('.financial_calendar'), calendar_index_path) %>
           </div>
         </div>
 
@@ -58,7 +58,7 @@
                   data-action="click->navbar-dropdown#toggle"
                   aria-haspopup="true"
                   aria-expanded="false">
-            Planificación
+            <%= t('.planning_dropdown') %>
             <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
@@ -66,15 +66,15 @@
           <div class="hidden absolute left-0 top-full mt-1 w-52 rounded-xl bg-bunker-900 border border-bunker-700 shadow-xl shadow-black/40 overflow-hidden z-50 py-1"
                data-navbar-dropdown-target="dropdown"
                data-action="mouseenter->navbar-dropdown#cancelCloseTimer mouseleave->navbar-dropdown#startCloseTimer">
-            <%= navbar_dropdown_item_to("Presupuestos", budgets_path) %>
-            <%= navbar_dropdown_item_to("Recordatorios", obligatory_payments_path) %>
-            <%= navbar_dropdown_item_to("Cal. Recordatorios", obligatory_payments_calendar_index_path) %>
-            <%= navbar_dropdown_item_to("Metas de Ahorro", saving_goals_path) %>
+            <%= navbar_dropdown_item_to(t('.budgets_link'), budgets_path) %>
+            <%= navbar_dropdown_item_to(t('.reminders_link'), obligatory_payments_path) %>
+            <%= navbar_dropdown_item_to(t('.reminders_calendar_link'), obligatory_payments_calendar_index_path) %>
+            <%= navbar_dropdown_item_to(t('.saving_goals_link'), saving_goals_path) %>
           </div>
         </div>
 
         <!-- Reportes (enlace directo) -->
-        <%= navbar_link_to("Reportes", reports_path) %>
+        <%= navbar_link_to(t('.reports_link'), reports_path) %>
 
         <!-- Dropdown: Administración -->
         <div class="relative"
@@ -86,7 +86,7 @@
                   data-action="click->navbar-dropdown#toggle"
                   aria-haspopup="true"
                   aria-expanded="false">
-            Administración
+            <%= t('.administration_dropdown') %>
             <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
@@ -94,8 +94,8 @@
           <div class="hidden absolute left-0 top-full mt-1 w-52 rounded-xl bg-bunker-900 border border-bunker-700 shadow-xl shadow-black/40 overflow-hidden z-50 py-1"
                data-navbar-dropdown-target="dropdown"
                data-action="mouseenter->navbar-dropdown#cancelCloseTimer mouseleave->navbar-dropdown#startCloseTimer">
-            <%= navbar_dropdown_item_to("Perfil Laboral", current_user&.employment_information ? employment_information_path : new_employment_information_path) %>
-            <%= navbar_dropdown_item_to("Nómina", edit_payroll_profile_path) %>
+            <%= navbar_dropdown_item_to(t('.employment_profile_link'), current_user&.employment_information ? employment_information_path : new_employment_information_path) %>
+            <%= navbar_dropdown_item_to(t('.payroll_link'), edit_payroll_profile_path) %>
           </div>
         </div>
 
@@ -115,7 +115,7 @@
                     data-action="click->navbar-dropdown#toggle"
                     aria-haspopup="true"
                     aria-expanded="false"
-                    aria-label="Menú de usuario"
+                    aria-label="<%= t('.user_menu_label') %>"
                     id="user-menu-button">
               <%= current_user.email.first.upcase %>
             </button>
@@ -123,15 +123,15 @@
                  data-navbar-dropdown-target="dropdown"
                  data-action="mouseenter->navbar-dropdown#cancelCloseTimer mouseleave->navbar-dropdown#startCloseTimer">
               <div class="px-4 py-3 border-b border-bunker-700">
-                <p class="text-xs text-bunker-400">Sesión iniciada como</p>
+                <p class="text-xs text-bunker-400"><%= t('.signed_in_as') %></p>
                 <p class="text-sm font-medium text-white truncate"><%= current_user.email %></p>
               </div>
-              <%= navbar_dropdown_item_to("Editar perfil", edit_user_registration_path) %>
+              <%= navbar_dropdown_item_to(t('.edit_profile_link'), edit_user_registration_path) %>
               <div class="border-t border-bunker-700 mt-1 pt-1">
                 <%= button_to destroy_user_session_path,
                       method: :delete,
                       class: "navbar-dropdown-item w-full text-left text-red-400 hover:text-red-300 hover:bg-red-500/10" do %>
-                  Cerrar sesión
+                  <%= t('.sign_out_link') %>
                 <% end %>
               </div>
             </div>
@@ -143,7 +143,7 @@
           <button type="button"
                   class="bg-bunker-800 p-2 rounded-lg text-bunker-300 hover:text-white hover:bg-bunker-700 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
                   data-action="click->navbar-mobile#toggle"
-                  aria-label="Abrir menú de navegación">
+                  aria-label="<%= t('.open_mobile_menu_label') %>">
             <svg data-navbar-mobile-target="hamburger" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
@@ -162,7 +162,7 @@
     <div class="px-4 pt-3 pb-4 space-y-1">
 
       <!-- Dashboard -->
-      <%= navbar_link_to("Dashboard", root_path) %>
+      <%= navbar_link_to(t('.dashboard_link'), root_path) %>
 
       <!-- Grupo: Transacciones -->
       <div data-controller="navbar-dropdown" class="rounded-md overflow-hidden">
@@ -172,15 +172,15 @@
                 data-action="click->navbar-dropdown#toggle"
                 aria-haspopup="true"
                 aria-expanded="false">
-          Transacciones
+          <%= t('.transactions_dropdown') %>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
         <div class="hidden bg-bunker-900/50 rounded-b-md" data-navbar-dropdown-target="dropdown">
           <div class="pl-4 py-1 space-y-1">
-            <%= navbar_dropdown_item_to("Todas las transacciones", transactions_path) %>
-            <%= navbar_dropdown_item_to("Calendario financiero", calendar_index_path) %>
+            <%= navbar_dropdown_item_to(t('.all_transactions'), transactions_path) %>
+            <%= navbar_dropdown_item_to(t('.financial_calendar'), calendar_index_path) %>
           </div>
         </div>
       </div>
@@ -193,23 +193,23 @@
                 data-action="click->navbar-dropdown#toggle"
                 aria-haspopup="true"
                 aria-expanded="false">
-          Planificación
+          <%= t('.planning_dropdown') %>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
         <div class="hidden bg-bunker-900/50 rounded-b-md" data-navbar-dropdown-target="dropdown">
           <div class="pl-4 py-1 space-y-1">
-            <%= navbar_dropdown_item_to("Presupuestos", budgets_path) %>
-            <%= navbar_dropdown_item_to("Recordatorios", obligatory_payments_path) %>
-            <%= navbar_dropdown_item_to("Cal. Recordatorios", obligatory_payments_calendar_index_path) %>
-            <%= navbar_dropdown_item_to("Metas de Ahorro", saving_goals_path) %>
+            <%= navbar_dropdown_item_to(t('.budgets_link'), budgets_path) %>
+            <%= navbar_dropdown_item_to(t('.reminders_link'), obligatory_payments_path) %>
+            <%= navbar_dropdown_item_to(t('.reminders_calendar_link'), obligatory_payments_calendar_index_path) %>
+            <%= navbar_dropdown_item_to(t('.saving_goals_link'), saving_goals_path) %>
           </div>
         </div>
       </div>
 
       <!-- Reportes -->
-      <%= navbar_link_to("Reportes", reports_path) %>
+      <%= navbar_link_to(t('.reports_link'), reports_path) %>
 
       <!-- Grupo: Administración -->
       <div data-controller="navbar-dropdown" class="rounded-md overflow-hidden">
@@ -219,15 +219,15 @@
                 data-action="click->navbar-dropdown#toggle"
                 aria-haspopup="true"
                 aria-expanded="false">
-          Administración
+          <%= t('.administration_dropdown') %>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
         <div class="hidden bg-bunker-900/50 rounded-b-md" data-navbar-dropdown-target="dropdown">
           <div class="pl-4 py-1 space-y-1">
-            <%= navbar_dropdown_item_to("Perfil Laboral", current_user&.employment_information ? employment_information_path : new_employment_information_path) %>
-            <%= navbar_dropdown_item_to("Nómina", edit_payroll_profile_path) %>
+            <%= navbar_dropdown_item_to(t('.employment_profile_link'), current_user&.employment_information ? employment_information_path : new_employment_information_path) %>
+            <%= navbar_dropdown_item_to(t('.payroll_link'), edit_payroll_profile_path) %>
           </div>
         </div>
       </div>
@@ -241,11 +241,11 @@
             </div>
             <p class="text-sm text-bunker-300 truncate"><%= current_user.email %></p>
           </div>
-          <%= navbar_dropdown_item_to("Editar perfil", edit_user_registration_path) %>
+          <%= navbar_dropdown_item_to(t('.edit_profile_link'), edit_user_registration_path) %>
           <%= button_to destroy_user_session_path,
                 method: :delete,
                 class: "navbar-dropdown-item w-full text-left text-red-400 hover:text-red-300 hover:bg-red-500/10" do %>
-            Cerrar sesión
+            <%= t('.sign_out_link') %>
           <% end %>
         </div>
       <% end %>

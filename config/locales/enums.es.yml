@@ -1,0 +1,42 @@
+es:
+  activerecord:
+    attributes:
+      employment_information:
+        calculation_periodicity:
+          daily_calculation: "Diario"
+          weekly_calculation: "Semanal"
+          biweekly_calculation: "Quincenal"
+          monthly_calculation: "Mensual"
+          annual_calculation: "Anual"
+        payment_frequency:
+          weekly_payment: "Semanal"
+          biweekly_payment: "Quincenal"
+          monthly_payment: "Mensual"
+      recurring_transaction:
+        frequency:
+          daily: "Diario"
+          weekly: "Semanal"
+          bi_weekly: "Quincenal"
+          monthly: "Mensual"
+          bi_monthly: "Bimestral"
+          quarterly: "Trimestral"
+          semi_annually: "Semestral"
+          annually: "Anual"
+        status:
+          active: "Activo"
+          paused: "Pausado"
+          completed: "Completado"
+          cancelled: "Cancelado"
+      saving_goal:
+        status:
+          active: "Activo"
+          paused: "Pausado"
+          achieved: "Alcanzada"
+          cancelled: "Cancelado"
+
+  saving_goals:
+    status:
+      active: "Activo"
+      paused: "Pausado"
+      achieved: "Alcanzada"
+      cancelled: "Cancelado"

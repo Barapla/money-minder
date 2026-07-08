@@ -1,0 +1,22 @@
+es:
+  shared:
+    navbar:
+      brand: "MoneyMinder"
+      dashboard_link: "Dashboard"
+      transactions_dropdown: "Transacciones"
+      all_transactions: "Todas las transacciones"
+      financial_calendar: "Calendario financiero"
+      planning_dropdown: "Planificación"
+      budgets_link: "Presupuestos"
+      reminders_link: "Recordatorios"
+      reminders_calendar_link: "Cal. Recordatorios"
+      saving_goals_link: "Metas de Ahorro"
+      reports_link: "Reportes"
+      administration_dropdown: "Administración"
+      employment_profile_link: "Perfil Laboral"
+      payroll_link: "Nómina"
+      signed_in_as: "Sesión iniciada como"
+      edit_profile_link: "Editar perfil"
+      sign_out_link: "Cerrar sesión"
+      open_mobile_menu_label: "Abrir menú de navegación"
+      user_menu_label: "Menú de usuario"

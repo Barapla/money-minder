@@ -1,7 +1,7 @@
 <%= form_with(model: saving_goal, local: true, html: { class: "px-8 py-6" }) do |form| %>
   <% if saving_goal.errors.any? %>
     <div class="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
-      <p class="text-sm font-medium text-red-400 mb-2"><%= pluralize(saving_goal.errors.count, 'error') %> al guardar la meta:</p>
+      <p class="text-sm font-medium text-red-400 mb-2"><%= t('saving_goals.form.error_count', count: saving_goal.errors.count) %></p>
       <ul class="list-disc list-inside space-y-1">
         <% saving_goal.errors.full_messages.each do |msg| %>
           <li class="text-sm text-red-300"><%= msg %></li>
@@ -13,16 +13,16 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
     <!-- Nombre -->
     <div>
-      <%= form.label :name, "Nombre de la meta", class: "block text-sm font-medium text-bunker-300 mb-2" %>
+      <%= form.label :name, t('saving_goals.form.name_label'), class: "block text-sm font-medium text-bunker-300 mb-2" %>
       <%= form.text_field :name,
-            placeholder: "Ej: Enganche auto, Laptop nueva",
+            placeholder: t('saving_goals.form.name_placeholder'),
             required: true,
             class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white placeholder-bunker-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" %>
     </div>
 
     <!-- Monto objetivo -->
     <div>
-      <%= form.label :target_amount, "Monto objetivo", class: "block text-sm font-medium text-bunker-300 mb-2" %>
+      <%= form.label :target_amount, t('saving_goals.form.target_amount_label'), class: "block text-sm font-medium text-bunker-300 mb-2" %>
       <div class="relative">
         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-bunker-400 font-medium">$</span>
         <%= form.number_field :target_amount,
@@ -36,16 +36,16 @@
 
     <!-- Fecha límite -->
     <div>
-      <%= form.label :deadline, "Fecha límite (opcional)", class: "block text-sm font-medium text-bunker-300 mb-2" %>
+      <%= form.label :deadline, t('saving_goals.form.deadline_label'), class: "block text-sm font-medium text-bunker-300 mb-2" %>
       <%= form.date_field :deadline,
             class: "w-full bg-bunker-800/60 border border-bunker-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" %>
-      <p class="mt-1 text-xs text-bunker-500">Deja vacío si la meta no tiene fecha límite</p>
+      <p class="mt-1 text-xs text-bunker-500"><%= t('saving_goals.form.deadline_help') %></p>
     </div>
 
     <!-- Estado (solo en edición) -->
     <% if saving_goal.persisted? %>
       <div>
-        <%= form.label :status, "Estado", class: "block text-sm font-medium text-bunker-300 mb-2" %>
+        <%= form.label :status, t('saving_goals.form.status_label'), class: "block text-sm font-medium text-bunker-300 mb-2" %>
         <%= form.select :status,
               SavingGoal.statuses.keys.map { |s| [t("saving_goals.status.#{s}", default: s.humanize), s] },
               {},
@@ -55,9 +55,9 @@
   </div>
 
   <div class="flex gap-4 mt-8 pt-6 border-t border-bunker-800/50">
-    <%= form.submit saving_goal.persisted? ? "Guardar cambios" : "Crear meta",
+    <%= form.submit saving_goal.persisted? ? t('saving_goals.form.submit_update') : t('saving_goals.form.submit_create'),
           class: "px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl font-medium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer" %>
-    <%= link_to "Cancelar", saving_goals_path,
+    <%= link_to t('saving_goals.form.cancel'), saving_goals_path,
           class: "px-6 py-3 bg-bunker-800/60 text-bunker-300 border border-bunker-700/50 rounded-xl font-medium hover:bg-bunker-700/60 hover:text-white transition-all duration-200" %>
   </div>
 <% end %>

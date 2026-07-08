@@ -1,0 +1,16 @@
+es:
+  budgets:
+    index:
+      title: "Presupuestos"
+      subtitle: "Gestiona todos tus presupuestos"
+      new_button: "Nuevo Presupuesto"
+      table_title: "Lista de Presupuestos"
+      table_actions: "Acciones"
+    new:
+      title: "Nuevo Presupuesto"
+      subtitle: "Crea un nuevo presupuesto para controlar tus gastos"
+      form_section: "Información del Presupuesto"
+    edit:
+      title: "Editar Presupuesto"
+      subtitle: "Edita el presupuesto"
+      form_section: "Información del Presupuesto"
