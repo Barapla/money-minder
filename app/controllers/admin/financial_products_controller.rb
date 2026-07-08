@@ -3,12 +3,16 @@
 module Admin
   # CRUD de productos financieros para administradores.
   class FinancialProductsController < Admin::ApplicationController
-    before_action :set_financial_product, only: %i[edit update]
+    before_action :set_financial_product, only: %i[show edit update]
 
     def index
       @products = FinancialProduct.includes(:financial_institution).alphabetical
       @products = @products.active if params[:active_only] == 'true'
       @grouped_products = @products.group_by(&:financial_institution)
+    end
+
+    def show
+      @benefits = @financial_product.benefits.order(created_at: :desc)
     end
 
     def new

@@ -48,3 +48,13 @@ es:
         debit: "Debito"
         credit: "Credito"
         savings_fund: "Fondo de ahorro"
+    financial_product_benefit:
+      benefit_type:
+        annual_yield: "Rendimiento anual"
+        cashback: "Cashback"
+        points: "Puntos"
+        discount: "Descuento"
+      unit:
+        percentage: "Porcentaje"
+        points: "Puntos"
+        fixed_amount: "Monto fijo"

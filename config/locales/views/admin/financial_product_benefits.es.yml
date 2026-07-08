@@ -1,0 +1,43 @@
+es:
+  helpers:
+    benefit_display_value:
+      points: "puntos"
+  admin:
+    financial_product_benefits:
+      new:
+        title: "Nuevo Beneficio"
+      edit:
+        title: "Editar Beneficio"
+      create:
+        success: "Beneficio creado exitosamente."
+      update:
+        success: "Beneficio actualizado exitosamente."
+      destroy:
+        success: "Beneficio eliminado exitosamente."
+      form:
+        benefit_type_label: "Tipo de beneficio"
+        benefit_type_prompt: "Selecciona un tipo"
+        unit_label: "Unidad de medida"
+        unit_prompt: "Selecciona una unidad"
+        base_value_label: "Valor base"
+        base_value_help: "Valor del beneficio cuando se cumplen todos los requisitos"
+        reduced_value_label: "Valor reducido (opcional)"
+        reduced_value_help: "Valor del beneficio cuando NO se cumplen los requisitos"
+        amount_cap_label: "Monto tope (opcional)"
+        amount_cap_help: "Saldo o monto maximo sobre el cual aplica el beneficio"
+        description_label: "Descripcion"
+        description_placeholder: "Ej: 13% rendimiento con requisitos, 7% sin cumplir"
+        active_label: "Beneficio activo"
+        submit_create: "Crear beneficio"
+        submit_update: "Guardar cambios"
+        cancel: "Cancelar"
+        error_count:
+          one: "Se encontro 1 error que impide guardar el beneficio:"
+          other: "Se encontraron %{count} errores que impiden guardar el beneficio:"
+      item:
+        reduced_label: "sin requisitos"
+        cap_label: "Aplica hasta %{amount}"
+        inactive: "Inactivo"
+        edit: "Editar"
+        delete: "Eliminar"
+        confirm_delete: "Eliminar este beneficio? Esta accion no se puede deshacer."
