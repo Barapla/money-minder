@@ -1,0 +1,8 @@
+# Configuracion de bundler-audit.
+#
+# CVE-2026-38969 (webrick): sin version corregida disponible todavia.
+# webrick es una dependencia transitiva de `rackup`; esta app usa Puma
+# como servidor (ver Gemfile), por lo que webrick nunca se ejecuta.
+# Remover este ignore cuando exista un release de webrick que lo corrija.
+ignore:
+  - CVE-2026-38969
