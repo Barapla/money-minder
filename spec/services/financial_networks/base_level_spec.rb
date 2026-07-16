@@ -7,6 +7,10 @@ RSpec.describe FinancialNetworks::BaseLevel do
     expect { described_class.name }.to raise_error(NotImplementedError)
   end
 
+  it 'raises NotImplementedError when id is called on BaseLevel directly' do
+    expect { described_class.id }.to raise_error(NotImplementedError)
+  end
+
   it 'defaults benefits to an empty array' do
     expect(described_class.benefits).to eq([])
   end

@@ -11,6 +11,8 @@ module FinancialNetworks
   #   FinancialNetworks::Mastercard::WorldElite.id #=> "mastercard_world_elite"
   class BaseLevel
     def self.id
+      raise NotImplementedError, 'BaseLevel must be subclassed' if self == BaseLevel
+
       "#{network_id}_#{to_s.demodulize.underscore}"
     end
 
