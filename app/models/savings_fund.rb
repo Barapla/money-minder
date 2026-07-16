@@ -2,6 +2,8 @@
 
 # This class represents a savings fund in the application.
 class SavingsFund < ApplicationRecord
+  include FinancialProductAssociable
+
   belongs_to :budget
 
   # Usar las transacciones para calcular el saldo

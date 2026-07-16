@@ -64,12 +64,14 @@ es:
         budget_type_id: "Tipo de presupuesto"
         icon_id: "Icono"
         color_id: "Color"
+        financial_product_id: "Producto del catálogo financiero"
       credit_card:
         initial_debt: "Presupuesto inicial de deuda"
         limit_amount: "Presupuesto límite"
         payday: "Siguiente día de pago"
         payment_due_days: "Días para el pago"
         cutting_day: "Día de corte"
+        financial_product_id: "Producto del catálogo financiero"
       obligatory_payment:
         name: "Nombre del pago"
         amount: "Monto"
@@ -96,6 +98,7 @@ es:
         compound_frequency_id: "Frecuencia de capitalización"
         minimum_balance: "Saldo mínimo"
         max_balance: "Saldo máximo"
+        financial_product_id: "Producto del catálogo financiero"
       transaction:
         amount: "Monto"
         transaction_date: "Fecha"
@@ -158,6 +161,7 @@ es:
         greater_than: "debe ser mayor que %{count}"
         less_than_or_equal_to: "debe ser menor o igual que %{count}"
         out_of_range: "debe estar entre 0 y 100 para unidad de tipo porcentaje"
+        invalid_financial_product: "no corresponde a ningun producto del catalogo financiero"
   
   recurring_transactions:
     create:

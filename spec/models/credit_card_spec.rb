@@ -170,4 +170,42 @@ RSpec.describe CreditCard, type: :model do
       end
     end
   end
+
+  describe 'asociacion a producto del catalogo financiero (FEAT-022)' do
+    it 'CA4: autogenera el nombre del budget asociado a partir del producto' do
+      card = CreditCard.new(
+        budget: budget,
+        limit_amount: 20_000,
+        initial_debt: 0,
+        cutting_day: 15,
+        payment_due_days: 5,
+        financial_product_id: 'klar_debit_card'
+      )
+
+      expect(card).to be_valid
+      expect(budget.reload.name).to eq("Cuenta Klar Debito de #{user.first_name}")
+    end
+
+    it 'rechaza un financial_product_id que no existe en el catalogo' do
+      card = CreditCard.new(
+        budget: budget,
+        limit_amount: 20_000,
+        initial_debt: 0,
+        cutting_day: 15,
+        payment_due_days: 5,
+        financial_product_id: 'no_existe'
+      )
+
+      expect(card).to be_invalid
+      expect(card.errors[:financial_product_id])
+        .to include('no corresponde a ningun producto del catalogo financiero')
+    end
+
+    it 'sin financial_product_id es valido y no modifica el nombre del budget' do
+      card = build_credit_card(initial_debt: 0)
+
+      expect(budget.reload.name).to eq('Tarjeta de Prueba')
+      expect(card.financial_product_id).to be_nil
+    end
+  end
 end

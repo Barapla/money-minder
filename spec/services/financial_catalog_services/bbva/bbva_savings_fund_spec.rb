@@ -6,6 +6,7 @@ RSpec.describe FinancialCatalogServices::Bbva::BbvaSavingsFund do
   subject(:product) { described_class.new }
 
   it { expect(product).to be_a(FinancialCatalogServices::BaseProduct) }
+  it { expect(product.id).to eq('bbva_savings_fund') }
   it { expect(product.name).to eq('Ahorro Digital') }
   it { expect(product.institution).to eq('BBVA') }
   it { expect(product.product_type).to eq(:savings_fund) }

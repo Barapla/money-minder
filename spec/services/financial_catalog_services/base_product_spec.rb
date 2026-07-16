@@ -12,6 +12,7 @@ RSpec.describe FinancialCatalogServices::BaseProduct do
     )
   end
 
+  it { expect(product.id).to eq('base_product') }
   it { expect(product.name).to eq('Test Product') }
   it { expect(product.institution).to eq('Test Bank') }
   it { expect(product.product_type).to eq(:debit) }

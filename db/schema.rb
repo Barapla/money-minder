@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_16_044910) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_16_062441) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -88,8 +88,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_16_044910) do
     t.string "name", null: false
     t.boolean "personal", default: false
     t.bigint "user_id", null: false
+    t.string "financial_product_id"
     t.index ["budget_type_id"], name: "index_budgets_on_budget_type_id"
     t.index ["color_id"], name: "index_budgets_on_color_id"
+    t.index ["financial_product_id"], name: "index_budgets_on_financial_product_id"
     t.index ["icon_id"], name: "index_budgets_on_icon_id"
     t.index ["user_id"], name: "index_budgets_on_user_id"
     t.index ["uuid"], name: "index_budgets_on_uuid", unique: true
@@ -225,8 +227,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_16_044910) do
     t.decimal "credit_limit", precision: 10, scale: 2
     t.decimal "available_credit", precision: 10, scale: 2
     t.decimal "current_balance", precision: 10, scale: 2, default: "0.0"
+    t.string "financial_product_id"
     t.index ["budget_id"], name: "index_credit_cards_on_budget_id"
     t.index ["credit_card_product_id"], name: "index_credit_cards_on_credit_card_product_id"
+    t.index ["financial_product_id"], name: "index_credit_cards_on_financial_product_id"
     t.index ["uuid"], name: "index_credit_cards_on_uuid", unique: true
   end
 
@@ -411,9 +415,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_16_044910) do
     t.bigint "budget_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "financial_product_id"
     t.index ["account_type_id"], name: "index_savings_funds_on_account_type_id"
     t.index ["budget_id"], name: "index_savings_funds_on_budget_id"
     t.index ["compound_frequency_id"], name: "index_savings_funds_on_compound_frequency_id"
+    t.index ["financial_product_id"], name: "index_savings_funds_on_financial_product_id"
     t.index ["uuid"], name: "index_savings_funds_on_uuid", unique: true
   end
 
