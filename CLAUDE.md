@@ -40,7 +40,7 @@ Gemas clave: `devise`, `httparty`, `sidekiq-cron`, `brakeman`, `bundler-audit`
 | Catálogos | `GroupCatalog`, `Catalog` | Completo |
 | Tarjetas de crédito | `CreditCard`, `CreditCardCycle`, `CreditCardProduct`, `CreditCardTier`, `CreditCardCycleTransaction` | Completo |
 | Fondos de ahorro | `SavingsFund` | Completo |
-| Instituciones financieras | `FinancialInstitution` | Completo |
+| Catálogo financiero (código) | `FinancialCatalogServices::Catalog`, `FinancialCatalogServices::BaseProduct` | Completo |
 | Pagos obligatorios | `ObligatoryPayment` | Completo |
 | Reportes IA | `AiReport` | Completo |
 | Historial crediticio | `CreditScoreEvent`, `Status` | Completo |
@@ -232,6 +232,33 @@ Para crear transacciones en specs, usar las factories:
 - `status` como enum con default `:active`; la transicion a `:achieved` es manual por el usuario
 - `deadline` es opcional; si no se establece, la meta no tiene fecha limite
 - Validacion de `deadline` solo en `on: :create` para permitir editar metas con fechas pasadas
+
+---
+
+## Financial Products Catalog (FEAT-020)
+
+El catalogo de instituciones financieras y sus productos/beneficios **ya no vive en base de datos**. Antes existian `FinancialInstitution`, `FinancialProduct` y `FinancialProductBenefit` como modelos ActiveRecord con panel de administracion en `/admin/financial_institutions` y `/admin/financial_products`; esas tablas, modelos, controllers y vistas fueron eliminados.
+
+Las reglas de cada institucion (tramos, beneficios, requisitos) son mas formulas que datos planos, asi que el catalogo ahora sigue el mismo patron que `PayrollConstants`: **clases Ruby versionadas en codigo**, no registros editables en runtime.
+
+### Estructura
+
+`app/services/financial_catalog_services/` — una subcarpeta por institucion (`nu/`, `klar/`, `bbva/`, etc):
+
+- **`BaseProduct`** — clase base con atributos `name`, `institution`, `product_type` (`:cash`, `:debit`, `:credit`, `:savings_fund`), `active` y `benefits` (array de hashes `{ type:, unit:, value:, description: }`).
+- Cada producto concreto (ej. `FinancialCatalogServices::Nu::NuCreditCard`) hereda de `BaseProduct` y define sus atributos en el constructor.
+- **`Catalog.all_products`** — registry central; retorna instancias de todos los productos activos definidos en codigo.
+
+```ruby
+FinancialCatalogServices::Catalog.all_products
+# => [#<Nu::NuCreditCard ...>, #<Klar::KlarDebitCard ...>, #<Bbva::BbvaSavingsFund ...>]
+```
+
+### Decisiones de diseno
+
+- Sin BD: agregar una institucion o producto nuevo es agregar una clase nueva, no un registro
+- Sin FK a datos de usuario: si una feature futura necesita referenciar un producto (ej. `CreditCard`), debe usar un `product_identifier` (string) que matchee con la clase, no una FK
+- `credit_card_products.financial_institution_id` (tabla sin controller/vista/ruta, scaffolding sin usar) perdio su FK a `financial_institutions` al eliminarse la tabla; la columna permanece pero sin referencia
 
 ---
 

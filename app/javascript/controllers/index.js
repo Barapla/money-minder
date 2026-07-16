@@ -67,9 +67,6 @@ application.register("pagination", PaginationController)
 import RecurrenceFormController from "./recurrence_form_controller"
 application.register("recurrence-form", RecurrenceFormController)
 
-import RequirementFormController from "./requirement_form_controller"
-application.register("requirement-form", RequirementFormController)
-
 import RecurringTransactionFormController from "./recurring_transaction_form_controller"
 application.register("recurring-transaction-form", RecurringTransactionFormController)
 
