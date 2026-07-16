@@ -8,7 +8,10 @@ module FinancialCatalogServices
         Nu::NuCreditCard.new,
         Nu::NuFrozenSavings90.new,
         Klar::KlarDebitCard.new,
-        Bbva::BbvaSavingsFund.new
+        Bbva::BbvaSavingsFund.new,
+        MercadoPago::MercadoPagoCuenta.new,
+        MercadoPago::MercadoPagoTarjetaDebito.new,
+        MercadoPago::MercadoPagoTarjetaCredito.new
       ].select(&:active)
     end
   end

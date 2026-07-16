@@ -261,6 +261,10 @@ FinancialCatalogServices::Catalog.all_products
 - Sin FK a datos de usuario: si una feature futura necesita referenciar un producto (ej. `CreditCard`), debe usar un `product_identifier` (string) que matchee con la clase, no una FK
 - `credit_card_products.financial_institution_id` (tabla sin controller/vista/ruta, scaffolding sin usar) perdio su FK a `financial_institutions` al eliminarse la tabla; la columna permanece pero sin referencia
 
+### Estado actual
+
+- **Mercado Pago** (FEAT-025) agregado en `app/services/financial_catalog_services/mercado_pago/`: `MercadoPagoCuenta` (fondo de ahorro con 3 tramos de tasa por saldo), `MercadoPagoTarjetaDebito` (Mastercard, sin beneficios propios) y `MercadoPagoTarjetaCredito` (Visa Classic, sin anualidad ni cashback)
+
 ---
 
 ## Financial Networks — Redes y niveles de tarjetas (FEAT-023)

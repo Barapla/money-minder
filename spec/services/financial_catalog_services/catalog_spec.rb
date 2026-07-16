@@ -11,7 +11,10 @@ RSpec.describe FinancialCatalogServices::Catalog do
         an_instance_of(FinancialCatalogServices::Nu::NuCreditCard),
         an_instance_of(FinancialCatalogServices::Nu::NuFrozenSavings90),
         an_instance_of(FinancialCatalogServices::Klar::KlarDebitCard),
-        an_instance_of(FinancialCatalogServices::Bbva::BbvaSavingsFund)
+        an_instance_of(FinancialCatalogServices::Bbva::BbvaSavingsFund),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoCuenta),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaDebito),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaCredito)
       )
     end
 
