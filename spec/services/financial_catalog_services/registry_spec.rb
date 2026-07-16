@@ -67,5 +67,13 @@ RSpec.describe FinancialCatalogServices::Registry do
 
       expect(collection.map(&:institution)).to eq(['Nu'])
     end
+
+    it 'to_a does not expose the internal array for mutation' do
+      collection = described_class.new([FinancialCatalogServices::Nu::NuCreditCard.new])
+
+      collection.to_a.clear
+
+      expect(collection.to_a.size).to eq(1)
+    end
   end
 end

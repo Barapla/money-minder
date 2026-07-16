@@ -58,7 +58,7 @@ module FinancialCatalogServices
       end
 
       def to_a
-        @products
+        @products.dup
       end
     end
   end
