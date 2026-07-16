@@ -2,8 +2,8 @@
   "ignored_warnings": [
     {
       "warning_type": "Unmaintained Dependency",
-      "warning_code": 120,
-      "fingerprint": "21ab0fe00fdd5899ffc405cff75aadb91b805ee996a614f7e27b08a287e9062d",
+      "warning_code": 122,
+      "fingerprint": "98b26f60d776fd41ee6f088c833725145be9aac2d7c5b33780241c273622db42",
       "check_name": "EOLRails",
       "message": "Support for Rails 7.2.3.1 ends on 2026-08-09",
       "file": "Gemfile.lock",
@@ -41,6 +41,6 @@
       "note": "Falso positivo: goal_ids proviene de pluck(:id) — enteros de la base de datos, no input de usuario. Los valores se pasan como bind parameters via update_all([sql, *binds])."
     }
   ],
-  "updated": "2026-06-24",
+  "updated": "2026-07-15",
   "brakeman_version": "8.0.5"
 }
