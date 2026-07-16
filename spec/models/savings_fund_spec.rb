@@ -41,6 +41,13 @@ RSpec.describe SavingsFund, type: :model do
       expect(fund).to be_valid
       expect(budget.reload.name).to eq('Cuenta Ahorro Digital de Bryan')
     end
+
+    it 'FEAT-025 CA2: autogenera el nombre para la Cuenta Mercado Pago' do
+      fund = build_savings_fund(financial_product_id: 'mercado_pago_cuenta')
+
+      expect(fund).to be_valid
+      expect(budget.reload.name).to eq('Cuenta Mercado Pago de Bryan')
+    end
   end
 
   describe 'financial_product_id invalido' do

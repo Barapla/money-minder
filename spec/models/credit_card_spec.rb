@@ -186,6 +186,29 @@ RSpec.describe CreditCard, type: :model do
       expect(budget.reload.name).to eq("Cuenta Klar Debito de #{user.first_name}")
     end
 
+    it 'CA4: producto de debito Mercado Pago menciona Mastercard en su descripcion' do
+      product = FinancialCatalogServices::Registry.all_products.find { |p| p.id == 'mercado_pago_tarjeta_debito' }
+
+      expect(product.description).to include('Mastercard')
+    end
+
+    it 'CA5: producto de credito Mercado Pago usa Visa Classic sin anualidad ni cashback' do
+      card = CreditCard.new(
+        budget: budget,
+        limit_amount: 20_000,
+        initial_debt: 0,
+        cutting_day: 15,
+        payment_due_days: 5,
+        financial_product_id: 'mercado_pago_tarjeta_credito'
+      )
+      product = FinancialCatalogServices::Registry.all_products.find { |p| p.id == 'mercado_pago_tarjeta_credito' }
+
+      expect(card).to be_valid
+      expect(budget.reload.name).to eq("Cuenta Tarjeta de crédito Mercado Pago de #{user.first_name}")
+      expect(product.network_level).to eq(FinancialNetworks::Visa::Classic)
+      expect(product.benefits).to eq([])
+    end
+
     it 'rechaza un financial_product_id que no existe en el catalogo' do
       card = CreditCard.new(
         budget: budget,

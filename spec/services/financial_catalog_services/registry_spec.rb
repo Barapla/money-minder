@@ -9,7 +9,10 @@ RSpec.describe FinancialCatalogServices::Registry do
         an_instance_of(FinancialCatalogServices::Nu::NuCreditCard),
         an_instance_of(FinancialCatalogServices::Nu::NuFrozenSavings90),
         an_instance_of(FinancialCatalogServices::Klar::KlarDebitCard),
-        an_instance_of(FinancialCatalogServices::Bbva::BbvaSavingsFund)
+        an_instance_of(FinancialCatalogServices::Bbva::BbvaSavingsFund),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoCuenta),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaDebito),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaCredito)
       )
     end
   end
@@ -17,13 +20,22 @@ RSpec.describe FinancialCatalogServices::Registry do
   describe '.by_type' do
     it 'returns only products matching the given type' do
       expect(described_class.by_type('credit').to_a).to contain_exactly(
-        an_instance_of(FinancialCatalogServices::Nu::NuCreditCard)
+        an_instance_of(FinancialCatalogServices::Nu::NuCreditCard),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaCredito)
       )
     end
 
     it 'accepts the type constants' do
       expect(described_class.by_type(described_class::DEBIT).to_a).to contain_exactly(
-        an_instance_of(FinancialCatalogServices::Klar::KlarDebitCard)
+        an_instance_of(FinancialCatalogServices::Klar::KlarDebitCard),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaDebito)
+      )
+    end
+
+    it 'returns the savings fund products, including Mercado Pago (CA6)' do
+      expect(described_class.by_type(described_class::SAVINGS).to_a).to contain_exactly(
+        an_instance_of(FinancialCatalogServices::Bbva::BbvaSavingsFund),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoCuenta)
       )
     end
 
@@ -37,6 +49,14 @@ RSpec.describe FinancialCatalogServices::Registry do
       expect(described_class.by_institution('Nu').to_a).to contain_exactly(
         an_instance_of(FinancialCatalogServices::Nu::NuCreditCard),
         an_instance_of(FinancialCatalogServices::Nu::NuFrozenSavings90)
+      )
+    end
+
+    it 'returns the three Mercado Pago products' do
+      expect(described_class.by_institution('Mercado Pago').to_a).to contain_exactly(
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoCuenta),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaDebito),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaCredito)
       )
     end
 
