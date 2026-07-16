@@ -4,6 +4,7 @@
 class CreditCard < ApplicationRecord
   include Utils::CreditCard::TemporaryConsciousness
   include Utils::CreditCard::CycleAssignment
+  include FinancialProductAssociable
 
   belongs_to :budget
   has_many :credit_card_cycles, dependent: :destroy

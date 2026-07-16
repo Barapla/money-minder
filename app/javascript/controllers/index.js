@@ -64,6 +64,9 @@ application.register("navbar-mobile", NavbarMobileController)
 import PaginationController from "./pagination_controller"
 application.register("pagination", PaginationController)
 
+import ProductNameGeneratorController from "./product_name_generator_controller"
+application.register("product-name-generator", ProductNameGeneratorController)
+
 import RecurrenceFormController from "./recurrence_form_controller"
 application.register("recurrence-form", RecurrenceFormController)
 

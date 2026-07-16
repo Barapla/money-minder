@@ -5,22 +5,43 @@
         form_validator_validate_on_input_value: false} }) do |form| %>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Left Column -->
-        <div>
-            <%= render Forms::InputComponent.new(
-                name: :name,
+        <div data-controller="product-name-generator" data-product-name-generator-user-name-value="<%= current_user.first_name %>">
+            <%= render Forms::SelectComponent.new(
+                name: :financial_product_id,
                 form:,
-                type: :text,
-                options: { 
-                    placeholder: "Nuevo Presupuesto",
-                    help_text: "Nombre descriptivo del presupuesto",
-                    required: true,
+                options_collection: FinancialCatalogServices::Registry.all_products.map { |p| [p.name, p.id] },
+                options: {
+                    prompt: "Sin producto específico",
+                    help_text: "Vincula este presupuesto a un producto del catálogo financiero (opcional)",
                     data: {
-                        "budgets--preview-target": "name",
-                        action: "input->budgets--preview#updatePreview",
-                        required_message: "Por favor, ingresa un nombre para el presupuesto",
+                        product_name_generator_target: "select",
+                        action: "change->product-name-generator#toggle"
                     }
                 }
             ) %>
+
+            <div data-product-name-generator-target="nameField">
+                <%= render Forms::InputComponent.new(
+                    name: :name,
+                    form:,
+                    type: :text,
+                    options: {
+                        placeholder: "Nuevo Presupuesto",
+                        help_text: "Nombre descriptivo del presupuesto",
+                        required: true,
+                        data: {
+                            "budgets--preview-target": "name",
+                            action: "input->budgets--preview#updatePreview",
+                            required_message: "Por favor, ingresa un nombre para el presupuesto",
+                        }
+                    }
+                ) %>
+            </div>
+
+            <div data-product-name-generator-target="namePreview" class="hidden form-group">
+                <p class="text-xs text-bunker-400 mt-1">Nombre: <span class="font-medium text-bunker-200" data-product-name-generator-target="preview"></span></p>
+            </div>
+
             <%= turbo_frame_tag "budget_type_frame" do  %>
                 <% if budget.new_record? || budget.budget_type != nil %>
                     <%= render partial: "budgets/forms/#{budget.budget_type&.code || 'cash'}/form", locals: { budget: } %>
