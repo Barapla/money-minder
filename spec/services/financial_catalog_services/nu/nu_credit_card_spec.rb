@@ -16,4 +16,8 @@ RSpec.describe FinancialCatalogServices::Nu::NuCreditCard do
   it 'includes a cashback benefit' do
     expect(product.benefits).to include(hash_including(type: :cashback))
   end
+
+  it 'has Visa Gold as its network_level' do
+    expect(product.network_level).to eq(FinancialNetworks::Visa::Gold)
+  end
 end

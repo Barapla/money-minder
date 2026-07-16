@@ -14,5 +14,13 @@ module FinancialCatalogServices
       @active = active
       @benefits = benefits
     end
+
+    # Red y nivel de tarjeta asociados a este producto (ver FinancialNetworks).
+    # Productos sin red/nivel (ej. cash, savings_fund) retornan nil.
+    #
+    # @return [Class, nil] subclase de FinancialNetworks::BaseLevel, o nil
+    def network_level
+      nil
+    end
   end
 end

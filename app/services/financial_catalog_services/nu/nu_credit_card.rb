@@ -14,6 +14,10 @@ module FinancialCatalogServices
           ]
         )
       end
+
+      def network_level
+        FinancialNetworks::Visa::Gold
+      end
     end
   end
 end
