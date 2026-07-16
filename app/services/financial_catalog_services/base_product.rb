@@ -4,6 +4,13 @@ module FinancialCatalogServices
   # Clase base para productos financieros definidos en codigo (FEAT-020).
   # Cada institucion implementa subclases concretas (ver Nu::NuCreditCard, Klar::KlarDebitCard, etc).
   class BaseProduct
+    # Frecuencia de devengo de rendimientos para productos de plazo fijo
+    # (ver FinancialNetworks-style override: subclases redefinen esta constante).
+    # Valores permitidos: :daily (interes compuesto diario) o :at_maturity
+    # (interes simple liquidado al vencimiento). Ver TermSavingServices::AccruedInterestCalculator.
+    ACCRUAL_FREQUENCY = :at_maturity
+    ALLOWED_ACCRUAL_FREQUENCIES = %i[daily at_maturity].freeze
+
     attr_reader :id, :name, :institution, :product_type, :active, :benefits
 
     def initialize(name:, institution:, product_type:, active: true, benefits: [])
@@ -21,6 +28,11 @@ module FinancialCatalogServices
     # @return [Class, nil] subclase de FinancialNetworks::BaseLevel, o nil
     def network_level
       nil
+    end
+
+    # @return [Symbol] :daily o :at_maturity
+    def accrual_frequency
+      self.class::ACCRUAL_FREQUENCY
     end
   end
 end

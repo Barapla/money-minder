@@ -9,6 +9,7 @@ RSpec.describe FinancialCatalogServices::Catalog do
     it 'returns an instance of every active product defined in code' do
       expect(products).to contain_exactly(
         an_instance_of(FinancialCatalogServices::Nu::NuCreditCard),
+        an_instance_of(FinancialCatalogServices::Nu::NuFrozenSavings90),
         an_instance_of(FinancialCatalogServices::Klar::KlarDebitCard),
         an_instance_of(FinancialCatalogServices::Bbva::BbvaSavingsFund)
       )

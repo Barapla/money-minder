@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_16_062441) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_16_081037) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -436,6 +436,23 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_16_062441) do
     t.index ["uuid"], name: "index_statuses_on_uuid", unique: true
   end
 
+  create_table "term_savings", force: :cascade do |t|
+    t.bigint "budget_id", null: false
+    t.integer "term_days", null: false
+    t.decimal "rate_locked", precision: 5, scale: 4, null: false
+    t.date "started_at", null: false
+    t.date "matures_at", null: false
+    t.decimal "principal_amount", precision: 15, scale: 2, null: false
+    t.string "financial_product_id"
+    t.integer "status", default: 0, null: false
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["budget_id"], name: "index_term_savings_on_budget_id"
+    t.index ["financial_product_id"], name: "index_term_savings_on_financial_product_id"
+    t.index ["status"], name: "index_term_savings_on_status"
+  end
+
   create_table "transaction_histories", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
@@ -542,6 +559,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_16_062441) do
   add_foreign_key "savings_funds", "catalogs", column: "account_type_id", name: "fk_savings_funds_account_type"
   add_foreign_key "savings_funds", "catalogs", column: "compound_frequency_id", name: "fk_savings_funds_compound_frequency"
   add_foreign_key "statuses", "group_catalogs", name: "fk_statuses_group_catalog"
+  add_foreign_key "term_savings", "budgets", name: "fk_term_savings_budget"
   add_foreign_key "transaction_histories", "transactions", name: "fk_transaction_histories_transactions"
   add_foreign_key "transactions", "budgets", column: "related_budget_id", name: "fk_transactions_related_budget"
   add_foreign_key "transactions", "budgets", name: "fk_transactions_budget"

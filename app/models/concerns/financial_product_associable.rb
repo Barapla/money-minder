@@ -28,7 +28,13 @@ module FinancialProductAssociable
     owner = financial_product_owner
     return unless product && owner
 
-    assign_generated_name("Cuenta #{product.name} de #{owner.first_name}")
+    assign_generated_name("#{financial_product_name_prefix} #{product.name} de #{owner.first_name}")
+  end
+
+  # Prefijo del nombre autogenerado. Override en el modelo incluyente para
+  # personalizarlo (ej. TermSaving usa 'Ahorro' en vez de 'Cuenta').
+  def financial_product_name_prefix
+    'Cuenta'
   end
 
   def matched_financial_product

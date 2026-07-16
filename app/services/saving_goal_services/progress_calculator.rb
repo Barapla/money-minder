@@ -25,7 +25,8 @@ module SavingGoalServices
     attr_reader :user
 
     def total_available_money
-      @total_available_money ||= cash_balance + debit_balance + savings_balance - credit_debt
+      @total_available_money ||=
+        cash_balance + debit_balance + savings_balance - credit_debt - locked_term_savings_balance
     end
 
     def cash_balance
@@ -45,6 +46,17 @@ module SavingGoalServices
                  .where(budgets: { user_id: user.id, active: true })
                  .where(active: true)
                  .sum('budgets.current_amount')
+    end
+
+    # Capital bloqueado en TermSavings activos que aun no vencen: no cuenta como
+    # disponible (FEAT-024). Los vencidos o retirados ya suman via savings_balance
+    # (el dinero vuelve al saldo del budget al madurar).
+    def locked_term_savings_balance
+      TermSaving.joins(:budget)
+                .where(budgets: { user_id: user.id, active: true })
+                .active
+                .where('matures_at > ?', Date.current)
+                .sum(:principal_amount)
     end
 
     def credit_debt
