@@ -111,9 +111,10 @@ class BudgetsController < ApplicationController
   def budget_params
     params.require(:budget).permit(
       :name, :budget_type_id, :current_amount, :icon_id, :color_id, :financial_product_id,
-      credit_card_attributes: %i[initial_debt limit_amount cutting_day payment_due_days],
+      credit_card_attributes: %i[initial_debt limit_amount cutting_day payment_due_days financial_product_id],
       savings_fund_attributes: %i[goal_amount target_date monthly_contribution interest_rate compound_frequency_id
-                                  account_type_id minimum_balance max_balance]
+                                  account_type_id minimum_balance max_balance financial_product_id],
+      term_savings_attributes: %i[id name term_days rate_locked started_at principal_amount financial_product_id]
     )
   end
 

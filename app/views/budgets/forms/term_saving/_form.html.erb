@@ -1,0 +1,116 @@
+<% term_saving = budget.term_savings.first || budget.term_savings.build %>
+<% selected_institution = selected_financial_institution(financial_product_id: term_saving.financial_product_id, persisted: term_saving.persisted?) %>
+<%= fields_for "budget[term_savings_attributes]", term_saving do |ts_form| %>
+    <%= ts_form.hidden_field :id %>
+
+    <div data-controller="product-selector"
+        data-product-selector-product-type-value="<%= FinancialCatalogServices::Registry::TERM_SAVING %>"
+        data-product-selector-selected-product-value="<%= term_saving.financial_product_id %>">
+        <%= render Forms::SelectComponent.new(
+            name: :institution,
+            form: ts_form,
+            options_collection: financial_institutions_for_select(FinancialCatalogServices::Registry::TERM_SAVING),
+            options: {
+                prompt: "Selecciona una institución",
+                help_text: "Institución financiera del producto (opcional)",
+                selected: selected_institution.to_s,
+                data: {
+                    product_selector_target: "institution",
+                    action: "change->product-selector#updateProducts"
+                }
+            }
+        ) %>
+
+        <div data-product-selector-target="productContainer">
+            <%= render Forms::SelectComponent.new(
+                name: :financial_product_id,
+                form: ts_form,
+                options_collection: financial_products_for_select(FinancialCatalogServices::Registry::TERM_SAVING, selected_institution),
+                options: {
+                    prompt: "Selecciona un producto",
+                    help_text: "Producto del catálogo financiero (opcional)",
+                    data: {
+                        product_selector_target: "product"
+                    }
+                }
+            ) %>
+        </div>
+
+        <div data-product-selector-target="manualNameContainer">
+            <%= render Forms::InputComponent.new(
+                name: :name,
+                form: ts_form,
+                type: :text,
+                options: {
+                    placeholder: "Nombre del ahorro",
+                    help_text: "Nombre descriptivo del ahorro a plazo fijo",
+                    required: selected_institution == 'other',
+                    data: {
+                        required_message: "Por favor, ingresa un nombre para el ahorro"
+                    }
+                }
+            ) %>
+        </div>
+    </div>
+
+    <%= render Forms::InputComponent.new(
+        name: :principal_amount,
+        form: ts_form,
+        type: :number,
+        options: {
+            step: 0.01,
+            placeholder: "0.00",
+            prefix: "$",
+            help_text: "Capital que se bloqueará durante el plazo",
+            required: true,
+            data: {
+                required_message: "Por favor, ingresa el capital a bloquear"
+            }
+        }
+    ) %>
+
+    <%= render Forms::InputComponent.new(
+        name: :term_days,
+        form: ts_form,
+        type: :number,
+        options: {
+            placeholder: "90",
+            min: 1,
+            help_text: "Días que el capital permanecerá bloqueado",
+            required: true,
+            data: {
+                required_message: "Por favor, ingresa el plazo en días"
+            }
+        }
+    ) %>
+
+    <%= render Forms::InputComponent.new(
+        name: :rate_locked,
+        form: ts_form,
+        type: :number,
+        options: {
+            step: 0.0001,
+            placeholder: "0.12",
+            suffix: "%",
+            help_text: "Tasa de rendimiento fija durante el plazo",
+            required: true,
+            disabled: term_saving.persisted?,
+            data: {
+                required_message: "Por favor, ingresa la tasa de rendimiento"
+            }
+        }
+    ) %>
+
+    <%= render Forms::InputComponent.new(
+        name: :started_at,
+        form: ts_form,
+        type: :date,
+        options: {
+            help_text: "Fecha de inicio del plazo",
+            required: true,
+            data: {
+                required_message: "Por favor, ingresa la fecha de inicio"
+            }
+        }
+    ) %>
+<% end %>

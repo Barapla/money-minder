@@ -30,6 +30,8 @@ class Budget < ApplicationRecord
   accepts_nested_attributes_for :savings_fund,
                                 allow_destroy: true,
                                 update_only: true, reject_if: :should_reject_savings_fund?
+  accepts_nested_attributes_for :term_savings,
+                                allow_destroy: true, reject_if: :should_reject_term_saving?
 
   # Construir credit_card automáticamente
   after_initialize :build_budget_type_if_needed
@@ -128,8 +130,9 @@ class Budget < ApplicationRecord
     # Para registros existentes, solo si es credit_card y no existe
     return unless new_record?
     return build_credit_card if credit_card.nil? && budget_type&.code == 'credit_card'
+    return build_savings_fund if savings_fund.nil? && budget_type&.code == 'savings_fund'
 
-    build_savings_fund if savings_fund.nil? && budget_type&.code == 'savings_fund'
+    term_savings.build if term_savings.empty? && budget_type&.code == 'term_saving'
   end
 
   def should_reject_credit_card?
@@ -142,4 +145,8 @@ class Budget < ApplicationRecord
     budget_type&.code != 'savings_fund'
   end
 
+  def should_reject_term_saving?
+    # Rechazar los atributos de term_saving si no es tipo term_saving
+    budget_type&.code != 'term_saving'
+  end
 end

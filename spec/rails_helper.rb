@@ -74,6 +74,7 @@ RSpec.configure do |config|
 
   config.include FactoryBot::Syntax::Methods
   config.include Devise::Test::IntegrationHelpers, type: :request
+  config.include Devise::Test::IntegrationHelpers, type: :system
 
   config.before(:suite) do
     # Faker usa :en internamente via I18n; desactivar enforce para evitar InvalidLocale
@@ -88,6 +89,12 @@ RSpec.configure do |config|
 
   config.before(:each) do
     I18n.locale = :es
+  end
+
+  # Sin driver de navegador (chromedriver) disponible en este entorno; los specs de
+  # sistema corren sobre rack_test, que no ejecuta JavaScript (ver FEAT-026).
+  config.before(:each, type: :system) do
+    driven_by(:rack_test)
   end
 
   config.before(:each, type: :view) do

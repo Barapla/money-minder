@@ -6,6 +6,32 @@ module ApplicationHelper
   include SvgHelper
   include DayDetailsHelper
 
+  # Instituciones disponibles para un tipo de instrumento (FEAT-026), mas la opcion "Otro"
+  # para ingreso manual cuando el producto no esta en el catalogo.
+  def financial_institutions_for_select(product_type)
+    institutions = FinancialCatalogServices::Registry.by_type(product_type).map(&:institution).uniq.sort
+
+    institutions.map { |institution| [institution, institution] } + [%w[Otro other]]
+  end
+
+  # Productos del catalogo para una institucion y tipo de instrumento dados (FEAT-026).
+  def financial_products_for_select(product_type, institution)
+    return [] if institution.blank? || institution == 'other'
+
+    FinancialCatalogServices::Registry.by_type(product_type)
+                                      .by_institution(institution)
+                                      .map { |product| [product.name, product.id] }
+  end
+
+  # Institucion a precargar en el select del formulario (FEAT-026): la del producto
+  # asociado si existe, "other" si el instrumento ya existe sin producto, o nil si es nuevo.
+  def selected_financial_institution(financial_product_id:, persisted:)
+    return 'other' if financial_product_id.blank? && persisted
+    return nil if financial_product_id.blank?
+
+    FinancialCatalogServices::Registry.all_products.find { |product| product.id == financial_product_id }&.institution
+  end
+
   def ai_report_status_badge(report)
     if report.processing_success?
       content_tag :span, '✓ Actualizado', class: 'badge badge-success'

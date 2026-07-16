@@ -65,6 +65,7 @@ es:
         icon_id: "Icono"
         color_id: "Color"
         financial_product_id: "Producto del catálogo financiero"
+        institution: "Institución financiera"
       credit_card:
         initial_debt: "Presupuesto inicial de deuda"
         limit_amount: "Presupuesto límite"
@@ -72,6 +73,7 @@ es:
         payment_due_days: "Días para el pago"
         cutting_day: "Día de corte"
         financial_product_id: "Producto del catálogo financiero"
+        institution: "Institución financiera"
       obligatory_payment:
         name: "Nombre del pago"
         amount: "Monto"
@@ -99,6 +101,15 @@ es:
         minimum_balance: "Saldo mínimo"
         max_balance: "Saldo máximo"
         financial_product_id: "Producto del catálogo financiero"
+        institution: "Institución financiera"
+      term_saving:
+        name: "Nombre del ahorro"
+        term_days: "Plazo en días"
+        rate_locked: "Tasa fija"
+        started_at: "Fecha de inicio"
+        principal_amount: "Capital"
+        financial_product_id: "Producto del catálogo financiero"
+        institution: "Institución financiera"
       transaction:
         amount: "Monto"
         transaction_date: "Fecha"

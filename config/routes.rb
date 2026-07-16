@@ -27,6 +27,8 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
     end
   end
 
+  resources :financial_products, only: [:index]
+
   resources :transactions do
     collection do
       post :change_categories

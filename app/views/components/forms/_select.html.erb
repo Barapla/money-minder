@@ -2,6 +2,7 @@
     form = component.form 
     options_collection = component.options_collection
     prompt = component.prompt
+    selected = component.selected
     help_text = component.help_text
     required = component.required
     icon = component.icon
@@ -17,12 +18,12 @@
             </div>
         <% end %>
         
-        <%= form.select(name, 
+        <%= form.select(name,
             options_collection,
-            { prompt: },
-            { 
+            { prompt:, **(selected.nil? ? {} : { selected: }) },
+            {
                 class: component.send(:select_classes),
-                **options 
+                **options
             }) %>
         
         <% if options[:disabled].present? %>

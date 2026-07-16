@@ -1,6 +1,41 @@
+<% savings_fund = budget.savings_fund || budget.build_savings_fund %>
+<% selected_institution = selected_financial_institution(financial_product_id: savings_fund.financial_product_id, persisted: savings_fund.persisted?) %>
 <%= fields_for "budget", budget do |form| %>
-    <%= fields_for "budget[savings_fund_attributes]", budget.savings_fund || budget.build_savings_fund do |sf_form| %>
-        
+    <%= fields_for "budget[savings_fund_attributes]", savings_fund do |sf_form| %>
+        <div data-controller="product-selector"
+            data-product-selector-product-type-value="<%= FinancialCatalogServices::Registry::SAVINGS %>"
+            data-product-selector-selected-product-value="<%= savings_fund.financial_product_id %>">
+            <%= render Forms::SelectComponent.new(
+                name: :institution,
+                form: sf_form,
+                options_collection: financial_institutions_for_select(FinancialCatalogServices::Registry::SAVINGS),
+                options: {
+                    prompt: "Selecciona una institución",
+                    help_text: "Institución financiera del producto (opcional)",
+                    selected: selected_institution.to_s,
+                    data: {
+                        product_selector_target: "institution",
+                        action: "change->product-selector#updateProducts"
+                    }
+                }
+            ) %>
+
+            <div data-product-selector-target="productContainer">
+                <%= render Forms::SelectComponent.new(
+                    name: :financial_product_id,
+                    form: sf_form,
+                    options_collection: financial_products_for_select(FinancialCatalogServices::Registry::SAVINGS, selected_institution),
+                    options: {
+                        prompt: "Selecciona un producto",
+                        help_text: "Producto del catálogo financiero (opcional)",
+                        data: {
+                            product_selector_target: "product"
+                        }
+                    }
+                ) %>
+            </div>
+        </div>
+
         <%= render Forms::InputComponent.new(
             name: :current_amount,
             form:,
