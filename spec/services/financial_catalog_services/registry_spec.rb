@@ -7,6 +7,7 @@ RSpec.describe FinancialCatalogServices::Registry do
     it 'returns every product in the catalog' do
       expect(described_class.all_products).to contain_exactly(
         an_instance_of(FinancialCatalogServices::Nu::NuCreditCard),
+        an_instance_of(FinancialCatalogServices::Nu::NuFrozenSavings90),
         an_instance_of(FinancialCatalogServices::Klar::KlarDebitCard),
         an_instance_of(FinancialCatalogServices::Bbva::BbvaSavingsFund)
       )
@@ -34,7 +35,8 @@ RSpec.describe FinancialCatalogServices::Registry do
   describe '.by_institution' do
     it 'returns only products from the given institution' do
       expect(described_class.by_institution('Nu').to_a).to contain_exactly(
-        an_instance_of(FinancialCatalogServices::Nu::NuCreditCard)
+        an_instance_of(FinancialCatalogServices::Nu::NuCreditCard),
+        an_instance_of(FinancialCatalogServices::Nu::NuFrozenSavings90)
       )
     end
 

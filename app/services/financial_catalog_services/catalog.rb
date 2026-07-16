@@ -6,6 +6,7 @@ module FinancialCatalogServices
     def self.all_products
       [
         Nu::NuCreditCard.new,
+        Nu::NuFrozenSavings90.new,
         Klar::KlarDebitCard.new,
         Bbva::BbvaSavingsFund.new
       ].select(&:active)

@@ -16,6 +16,7 @@ class Budget < ApplicationRecord
   has_many :transactions, dependent: :destroy
   has_one :credit_card, dependent: :destroy
   has_one :savings_fund, dependent: :destroy
+  has_many :term_savings, dependent: :destroy
 
   belongs_to :user
   belongs_to :budget_type, class_name: 'Catalog', foreign_key: 'budget_type_id'

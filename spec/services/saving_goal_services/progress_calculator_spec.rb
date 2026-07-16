@@ -35,6 +35,19 @@ RSpec.describe SavingGoalServices::ProgressCalculator, type: :service do
     )
   end
 
+  def make_term_saving_budget(amount:)
+    # type_code distinto de 'savings_fund' para evitar el auto-build de un
+    # SavingsFund vacio en Budget#build_budget_type_if_needed.
+    budget = make_budget(type_code: 'term_savings_account', amount:)
+    SavingsFund.create!(
+      budget:,
+      compound_frequency_id: color_catalog.id,
+      account_type_id: icon_catalog.id,
+      active: true
+    )
+    budget
+  end
+
   describe '#calculate_for' do
     let(:goal) { build(:saving_goal, user:, target_amount: 80_000) }
 
@@ -69,6 +82,38 @@ RSpec.describe SavingGoalServices::ProgressCalculator, type: :service do
         result = calculator.calculate_for(goal)
         expect(result[:progress_percentage]).to eq(125.0)
         expect(result[:is_achieved]).to be true
+      end
+    end
+
+    context 'con un TermSaving activo y no vencido (CA5)' do
+      before do
+        make_budget(type_code: 'cash', amount: 50_000, personal: true)
+        term_budget = make_term_saving_budget(amount: 10_000)
+        TermSaving.create!(
+          budget: term_budget, term_days: 90, rate_locked: 0.12,
+          started_at: Date.current, principal_amount: 10_000
+        )
+      end
+
+      it 'excluye el principal_amount bloqueado del dinero disponible' do
+        result = calculator.calculate_for(goal)
+        expect(result[:available_money]).to eq(50_000)
+      end
+    end
+
+    context 'con un TermSaving vencido (CA6)' do
+      before do
+        make_budget(type_code: 'cash', amount: 50_000, personal: true)
+        term_budget = make_term_saving_budget(amount: 10_000)
+        TermSaving.create!(
+          budget: term_budget, term_days: 90, rate_locked: 0.12,
+          started_at: 100.days.ago.to_date, principal_amount: 10_000, status: :matured
+        )
+      end
+
+      it 'incluye el saldo del budget en el dinero disponible' do
+        result = calculator.calculate_for(goal)
+        expect(result[:available_money]).to eq(60_000)
       end
     end
 

@@ -22,6 +22,7 @@ module FinancialCatalogServices
     DEBIT = :debit
     CREDIT = :credit
     SAVINGS = :savings_fund
+    TERM_SAVING = :term_saving
 
     class << self
       def all_products
