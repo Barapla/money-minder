@@ -46,7 +46,8 @@ module TermSavingServices
     attr_reader :term_saving, :reference_date
 
     def elapsed_days
-      (reference_date - term_saving.started_at).to_i
+      days = (reference_date - term_saving.started_at).to_i
+      days.negative? ? 0 : days
     end
 
     def daily_interest
@@ -56,6 +57,9 @@ module TermSavingServices
       (principal * (((1 + (rate / DAYS_IN_YEAR))**elapsed_days) - 1)).round(2)
     end
 
+    # El interes se calcula solo con base en term_days, sin importar cuanto haya
+    # transcurrido de mas ni el status actual del TermSaving (matured/withdrawn):
+    # una vez vencido, el rendimiento ya esta fijo y no sigue creciendo.
     def at_maturity_interest
       return 0.0 if elapsed_days < term_saving.term_days
 

@@ -86,5 +86,13 @@ RSpec.describe TermSavingServices::AccruedInterestCalculator, type: :service do
 
       expect(accrued).to eq(0.0)
     end
+
+    it 'no devenga intereses si reference_date es anterior a started_at' do
+      term_saving = build_term_saving(started_at: Date.current)
+
+      accrued = described_class.call(term_saving, reference_date: Date.current - 5)
+
+      expect(accrued).to eq(0.0)
+    end
   end
 end
