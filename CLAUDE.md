@@ -41,6 +41,7 @@ Gemas clave: `devise`, `httparty`, `sidekiq-cron`, `brakeman`, `bundler-audit`
 | Tarjetas de crédito | `CreditCard`, `CreditCardCycle`, `CreditCardProduct`, `CreditCardTier`, `CreditCardCycleTransaction` | Completo |
 | Fondos de ahorro | `SavingsFund` | Completo |
 | Catálogo financiero (código) | `FinancialCatalogServices::Catalog`, `FinancialCatalogServices::BaseProduct` | Completo |
+| Redes y niveles de tarjetas (código) | `FinancialNetworks::BaseNetwork`, `FinancialNetworks::BaseLevel` | Completo |
 | Pagos obligatorios | `ObligatoryPayment` | Completo |
 | Reportes IA | `AiReport` | Completo |
 | Historial crediticio | `CreditScoreEvent`, `Status` | Completo |
@@ -259,6 +260,35 @@ FinancialCatalogServices::Catalog.all_products
 - Sin BD: agregar una institucion o producto nuevo es agregar una clase nueva, no un registro
 - Sin FK a datos de usuario: si una feature futura necesita referenciar un producto (ej. `CreditCard`), debe usar un `product_identifier` (string) que matchee con la clase, no una FK
 - `credit_card_products.financial_institution_id` (tabla sin controller/vista/ruta, scaffolding sin usar) perdio su FK a `financial_institutions` al eliminarse la tabla; la columna permanece pero sin referencia
+
+---
+
+## Financial Networks — Redes y niveles de tarjetas (FEAT-023)
+
+Las redes de tarjetas de credito (Visa, Mastercard, Amex) y sus niveles (Classic, Gold, Platinum, etc.) son componentes independientes de la institucion emisora: comparten beneficios entre bancos sin duplicar codigo. Mismo patron que el catalogo financiero (FEAT-020): clases Ruby en `app/services/financial_networks/`, sin BD.
+
+- **`FinancialNetworks::BaseNetwork`** — clase base con metodos de clase `id`, `name`, `all_levels`.
+- **`FinancialNetworks::BaseLevel`** — clase base con metodos de clase `id`, `network_id`, `name`, `benefits`. `id`/`network_id` se derivan del nombre real de la clase (`to_s`), no de `name` (que las subclases sobreescriben con un texto de despliegue), para mantener IDs estables (`visa_gold`, `mastercard_world_elite`).
+- Redes concretas: `Visa` (Classic, Gold, Platinum, Signature, Infinite), `Mastercard` (Standard, Gold, Platinum, World, WorldElite), `Amex` (Green, Gold, Platinum, Centurion) — jerarquia independiente con beneficios propios.
+- **`FinancialNetworks.all_networks`** / **`FinancialNetworks.find_level(id)`** — utilidades a nivel de modulo.
+
+```ruby
+FinancialNetworks::Visa::Gold.benefits
+# => ["Proteccion de compras hasta 90 dias", "Seguro de viaje internacional", "Asistencia en carretera 24/7"]
+
+FinancialNetworks.find_level('mastercard_world_elite')
+# => FinancialNetworks::Mastercard::WorldElite
+```
+
+`FinancialCatalogServices::BaseProduct#network_level` (instance method, default `nil`) conecta un producto con su red/nivel. Productos sin tarjeta (cash, savings_fund) no lo sobreescriben:
+
+```ruby
+class NuCreditCard < FinancialCatalogServices::BaseProduct
+  def network_level
+    FinancialNetworks::Visa::Gold
+  end
+end
+```
 
 ---
 

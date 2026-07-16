@@ -30,4 +30,8 @@ RSpec.describe FinancialCatalogServices::BaseProduct do
     inactive = described_class.new(name: 'X', institution: 'Y', product_type: :cash, active: false)
     expect(inactive.active).to be false
   end
+
+  it 'defaults network_level to nil' do
+    expect(product.network_level).to be_nil
+  end
 end
