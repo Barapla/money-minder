@@ -14,7 +14,7 @@ module FinancialProductAssociable
   included do
     validates :financial_product_id, inclusion: {
       in: ->(_record) { FinancialCatalogServices::Registry.all_products.map(&:id) },
-      allow_nil: true,
+      allow_blank: true,
       message: :invalid_financial_product
     }
 

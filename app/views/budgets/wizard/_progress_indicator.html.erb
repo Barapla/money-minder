@@ -1,0 +1,32 @@
+<% steps = [[1, t('budgets.wizard.steps.type')], [2, t('budgets.wizard.steps.institution')],
+           [3, t('budgets.wizard.steps.product')], [4, t('budgets.wizard.steps.details')]] %>
+<div class="flex items-center" data-testid="wizard-progress-indicator">
+    <% steps.each do |step_number, label| %>
+        <div class="flex items-center <%= 'flex-1' unless step_number == steps.last.first %>">
+            <div class="flex flex-col items-center gap-1">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold shrink-0
+                    <%= if step_number < current_step
+                          'bg-purple-500 text-white'
+                        elsif step_number == current_step
+                          'bg-purple-500/20 border-2 border-purple-400 text-purple-200'
+                        else
+                          'bg-bunker-800 text-bunker-500'
+                        end %>">
+                    <% if step_number < current_step %>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    <% else %>
+                        <%= step_number %>
+                    <% end %>
+                </div>
+                <span class="text-xs whitespace-nowrap <%= step_number == current_step ? 'text-white' : 'text-bunker-500' %>">
+                    <%= label %>
+                </span>
+            </div>
+            <% unless step_number == steps.last.first %>
+                <div class="flex-1 h-0.5 mx-2 <%= step_number < current_step ? 'bg-purple-500' : 'bg-bunker-800' %>"></div>
+            <% end %>
+        </div>
+    <% end %>
+</div>

@@ -1,0 +1,23 @@
+<div class="p-8">
+    <h2 class="text-xl font-semibold text-white mb-2"><%= t('budgets.wizard.step_3.heading', institution: institution) %></h2>
+    <p class="text-bunker-400 text-sm mb-6"><%= t('budgets.wizard.step_3.subtitle', type: budget_type.value) %></p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <% products.each do |product| %>
+            <%= link_to wizard_step4_budgets_path(product_id: product.id), class: 'wizard-step-card wizard-step-card--wide' do %>
+                <div>
+                    <div class="text-white font-semibold"><%= product.name %></div>
+                    <% if product.benefits.any? %>
+                        <ul class="text-bunker-400 text-xs mt-2 space-y-1">
+                            <% product.benefits.first(3).each do |benefit| %>
+                                <li>• <%= benefit[:description] %></li>
+                            <% end %>
+                        </ul>
+                    <% end %>
+                </div>
+            <% end %>
+        <% end %>
+    </div>
+
+    <%= link_to t('budgets.wizard.back'), wizard_step2_budgets_path, class: 'btn-cancel mt-8 inline-flex' %>
+</div>

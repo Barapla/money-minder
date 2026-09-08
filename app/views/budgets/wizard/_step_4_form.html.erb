@@ -1,0 +1,93 @@
+<div class="px-8 py-6">
+    <h2 class="text-xl font-semibold text-white mb-6"><%= t('budgets.wizard.step_4.heading') %></h2>
+
+    <%= form_with(model: budget, url: budgets_path, method: :post, local: true, html: {
+        data: { controller: "budgets--preview form-validator",
+            form_validator_validate_on_blur_value: true,
+            form_validator_validate_on_input_value: false } }) do |form| %>
+        <%= form.hidden_field :budget_type_id %>
+        <%= form.hidden_field :user_id, value: current_user.id %>
+
+        <!-- Select oculto: solo para que budgets--preview#updatePreview pueda leer el tipo elegido -->
+        <select class="hidden" data-budgets--preview-target="budgetType">
+            <option selected><%= budget.budget_type.value %></option>
+        </select>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Column -->
+            <div>
+                <%= render Forms::InputComponent.new(
+                    name: :name,
+                    form:,
+                    type: :text,
+                    options: {
+                        placeholder: "Nuevo Presupuesto",
+                        help_text: "Nombre descriptivo del presupuesto (se sobreescribe si eliges un producto del catálogo)",
+                        required: true,
+                        data: {
+                            "budgets--preview-target": "name",
+                            action: "input->budgets--preview#updatePreview",
+                            required_message: "Por favor, ingresa un nombre para el presupuesto",
+                        }
+                    }
+                ) %>
+
+                <%= render partial: "budgets/forms/#{budget.budget_type.code}/form", locals: { budget: } %>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <%= render Forms::SpecialRadioComponent.new(
+                    name: :icon_id,
+                    form:,
+                    collection: Catalog.by_group('budget_icons'),
+                    options: {
+                        default_object_label: 'value',
+                        help_text: "Selecciona un icono para identificar tu presupuesto",
+                        value: budget.icon&.id,
+                        collection_options: {
+                            data: {
+                                "budgets--preview-target": "icons",
+                                action: "click->budgets--preview#selectIcon"
+                            }
+                        }
+                    }
+                ) %>
+
+                <%= render Forms::SpecialRadioComponent.new(
+                    name: :color_id,
+                    form:,
+                    collection: Catalog.by_group('colors'),
+                    options: {
+                        is_colors: true,
+                        default_object_label: 'value',
+                        help_text: "Elige un color para personalizar tu presupuesto",
+                        value: budget.color&.id,
+                        collection_options: {
+                            data: {
+                                "budgets--preview-target": "colors",
+                                action: "click->budgets--preview#selectColor"
+                            }
+                        }
+                    }
+                ) %>
+
+                <%= render partial: "budgets/forms/#{budget.budget_type.code}/preview", locals: { budget: } %>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex items-center justify-between pt-8 mt-8 border-t border-bunker-800/50">
+            <div class="flex items-center gap-3">
+                <%= link_to t('budgets.wizard.back'), back_path, class: "btn-cancel" %>
+                <%= link_to t('budgets.wizard.cancel'), budgets_path, class: "btn-cancel" %>
+            </div>
+            <button type="submit" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <%= t('budgets.wizard.step_4.create_button') %>
+            </button>
+        </div>
+    <% end %>
+</div>

@@ -1,0 +1,3 @@
+<%= render layout: "budgets/wizard/shell", locals: { current_step: 3 } do %>
+    <%= render "budgets/wizard/step_3_product", budget_type: @budget_type, institution: @institution, products: @products %>
+<% end %>

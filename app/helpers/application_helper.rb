@@ -32,6 +32,26 @@ module ApplicationHelper
     FinancialCatalogServices::Registry.find_by_id(financial_product_id)&.institution
   end
 
+  # Icono del tipo de presupuesto para el paso 1 del wizard (FEAT-027).
+  def budget_type_icon(code, css_class = nil)
+    options = {}
+    options[:class] = css_class if css_class
+
+    inline_svg_tag("budget_types/#{code}.svg", options)
+  end
+
+  # Logo de la institucion para el paso 2 del wizard (FEAT-027). El catalogo financiero
+  # no trae logos, asi que se genera un placeholder con las iniciales de la institucion.
+  def institution_logo_placeholder(institution)
+    initials = institution.to_s.split.first(2).filter_map { |word| word[0] }.join.upcase
+
+    content_tag(:svg, viewBox: '0 0 48 48', class: 'w-12 h-12') do
+      concat(content_tag(:circle, nil, cx: 24, cy: 24, r: 24, class: 'fill-purple-500/20'))
+      text_options = { x: 24, y: 30, 'text-anchor': 'middle', class: 'fill-purple-200 text-base font-semibold' }
+      concat(content_tag(:text, initials, text_options))
+    end
+  end
+
   def ai_report_status_badge(report)
     if report.processing_success?
       content_tag :span, '✓ Actualizado', class: 'badge badge-success'
