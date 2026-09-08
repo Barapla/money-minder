@@ -96,6 +96,10 @@
         {
           "value": "Fondo de ahorro",
           "code": "savings_fund"
+        },
+        {
+          "value": "Ahorro a plazo fijo",
+          "code": "term_saving"
         }
       ]
     },

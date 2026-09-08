@@ -1,0 +1,38 @@
+<% term_saving = budget.term_savings.first %>
+<div class="form-group">
+    <label class="block text-sm font-medium text-bunker-200 mb-2">
+        Vista previa
+    </label>
+    <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-4">
+        <div class="flex items-center gap-3 mb-3">
+            <div data-budgets--preview-target="preview" class="w-10 h-10 bg-<%= budget.color&.value || 'blue-500' %> rounded-lg flex items-center justify-center">
+                <span class="text-lg"><%= budget.icon&.value || "🔒" %></span>
+            </div>
+            <div>
+                <div data-budgets--preview-target="previewBudgetType" class="text-sm font-medium text-white">
+                    <%= budget.budget_type&.value || "Ahorro a plazo fijo" %>
+                </div>
+                <div data-budgets--preview-target="previewName" class="text-xs text-bunker-400">
+                    <%= budget.name || "Nuevo Ahorro" %>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-3 text-xs">
+            <div class="flex justify-between">
+                <span class="text-bunker-300">Capital</span>
+                <span class="text-blue-400 font-semibold">$<%= term_saving&.principal_amount || "0.00" %></span>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <span class="text-bunker-300">Plazo</span>
+                <span class="text-white font-semibold"><%= term_saving&.term_days || 0 %> días</span>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t border-bunker-700">
+                <span class="text-bunker-300">Tasa fija</span>
+                <span class="text-emerald-400 font-semibold"><%= term_saving&.rate_locked || 0 %>%</span>
+            </div>
+        </div>
+    </div>
+</div>

@@ -40,6 +40,7 @@ Gemas clave: `devise`, `httparty`, `sidekiq-cron`, `brakeman`, `bundler-audit`
 | Catálogos | `GroupCatalog`, `Catalog` | Completo |
 | Tarjetas de crédito | `CreditCard`, `CreditCardCycle`, `CreditCardProduct`, `CreditCardTier`, `CreditCardCycleTransaction` | Completo |
 | Fondos de ahorro | `SavingsFund` | Completo |
+| Ahorros a plazo fijo | `TermSaving` | Completo |
 | Catálogo financiero (código) | `FinancialCatalogServices::Catalog`, `FinancialCatalogServices::BaseProduct` | Completo |
 | Redes y niveles de tarjetas (código) | `FinancialNetworks::BaseNetwork`, `FinancialNetworks::BaseLevel` | Completo |
 | Pagos obligatorios | `ObligatoryPayment` | Completo |
@@ -293,6 +294,38 @@ class NuCreditCard < FinancialCatalogServices::BaseProduct
   end
 end
 ```
+
+---
+
+## Formularios de instrumentos financieros — Registry (FEAT-026)
+
+Los formularios de creación/edición de tarjetas de crédito, cuentas de débito, fondos de ahorro y ahorros a plazo fijo ya no consultan modelos de base de datos para institución/producto: consultan `FinancialCatalogServices::Registry` (FEAT-021).
+
+### No hay controllers separados por instrumento
+
+A diferencia de lo que sugeriría el nombre de cada instrumento, **no existen** `CreditCardsController`, `DebitCardsController`, `SavingsFundsController` ni `TermSavingsController`. Todo vive bajo `BudgetsController`/`Budget`: el usuario elige un `budget_type` (`cash`, `credit_card`, `debit_card`, `savings_fund`, `term_saving`) y `BudgetsController#change_budget_type` intercambia, vía Turbo Frame, el partial `app/views/budgets/forms/{code}/_form.html.erb` correspondiente. `DebitCard` no tiene modelo propio: es un `Budget` con `budget_type.code == 'debit_card'`, así que su selección de producto escribe directo en `Budget#financial_product_id`.
+
+### Helpers (`ApplicationHelper`)
+
+- `financial_institutions_for_select(product_type)` — instituciones únicas de `Registry.by_type(product_type)` más la opción `["Otro", "other"]`.
+- `financial_products_for_select(product_type, institution)` — productos de esa institución y tipo; `[]` si `institution` es `"other"` o blank.
+- `selected_financial_institution(financial_product_id:, persisted:)` — institución a precargar en edición: la del producto si existe, `"other"` si el instrumento ya existe sin producto, `nil` si es nuevo.
+
+### Stimulus `product-selector` (reemplaza a `product-name-generator`, ahora eliminado)
+
+`app/javascript/controllers/product_selector_controller.js` — al cambiar la institución, oculta/muestra el select de producto vs. el campo de nombre manual (`hasManualNameContainerTarget`, opcional) y hace `fetch` a `GET /financial_products?type=&institution=` (`FinancialProductsController#index`) para repoblar el select de producto, restaurando la selección previa vía `data-product-selector-selected-product-value`.
+
+### `FinancialProductAssociable` y el nombre autogenerado
+
+El nombre generado (`"#{prefix} #{product.name} de #{owner.first_name}"`) se asigna a `self` si el modelo tiene columna `name` propia (`TermSaving`, prefijo `'Ahorro'`) o a `budget.name` en caso contrario (`CreditCard`, `SavingsFund`, `Budget`/débito, prefijo `'Cuenta'`). Por eso el campo de nombre manual para la opción "Otro" en `CreditCard`/`SavingsFund`/débito es el campo `name` del propio `Budget` (siempre visible, en la columna izquierda del formulario) — no hay un campo de nombre duplicado dentro del partial de cada tipo. `TermSaving` sí necesita su propio campo de nombre manual (columna `name` propia).
+
+### TermSaving: primera UI real (antes no existía ninguna)
+
+FEAT-026 agregó `term_saving` al catálogo `budget_types` (`db/seeds/group_catalogs.json`), `accepts_nested_attributes_for :term_savings` en `Budget` (con `should_reject_term_saving?`), permitió `term_savings_attributes` en `BudgetsController#budget_params`, y creó `app/views/budgets/forms/term_saving/_form.html.erb` + `_preview.html.erb` + `app/views/budgets/shows/term_saving/_stats.html.erb` desde cero. `Budget#build_budget_type_if_needed` construye un `TermSaving` en blanco para un `Budget` nuevo de ese tipo; como `TermSaving` (a diferencia de `CreditCard`/`SavingsFund`) tiene validaciones de presencia, ese registro en blanco solo es válido si sus atributos reales llegan en la misma llamada a `Budget.create!`/`.new` (vía `term_savings_attributes`), nunca en una segunda llamada separada.
+
+### Límite de cobertura de tests en este entorno
+
+No hay `chromedriver`/navegador disponible en este sandbox (`selenium-webdriver` ni siquiera carga), así que `spec/system` corre con `driven_by(:rack_test)` (sin JS). Cubre precarga en edición (CA6/CA7) y presencia del select de institución. La actualización dinámica del select de producto vía JS (CA2/CA3) se verifica indirectamente con request specs contra `GET /financial_products` y `POST /budgets/change_budget_type`. La creación con producto del catálogo/opción "Otro" (CA4/CA5/CA8) se verifica con request specs contra `BudgetsController`.
 
 ---
 
