@@ -132,7 +132,7 @@ class Budget < ApplicationRecord
     return build_credit_card if credit_card.nil? && budget_type&.code == 'credit_card'
     return build_savings_fund if savings_fund.nil? && budget_type&.code == 'savings_fund'
 
-    term_savings.build if term_savings.first.nil? && budget_type&.code == 'term_saving'
+    term_savings.build if term_savings.none? && budget_type&.code == 'term_saving'
   end
 
   def should_reject_credit_card?

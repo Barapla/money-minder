@@ -19,6 +19,6 @@ class FinancialProductsController < ApplicationController
   private
 
   def validate_type!
-    render json: [] unless VALID_TYPES.include?(params[:type].to_s)
+    render json: [] and return unless VALID_TYPES.include?(params[:type].to_s)
   end
 end

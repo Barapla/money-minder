@@ -94,7 +94,7 @@
             suffix: "%",
             help_text: "Tasa de rendimiento fija durante el plazo",
             required: true,
-            disabled: term_saving.persisted?,
+            readonly: term_saving.persisted?,
             data: {
                 required_message: "Por favor, ingresa la tasa de rendimiento"
             }
