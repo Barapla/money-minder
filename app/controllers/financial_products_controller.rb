@@ -14,11 +14,14 @@ class FinancialProductsController < ApplicationController
                                                  .by_institution(params[:institution].to_s)
 
     render json: products.map { |product| { id: product.id, name: product.name } }
+  rescue StandardError => e
+    Rails.logger.error("FinancialProductsController#index failed: #{e.message}")
+    render json: [], status: :unprocessable_entity
   end
 
   private
 
   def validate_type!
-    render json: [] and return unless VALID_TYPES.include?(params[:type].to_s)
+    render(json: []) unless VALID_TYPES.include?(params[:type].to_s)
   end
 end

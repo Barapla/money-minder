@@ -39,9 +39,11 @@ export default class extends Controller {
       })
 
       this.productTarget.innerHTML = `<option value="">Selecciona un producto</option>${options.join("")}`
+      this.productTarget.disabled = false
     } catch (error) {
       console.error("product-selector: fallo al cargar productos", error)
       this.productTarget.innerHTML = `<option value="">Error al cargar productos</option>`
+      this.productTarget.disabled = true
     }
   }
 
