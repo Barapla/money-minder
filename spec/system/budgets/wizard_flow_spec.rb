@@ -36,9 +36,10 @@ RSpec.describe 'Wizard de creacion de presupuestos (FEAT-027)', type: :system do
 
     click_link 'Nu Credito'
     expect(page).to have_content('Completa los detalles')
-    expect(find_field('Institución financiera').value).to eq('Nu')
+    expect(page).to have_content('Nu')
+    expect(page).to have_content('Nu Credito')
+    expect(page).not_to have_field('Institución financiera')
 
-    fill_in 'Nombre del presupuesto', with: 'sera reemplazado'
     fill_in 'Presupuesto inicial de deuda', with: 0
     fill_in 'Presupuesto límite', with: 20_000
     fill_in 'Día de corte', with: 15

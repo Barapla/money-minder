@@ -18,6 +18,7 @@ class TermSaving < ApplicationRecord
   validate :rate_locked_immutable, on: :update
 
   before_validation :calculate_matures_at
+  before_validation :sync_name_to_budget
 
   def mature!
     update!(status: :matured) if matures_at && matures_at <= Date.current
@@ -33,6 +34,15 @@ class TermSaving < ApplicationRecord
 
   def rate_locked_immutable
     errors.add(:rate_locked, :immutable) if rate_locked_changed?
+  end
+
+  # El wizard (FEAT-027) ya no pide un nombre de presupuesto aparte: se reusa el
+  # nombre del ahorro (manual u autogenerado por FinancialProductAssociable) para
+  # el Budget contenedor, que tambien exige `name` presente.
+  def sync_name_to_budget
+    return unless budget && name.present? && budget.name.blank?
+
+    budget.name = name
   end
 
   def financial_product_name_prefix

@@ -97,7 +97,7 @@ class BudgetsController < ApplicationController
     return unless require_wizard_budget_type!
 
     institution = params[:institution].presence || wizard_state['institution']
-    return redirect_to_missing_institution unless institution
+    return redirect_to_missing_institution unless valid_institution?(institution)
 
     session[:budget_wizard]['institution'] = institution
     @institution = institution
@@ -156,11 +156,13 @@ class BudgetsController < ApplicationController
 
   def budget_params
     params.require(:budget).permit(
-      :name, :budget_type_id, :current_amount, :icon_id, :color_id, :financial_product_id,
-      credit_card_attributes: %i[initial_debt limit_amount cutting_day payment_due_days financial_product_id],
+      :name, :budget_type_id, :current_amount, :icon_id, :color_id, :financial_product_id, :nickname,
+      credit_card_attributes: %i[initial_debt limit_amount cutting_day payment_due_days financial_product_id
+                                 nickname],
       savings_fund_attributes: %i[goal_amount target_date monthly_contribution interest_rate compound_frequency_id
-                                  account_type_id minimum_balance max_balance financial_product_id],
-      term_savings_attributes: %i[id name term_days rate_locked started_at principal_amount financial_product_id]
+                                  account_type_id minimum_balance max_balance financial_product_id nickname],
+      term_savings_attributes: %i[id name term_days rate_locked started_at principal_amount financial_product_id
+                                  nickname]
     )
   end
 
@@ -177,7 +179,9 @@ class BudgetsController < ApplicationController
   end
 
   def resolve_wizard_type(type_code)
-    type_code && Catalog.by_group_and_code('budget_types', type_code)
+    return nil unless REGISTRY_TYPE_BY_BUDGET_CODE.key?(type_code)
+
+    Catalog.by_group_and_code('budget_types', type_code)
   end
 
   def wizard_type_param
@@ -200,8 +204,15 @@ class BudgetsController < ApplicationController
     redirect_to wizard_step2_budgets_path, alert: t('budgets.wizard.errors.missing_institution')
   end
 
+  def valid_institution?(institution)
+    registry_for(@budget_type).map(&:institution).uniq.include?(institution)
+  end
+
   def registry_for(budget_type)
-    FinancialCatalogServices::Registry.by_type(REGISTRY_TYPE_BY_BUDGET_CODE.fetch(budget_type.code))
+    registry_type = REGISTRY_TYPE_BY_BUDGET_CODE[budget_type.code]
+    return [] unless registry_type
+
+    FinancialCatalogServices::Registry.by_type(registry_type)
   end
 
   def wizard_step4_back_path

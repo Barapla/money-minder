@@ -50,6 +50,14 @@ RSpec.describe 'Wizard de creacion de presupuestos (FEAT-027)', type: :request d
 
       expect(response).to redirect_to(new_budget_path)
     end
+
+    it 'redirige al paso 1 si el tipo no esta soportado por el wizard aunque exista en el catalogo' do
+      create_budget_type('tipo_sin_registro')
+
+      get wizard_step2_budgets_path(type: 'tipo_sin_registro')
+
+      expect(response).to redirect_to(new_budget_path)
+    end
   end
 
   describe 'GET /budgets/wizard_step3 (paso 3)' do
@@ -69,6 +77,16 @@ RSpec.describe 'Wizard de creacion de presupuestos (FEAT-027)', type: :request d
       get wizard_step3_budgets_path(institution: 'Nu')
 
       expect(response).to redirect_to(new_budget_path)
+    end
+
+    it 'redirige al paso 2 si la institucion no existe para ese tipo (evita session tampering)' do
+      create_budget_type('credit_card')
+      get wizard_step2_budgets_path(type: 'credit_card')
+
+      get wizard_step3_budgets_path(institution: 'Institucion Inventada')
+
+      expect(response).to redirect_to(wizard_step2_budgets_path)
+      expect(session[:budget_wizard]['institution']).to be_nil
     end
   end
 
@@ -136,6 +154,27 @@ RSpec.describe 'Wizard de creacion de presupuestos (FEAT-027)', type: :request d
       expect(session[:budget_wizard]).to be_nil
     end
 
+    it 'agrega el apodo opcional entre parentesis al nombre autogenerado' do
+      budget_type = create_budget_type('credit_card')
+      get wizard_step2_budgets_path(type: 'credit_card')
+      get wizard_step3_budgets_path(institution: 'Nu')
+      get wizard_step4_budgets_path(product_id: 'nu_credit_card')
+
+      params = {
+        budget_type_id: budget_type.id,
+        color_id: color.id,
+        icon_id: icon.id,
+        credit_card_attributes: {
+          initial_debt: 0, limit_amount: 20_000, cutting_day: 15, payment_due_days: 5,
+          financial_product_id: 'nu_credit_card', nickname: 'Negocio'
+        }
+      }
+
+      post budgets_path, params: { budget: params }
+
+      expect(Budget.last.name).to eq('Cuenta Nu Credito de Bryan (Negocio)')
+    end
+
     it 're-renderiza el paso 4 (no el paso 1) cuando la creacion falla' do
       budget_type = create_budget_type('cash')
 
@@ -143,6 +182,56 @@ RSpec.describe 'Wizard de creacion de presupuestos (FEAT-027)', type: :request d
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(I18n.t('budgets.wizard.step_4.heading'))
+    end
+
+    it 'crea un ahorro a plazo fijo con producto del catalogo sin pedir nombre del presupuesto' do
+      budget_type = create_budget_type('term_saving')
+      get wizard_step2_budgets_path(type: 'term_saving')
+      get wizard_step3_budgets_path(institution: 'Nu')
+      get wizard_step4_budgets_path(product_id: 'nu_frozen_savings90')
+
+      expect(response).to have_http_status(:ok)
+
+      params = {
+        budget_type_id: budget_type.id,
+        color_id: color.id,
+        icon_id: icon.id,
+        term_savings_attributes: {
+          id: nil, principal_amount: 10_000, term_days: 90, rate_locked: 0.12, started_at: Date.current,
+          financial_product_id: 'nu_frozen_savings90'
+        }
+      }
+
+      expect do
+        post budgets_path, params: { budget: params }
+      end.to change(Budget, :count).by(1)
+
+      budget = Budget.last
+      expect(budget.name).to eq('Ahorro Congelado 90 dias de Bryan')
+      expect(budget.term_savings.first.name).to eq('Ahorro Congelado 90 dias de Bryan')
+    end
+
+    it 'crea un ahorro a plazo fijo manual (opcion "Otro") con el nombre ingresado' do
+      budget_type = create_budget_type('term_saving')
+      get wizard_step2_budgets_path(type: 'term_saving')
+
+      params = {
+        budget_type_id: budget_type.id,
+        color_id: color.id,
+        icon_id: icon.id,
+        term_savings_attributes: {
+          id: nil, name: 'Mi ahorro manual', principal_amount: 10_000, term_days: 90, rate_locked: 0.12,
+          started_at: Date.current
+        }
+      }
+
+      expect do
+        post budgets_path, params: { budget: params }
+      end.to change(Budget, :count).by(1)
+
+      budget = Budget.last
+      expect(budget.term_savings.first.financial_product_id).to be_blank
+      expect(budget.name).to eq('Mi ahorro manual')
     end
   end
 end

@@ -12,6 +12,8 @@ module FinancialProductAssociable
   extend ActiveSupport::Concern
 
   included do
+    attr_accessor :nickname
+
     validates :financial_product_id, inclusion: {
       in: ->(_record) { FinancialCatalogServices::Registry.all_products.map(&:id) },
       allow_blank: true,
@@ -28,7 +30,9 @@ module FinancialProductAssociable
     owner = financial_product_owner
     return unless product && owner
 
-    assign_generated_name("#{financial_product_name_prefix} #{product.name} de #{owner.first_name}")
+    generated_name = "#{financial_product_name_prefix} #{product.name} de #{owner.first_name}"
+    generated_name += " (#{nickname})" if nickname.present?
+    assign_generated_name(generated_name)
   end
 
   # Prefijo del nombre autogenerado. Override en el modelo incluyente para
