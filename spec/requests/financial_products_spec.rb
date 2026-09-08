@@ -20,6 +20,13 @@ RSpec.describe '/financial_products', type: :request do
 
       expect(JSON.parse(response.body)).to eq([])
     end
+
+    it 'retorna vacio cuando el tipo no esta en la whitelist' do
+      get financial_products_path(type: 'admin', institution: 'Nu')
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).to eq([])
+    end
   end
 
   describe 'sin autenticacion' do

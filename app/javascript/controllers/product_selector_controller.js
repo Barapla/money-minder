@@ -22,19 +22,26 @@ export default class extends Controller {
 
     this.toggleContainers({ showProduct: true })
 
-    const response = await fetch(
-      `/financial_products?type=${encodeURIComponent(this.productTypeValue)}&institution=${encodeURIComponent(institution)}`
-    )
-    const products = await response.json()
-
-    this.productTarget.innerHTML = [`<option value="">Selecciona un producto</option>`]
-      .concat(
-        products.map((product) => {
-          const isSelected = product.id === this.selectedProductValue ? " selected" : ""
-          return `<option value="${product.id}"${isSelected}>${product.name}</option>`
-        })
+    try {
+      const response = await fetch(
+        `/financial_products?type=${encodeURIComponent(this.productTypeValue)}&institution=${encodeURIComponent(institution)}`
       )
-      .join("")
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`)
+      }
+
+      const products = await response.json()
+
+      const options = products.map((product) => {
+        const isSelected = product.id === this.selectedProductValue ? " selected" : ""
+        return `<option value="${product.id}"${isSelected}>${product.name}</option>`
+      })
+
+      this.productTarget.innerHTML = `<option value="">Selecciona un producto</option>${options.join("")}`
+    } catch (error) {
+      this.productTarget.innerHTML = `<option value="">Error al cargar productos</option>`
+    }
   }
 
   toggleContainers({ showProduct }) {

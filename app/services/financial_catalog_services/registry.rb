@@ -36,6 +36,10 @@ module FinancialCatalogServices
       def by_institution(institution)
         FilteredCollection.new(all_products).by_institution(institution)
       end
+
+      def find_by_id(id)
+        all_products.find { |product| product.id == id }
+      end
     end
 
     # Coleccion de productos filtrada que permite seguir encadenando filtros.

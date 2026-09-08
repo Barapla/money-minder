@@ -29,7 +29,7 @@ module ApplicationHelper
     return 'other' if financial_product_id.blank? && persisted
     return nil if financial_product_id.blank?
 
-    FinancialCatalogServices::Registry.all_products.find { |product| product.id == financial_product_id }&.institution
+    FinancialCatalogServices::Registry.find_by_id(financial_product_id)&.institution
   end
 
   def ai_report_status_badge(report)

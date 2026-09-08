@@ -18,6 +18,11 @@
             </div>
         <% end %>
         
+        <%
+          # nil omits `selected:` so form.select reads the form object's real attribute;
+          # blank string is a deliberate value (e.g. "no institution chosen" on virtual
+          # fields like :institution, which the object doesn't respond to) and must stay.
+        %>
         <%= form.select(name,
             options_collection,
             { prompt:, **(selected.nil? ? {} : { selected: }) },
