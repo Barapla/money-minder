@@ -48,6 +48,13 @@ RSpec.describe SavingsFund, type: :model do
       expect(fund).to be_valid
       expect(budget.reload.name).to eq('Cuenta Mercado Pago de Bryan')
     end
+
+    it 'FEAT-028 CA7: autogenera el nombre para la Nu Cajita' do
+      fund = build_savings_fund(financial_product_id: 'nu_cajita')
+
+      expect(fund).to be_valid
+      expect(budget.reload.name).to eq('Cuenta Nu Cajita de Bryan')
+    end
   end
 
   describe 'financial_product_id invalido' do

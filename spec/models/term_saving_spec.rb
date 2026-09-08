@@ -81,6 +81,13 @@ RSpec.describe TermSaving, type: :model do
       expect(term_saving).to be_valid
       expect(term_saving.name).to eq('Ahorro Congelado 90 dias de Bryan')
     end
+
+    it 'FEAT-028 CA8: autogenera el nombre para el Nu Ahorro Congelado con el prefijo Ahorro' do
+      term_saving = build_term_saving(financial_product_id: 'nu_ahorro_congelado')
+
+      expect(term_saving).to be_valid
+      expect(term_saving.name).to eq('Ahorro Nu Ahorro Congelado de Bryan')
+    end
   end
 
   describe 'sincronizacion del nombre con el Budget contenedor (FEAT-027)' do

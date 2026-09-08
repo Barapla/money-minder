@@ -10,6 +10,10 @@ RSpec.describe FinancialCatalogServices::Catalog do
       expect(products).to contain_exactly(
         an_instance_of(FinancialCatalogServices::Nu::NuCreditCard),
         an_instance_of(FinancialCatalogServices::Nu::NuFrozenSavings90),
+        an_instance_of(FinancialCatalogServices::Nu::NuDebito),
+        an_instance_of(FinancialCatalogServices::Nu::NuCajita),
+        an_instance_of(FinancialCatalogServices::Nu::NuCajitaTurbo),
+        an_instance_of(FinancialCatalogServices::Nu::NuAhorroCongelado),
         an_instance_of(FinancialCatalogServices::Klar::KlarDebitCard),
         an_instance_of(FinancialCatalogServices::Bbva::BbvaSavingsFund),
         an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoCuenta),

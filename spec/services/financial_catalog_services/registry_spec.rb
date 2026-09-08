@@ -8,6 +8,10 @@ RSpec.describe FinancialCatalogServices::Registry do
       expect(described_class.all_products).to contain_exactly(
         an_instance_of(FinancialCatalogServices::Nu::NuCreditCard),
         an_instance_of(FinancialCatalogServices::Nu::NuFrozenSavings90),
+        an_instance_of(FinancialCatalogServices::Nu::NuDebito),
+        an_instance_of(FinancialCatalogServices::Nu::NuCajita),
+        an_instance_of(FinancialCatalogServices::Nu::NuCajitaTurbo),
+        an_instance_of(FinancialCatalogServices::Nu::NuAhorroCongelado),
         an_instance_of(FinancialCatalogServices::Klar::KlarDebitCard),
         an_instance_of(FinancialCatalogServices::Bbva::BbvaSavingsFund),
         an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoCuenta),
@@ -27,6 +31,7 @@ RSpec.describe FinancialCatalogServices::Registry do
 
     it 'accepts the type constants' do
       expect(described_class.by_type(described_class::DEBIT).to_a).to contain_exactly(
+        an_instance_of(FinancialCatalogServices::Nu::NuDebito),
         an_instance_of(FinancialCatalogServices::Klar::KlarDebitCard),
         an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaDebito)
       )
@@ -34,6 +39,8 @@ RSpec.describe FinancialCatalogServices::Registry do
 
     it 'returns the savings fund products, including Mercado Pago (CA6)' do
       expect(described_class.by_type(described_class::SAVINGS).to_a).to contain_exactly(
+        an_instance_of(FinancialCatalogServices::Nu::NuCajita),
+        an_instance_of(FinancialCatalogServices::Nu::NuCajitaTurbo),
         an_instance_of(FinancialCatalogServices::Bbva::BbvaSavingsFund),
         an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoCuenta)
       )
@@ -45,10 +52,14 @@ RSpec.describe FinancialCatalogServices::Registry do
   end
 
   describe '.by_institution' do
-    it 'returns only products from the given institution' do
+    it 'returns only products from the given institution (CA1, CA9)' do
       expect(described_class.by_institution('Nu').to_a).to contain_exactly(
         an_instance_of(FinancialCatalogServices::Nu::NuCreditCard),
-        an_instance_of(FinancialCatalogServices::Nu::NuFrozenSavings90)
+        an_instance_of(FinancialCatalogServices::Nu::NuFrozenSavings90),
+        an_instance_of(FinancialCatalogServices::Nu::NuDebito),
+        an_instance_of(FinancialCatalogServices::Nu::NuCajita),
+        an_instance_of(FinancialCatalogServices::Nu::NuCajitaTurbo),
+        an_instance_of(FinancialCatalogServices::Nu::NuAhorroCongelado)
       )
     end
 
