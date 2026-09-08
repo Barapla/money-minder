@@ -7,10 +7,7 @@
     prefix = component.prefix
     suffix = component.suffix
     help_text = component.help_text
-    required = component.required 
-    
-    # Generar ID único para el campo
-    field_id = "#{form.object_name}_#{name}"
+    required = component.required
 %>
 
 <div class="form-group">
@@ -31,10 +28,9 @@
             </span>
         <% end %>
         
-        <%= form.send(field_type, name, 
+        <%= form.send(field_type, name,
             class: component.send(:input_classes),
             placeholder:,
-            id: field_id,
             required:,
             data: { 
               form_validator_target: "field",

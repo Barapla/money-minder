@@ -83,6 +83,24 @@ RSpec.describe TermSaving, type: :model do
     end
   end
 
+  describe 'sincronizacion del nombre con el Budget contenedor (FEAT-027)' do
+    it 'copia el nombre del ahorro al Budget cuando este todavia no tiene uno' do
+      budget.update_column(:name, '')
+      term_saving = build_term_saving(financial_product_id: 'nu_frozen_savings90')
+
+      expect(term_saving).to be_valid
+      expect(term_saving.budget.name).to eq('Ahorro Congelado 90 dias de Bryan')
+      expect(Budget.find(budget.id).name).to eq('') # la sincronizacion es en memoria, no persiste el Budget solo
+    end
+
+    it 'no pisa un nombre de Budget ya existente' do
+      term_saving = build_term_saving(financial_product_id: 'nu_frozen_savings90')
+
+      expect(term_saving).to be_valid
+      expect(term_saving.budget.name).to eq('Ahorro a Plazo')
+    end
+  end
+
   describe 'financial_product_id invalido' do
     it 'falla la validacion con un mensaje claro' do
       term_saving = build_term_saving(financial_product_id: 'no_existe')

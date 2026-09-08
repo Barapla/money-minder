@@ -1,0 +1,14 @@
+<%# Institucion/producto ya se eligieron en los pasos 2-3 del wizard (FEAT-027); aqui solo
+    se conserva el producto elegido (hidden_field) y se ofrece un apodo opcional que se
+    agrega entre parentesis al nombre autogenerado (ver FinancialProductAssociable). %>
+<% product = FinancialCatalogServices::Registry.find_by_id(financial_product_id) %>
+<%= form.hidden_field :financial_product_id %>
+<%= render Forms::InputComponent.new(
+    name: :nickname,
+    form:,
+    type: :text,
+    options: {
+        placeholder: "Ej. Negocio",
+        help_text: product ? "Apodo opcional (se muestra como \"#{product.name} (tu apodo)\")" : "Apodo opcional"
+    }
+) %>

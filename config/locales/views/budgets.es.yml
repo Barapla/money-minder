@@ -14,3 +14,26 @@ es:
       title: "Editar Presupuesto"
       subtitle: "Edita el presupuesto"
       form_section: "Información del Presupuesto"
+    wizard:
+      back: "Atrás"
+      cancel: "Cancelar"
+      steps:
+        type: "Tipo"
+        institution: "Institución"
+        product: "Producto"
+        details: "Detalles"
+      step_1:
+        heading: "¿Qué tipo de presupuesto quieres crear?"
+      step_2:
+        heading: "Elige la institución financiera"
+        subtitle: "Instituciones con productos de tipo \"%{type}\""
+        other_option: "Otro"
+      step_3:
+        heading: "Elige el producto de %{institution}"
+        subtitle: "Productos de tipo \"%{type}\""
+      step_4:
+        heading: "Completa los detalles"
+        create_button: "Crear presupuesto"
+      errors:
+        invalid_step: "Selecciona un tipo de presupuesto para continuar"
+        missing_institution: "Selecciona una institución para continuar"

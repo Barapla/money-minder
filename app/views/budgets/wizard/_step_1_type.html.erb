@@ -1,0 +1,12 @@
+<div class="p-8">
+    <h2 class="text-xl font-semibold text-white mb-6"><%= t('budgets.wizard.step_1.heading') %></h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <% budget_types.each do |budget_type| %>
+            <%= link_to wizard_step2_budgets_path(type: budget_type.code), class: 'wizard-step-card' do %>
+                <%= budget_type_icon(budget_type.code, 'w-10 h-10 text-purple-300') %>
+                <span class="text-white font-semibold"><%= budget_type.value %></span>
+            <% end %>
+        <% end %>
+    </div>
+</div>

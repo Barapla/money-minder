@@ -1,38 +1,45 @@
 <% selected_institution = selected_financial_institution(financial_product_id: budget.financial_product_id, persisted: budget.persisted?) %>
+<% wizard = local_assigns.fetch(:wizard, false) %>
 <%= fields_for "budget", budget do |dc_form| %>
-    <div data-controller="product-selector"
-        data-product-selector-product-type-value="<%= FinancialCatalogServices::Registry::DEBIT %>"
-        data-product-selector-selected-product-value="<%= budget.financial_product_id %>">
-        <%= render Forms::SelectComponent.new(
-            name: :institution,
-            form: dc_form,
-            options_collection: financial_institutions_for_select(FinancialCatalogServices::Registry::DEBIT),
-            options: {
-                prompt: "Selecciona una institución",
-                help_text: "Institución financiera del producto (opcional)",
-                selected: selected_institution.to_s,
-                data: {
-                    product_selector_target: "institution",
-                    action: "change->product-selector#updateProducts"
-                }
-            }
-        ) %>
-
-        <div data-product-selector-target="productContainer">
+    <% if wizard %>
+        <% if budget.financial_product_id.present? %>
+            <%= render "budgets/forms/shared/wizard_product_fields", form: dc_form, financial_product_id: budget.financial_product_id %>
+        <% end %>
+    <% else %>
+        <div data-controller="product-selector"
+            data-product-selector-product-type-value="<%= FinancialCatalogServices::Registry::DEBIT %>"
+            data-product-selector-selected-product-value="<%= budget.financial_product_id %>">
             <%= render Forms::SelectComponent.new(
-                name: :financial_product_id,
+                name: :institution,
                 form: dc_form,
-                options_collection: financial_products_for_select(FinancialCatalogServices::Registry::DEBIT, selected_institution),
+                options_collection: financial_institutions_for_select(FinancialCatalogServices::Registry::DEBIT),
                 options: {
-                    prompt: "Selecciona un producto",
-                    help_text: "Producto del catálogo financiero (opcional)",
+                    prompt: "Selecciona una institución",
+                    help_text: "Institución financiera del producto (opcional)",
+                    selected: selected_institution.to_s,
                     data: {
-                        product_selector_target: "product"
+                        product_selector_target: "institution",
+                        action: "change->product-selector#updateProducts"
                     }
                 }
             ) %>
+
+            <div data-product-selector-target="productContainer">
+                <%= render Forms::SelectComponent.new(
+                    name: :financial_product_id,
+                    form: dc_form,
+                    options_collection: financial_products_for_select(FinancialCatalogServices::Registry::DEBIT, selected_institution),
+                    options: {
+                        prompt: "Selecciona un producto",
+                        help_text: "Producto del catálogo financiero (opcional)",
+                        data: {
+                            product_selector_target: "product"
+                        }
+                    }
+                ) %>
+            </div>
         </div>
-    </div>
+    <% end %>
 
     <%= render Forms::InputComponent.new(
         name: :current_amount,
