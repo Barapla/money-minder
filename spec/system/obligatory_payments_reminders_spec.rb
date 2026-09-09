@@ -46,6 +46,21 @@ RSpec.describe 'Recordatorios de pagos y cobros (FEAT-029)', type: :system do
     expect(reminder.recurrence).to be_nil
   end
 
+  it 'CA1: rechaza un recordatorio unico sin fecha' do
+    visit new_obligatory_payment_path
+
+    fill_in 'Nombre del pago', with: 'Reembolso sin fecha'
+    fill_in 'Monto', with: '500'
+    select category.name, from: 'Categoría'
+    choose 'obligatory_payment_reminder_type_income'
+    check 'obligatory_payment_one_time'
+
+    click_button 'Guardar Pago Obligatorio'
+
+    expect(page).to have_current_path(obligatory_payments_path)
+    expect(ObligatoryPayment.exists?(name: 'Reembolso sin fecha')).to be(false)
+  end
+
   it 'CA2: crea un recordatorio de pago recurrente sin due_date' do
     visit new_obligatory_payment_path
 

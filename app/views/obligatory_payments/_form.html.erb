@@ -90,7 +90,7 @@
                     Es único (sin recurrencia)
                 </label>
 
-                <div data-previews--obligatory-payments-target="dueDateWrapper">
+                <div class="<%= 'hidden' unless obligatory_payment.one_time? %>" data-previews--obligatory-payments-target="dueDateWrapper">
                     <%= render Forms::InputComponent.new(
                         name: :due_date,
                         form:,
@@ -108,7 +108,7 @@
                 <%= recurrence_form.hidden_field :recurrenceable_type_id,
                     value: Catalog.by_group_and_code('recurrenceable_types', 'obligatory_payment')&.id %>
 
-                <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6" data-previews--obligatory-payments-target="recurrenceFields">
+                <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6 <%= 'hidden' if obligatory_payment.one_time? %>" data-previews--obligatory-payments-target="recurrenceFields">
                     <h3 class="text-lg font-semibold text-white mb-4">Frecuencia de Pago</h3>
 
                     <%= render Forms::InputComponent.new(

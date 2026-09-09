@@ -13,7 +13,7 @@ class ObligatoryPayment < ApplicationRecord
 
   scope :one_time, -> { left_joins(:recurrence).where(recurrences: { id: nil }) }
   scope :recurring, -> { left_joins(:recurrence).where.not(recurrences: { id: nil }) }
-  scope :by_type, ->(type) { where(reminder_type: type) if type.present? }
+  scope :by_type, ->(type) { type.present? ? where(reminder_type: type) : all }
 
   # Quitas due_day de este modelo
   validates :name, presence: true

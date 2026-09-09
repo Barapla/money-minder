@@ -11,13 +11,21 @@ export default class extends PreviewBaseController {
   ]
 
   connect() {
-    this.toggleRecurrence()
+    if (this.hasOneTimeTarget) {
+      this.toggleRecurrence()
+    }
   }
 
   toggleRecurrence() {
+    if (!this.hasOneTimeTarget) return
+
     const isOneTime = this.oneTimeTarget.checked
-    this.recurrenceFieldsTarget.classList.toggle("hidden", isOneTime)
-    this.dueDateWrapperTarget.classList.toggle("hidden", !isOneTime)
+    if (this.hasRecurrenceFieldsTarget) {
+      this.recurrenceFieldsTarget.classList.toggle("hidden", isOneTime)
+    }
+    if (this.hasDueDateWrapperTarget) {
+      this.dueDateWrapperTarget.classList.toggle("hidden", !isOneTime)
+    }
   }
 
   updateAmount(event) {
