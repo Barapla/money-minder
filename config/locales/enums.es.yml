@@ -33,6 +33,10 @@ es:
           paused: "Pausado"
           achieved: "Alcanzada"
           cancelled: "Cancelado"
+      obligatory_payment:
+        reminder_type:
+          payment: "Pago"
+          income: "Cobro"
 
   saving_goals:
     status:

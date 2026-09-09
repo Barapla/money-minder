@@ -73,16 +73,9 @@
             <div id="daypayments" class="space-y-4">
                 <% if @day_payments.any? %>
                     <% @day_payments.each do |payment| %>
-                        <div class="bg-bunker-800/40 border border-bunker-700/50 rounded-xl p-4 flex items-center justify-between hover:bg-bunker-800/60 transition-colors">
+                        <div class="<%= payment.income? ? 'reminder-income' : 'reminder-payment' %> bg-bunker-800/40 border border-bunker-700/50 rounded-xl p-4 flex items-center justify-between hover:bg-bunker-800/60 transition-colors">
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl
-                                <%=
-                                    payment.color.code == 'emerald' ? 'bg-emerald-500/20' :
-                                    payment.color.code == 'red' ? 'bg-red-500/20' :
-                                    payment.color.code == 'yellow' ? 'bg-yellow-500/20' :
-                                    payment.color.code == 'blue' ? 'bg-blue-500/20' :
-                                    payment.color.code == 'orange' ? 'bg-orange-500/20' : 'bg-pink-500/20'%>
-                                ">
+                                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl <%= payment.income? ? 'bg-emerald-500/20' : 'bg-red-500/20' %>">
                                     <%= payment.icon.value %>
                                 </div>
                                 <div>
@@ -95,16 +88,21 @@
                                                 (cada <%= payment.recurrence.frequency_value %>)
                                             <% end %>
                                         </p>
+                                    <% else %>
+                                        <p class="text-xs text-bunker-400"><%= t('.one_time_label') %></p>
                                     <% end %>
                                 </div>
                             </div>
                             <div class="text-right">
-                                <div class="font-bold text-lg text-orange-400">
+                                <div class="font-bold text-lg <%= payment.income? ? 'text-emerald-400' : 'text-orange-400' %>">
                                     <%= payment.amount.present? ? number_to_currency(payment.amount.round(2)) : 'N/A' %>
                                 </div>
                                 <div class="text-xs text-bunker-400">
-                                    Pago Obligatorio
+                                    <%= ObligatoryPayment.human_attribute_name("reminder_type.#{payment.reminder_type}") %>
                                 </div>
+                                <% if payment.done? %>
+                                    <div class="text-xs text-emerald-400 mt-1"><%= t('.done_label') %></div>
+                                <% end %>
                             </div>
                         </div>
                     <% end %>

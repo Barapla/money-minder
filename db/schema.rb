@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_16_081037) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_09_064644) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -304,9 +304,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_16_081037) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "done", default: false
+    t.string "reminder_type", default: "payment", null: false
+    t.date "due_date"
     t.index ["category_id"], name: "index_obligatory_payments_on_category_id"
     t.index ["color_id"], name: "index_obligatory_payments_on_color_id"
+    t.index ["due_date"], name: "index_obligatory_payments_on_due_date"
     t.index ["icon_id"], name: "index_obligatory_payments_on_icon_id"
+    t.index ["reminder_type"], name: "index_obligatory_payments_on_reminder_type"
     t.index ["user_id"], name: "index_obligatory_payments_on_user_id"
     t.index ["uuid"], name: "index_obligatory_payments_on_uuid", unique: true
   end

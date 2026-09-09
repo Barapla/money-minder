@@ -32,13 +32,8 @@
                 <%= payment_count %> pago<%= payment_count != 1 ? 's' : '' %>
             </div>
             <% objects.slice(0,2).each do |payment| %>
-                <div class="text-xs px-2 py-1 rounded
-                <%= payment.color.code == 'emerald' ? 'bg-emerald-500/20 text-emerald-300' :
-                    payment.color.code == 'red' ? 'bg-red-500/20 text-red-300' :
-                    payment.color.code == 'yellow' ? 'bg-yellow-500/20 text-yellow-300' :
-                    payment.color.code == 'blue' ? 'bg-blue-500/20 text-blue-300' :
-                    payment.color.code == 'orange' ? 'bg-orange-500/20 text-orange-300' : 'bg-pink-500/20 text-pink-300'%>
-                    truncate flex items-center gap-1">
+                <div class="<%= payment.income? ? 'reminder-income bg-emerald-500/20 text-emerald-300' : 'reminder-payment bg-red-500/20 text-red-300' %>
+                    text-xs px-2 py-1 rounded truncate flex items-center gap-1">
                     <span><%= payment.icon.value %></span>
                     <span class="truncate"><%= payment.name %></span>
                 </div>

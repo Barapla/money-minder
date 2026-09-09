@@ -64,71 +64,112 @@
                 }
             ) %>
 
-            <!-- Recurrence fields -->
-            <%= form.fields_for :recurrence do |recurrence_form| %>
-                <%= recurrence_form.hidden_field :recurrenceable_type_id,
-                    value: Catalog.by_group_and_code('recurrenceable_types', 'obligatory_payment')&.id %>
-
-                <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
-                    <h3 class="text-lg font-semibold text-white mb-4">Frecuencia de Pago</h3>
-
-                    <%= render Forms::InputComponent.new(
-                        name: :start_date,
-                        form: recurrence_form,
-                        type: :date,
-                        options: {
-                            help_text: "Fecha de inicio del pago recurrente",
-                            required: true,
-                            value: recurrence_form.object.start_date || Date.current,
-                            data: {
-                                "previews--obligatory-payments-target": "startDate",
-                                action: "change->previews--obligatory-payments#updateNextDate",
-                            }
-                        }
-                    ) %>
-
-                    <%= render Forms::InputComponent.new(
-                        name: :end_date,
-                        form: recurrence_form,
-                        type: :date,
-                        options: {
-                            help_text: "Fecha de fin del pago recurrente",
-                            value: recurrence_form.object.end_date || nil
-                        }
-                    ) %>
-
-                    <%= render Forms::SelectComponent.new(
-                        name: :frequency_type_id,
-                        form: recurrence_form,
-                        options_collection: Catalog.get_by_group_pluck('frequency_types'),
-                        options: {
-                            help_text: "¿Cada cuánto se realiza el pago?",
-                            required: true,
-                            data: {
-                                "previews--obligatory-payments-target": "frequency",
-                                action: "change->previews--obligatory-payments#updateFrequency",
-                            }
-                        }
-                    ) %>
-
-                    <%= render Forms::InputComponent.new(
-                        name: :frequency_value,
-                        form: recurrence_form,
-                        type: :number,
-                        options: {
-                            placeholder: "1",
-                            help_text: "Cada cuántas unidades (ej: 1 = cada mes, 3 = cada 3 meses)",
-                            required: true,
-                            value: recurrence_form.object.frequency_value || 1,
-                            data: {
-                                "previews--obligatory-payments-target": "frequencyValue",
-                                action: "input->previews--obligatory-payments#updateNextDate",
-                            }
-                        }
-                    ) %>
-
+            <!-- Tipo de recordatorio -->
+            <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6 mb-6">
+                <h3 class="text-lg font-semibold text-white mb-4"><%= t('.reminder_type_heading') %></h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="cursor-pointer">
+                        <%= form.radio_button :reminder_type, :payment, class: "sr-only peer" %>
+                        <div class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-bunker-700/50 bg-bunker-800/40 text-bunker-300 peer-checked:bg-red-500/20 peer-checked:border-red-500/50 peer-checked:text-red-300 transition-all duration-200">
+                            <%= ObligatoryPayment.human_attribute_name('reminder_type.payment') %>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <%= form.radio_button :reminder_type, :income, class: "sr-only peer" %>
+                        <div class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-bunker-700/50 bg-bunker-800/40 text-bunker-300 peer-checked:bg-emerald-500/20 peer-checked:border-emerald-500/50 peer-checked:text-emerald-300 transition-all duration-200">
+                            <%= ObligatoryPayment.human_attribute_name('reminder_type.income') %>
+                        </div>
+                    </label>
                 </div>
-            <% end %>
+            </div>
+
+            <!-- Frecuencia de pago: unico vs. recurrente -->
+            <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6 mb-6">
+                <h3 class="text-lg font-semibold text-white mb-4">Frecuencia de Pago</h3>
+
+                <label class="flex items-center gap-2 text-bunker-200 mb-4">
+                    <%= form.check_box :one_time,
+                        { checked: obligatory_payment.one_time?, class: "accent-purple-500",
+                          data: { "previews--obligatory-payments-target": "oneTime",
+                                  action: "change->previews--obligatory-payments#toggleRecurrence" } },
+                        "1", "0" %>
+                    <%= t('.one_time_label') %>
+                </label>
+
+                <div class="<%= 'hidden' unless obligatory_payment.one_time? %>" data-previews--obligatory-payments-target="dueDateWrapper">
+                    <%= render Forms::InputComponent.new(
+                        name: :due_date,
+                        form:,
+                        type: :date,
+                        options: {
+                            help_text: t('.due_date_help'),
+                            value: obligatory_payment.due_date
+                        }
+                    ) %>
+                </div>
+
+                <%= form.fields_for :recurrence, obligatory_payment.recurrence || Recurrence.new do |recurrence_form| %>
+                    <%= recurrence_form.hidden_field :recurrenceable_type_id,
+                        value: Catalog.by_group_and_code('recurrenceable_types', 'obligatory_payment')&.id %>
+
+                    <div class="<%= 'hidden' if obligatory_payment.one_time? %>" data-previews--obligatory-payments-target="recurrenceFields">
+                        <%= render Forms::InputComponent.new(
+                            name: :start_date,
+                            form: recurrence_form,
+                            type: :date,
+                            options: {
+                                help_text: "Fecha de inicio del pago recurrente",
+                                required: true,
+                                value: recurrence_form.object.start_date || Date.current,
+                                data: {
+                                    "previews--obligatory-payments-target": "startDate",
+                                    action: "change->previews--obligatory-payments#updateNextDate",
+                                }
+                            }
+                        ) %>
+
+                        <%= render Forms::InputComponent.new(
+                            name: :end_date,
+                            form: recurrence_form,
+                            type: :date,
+                            options: {
+                                help_text: "Fecha de fin del pago recurrente",
+                                value: recurrence_form.object.end_date || nil
+                            }
+                        ) %>
+
+                        <%= render Forms::SelectComponent.new(
+                            name: :frequency_type_id,
+                            form: recurrence_form,
+                            options_collection: Catalog.get_by_group_pluck('frequency_types'),
+                            options: {
+                                help_text: "¿Cada cuánto se realiza el pago?",
+                                required: true,
+                                data: {
+                                    "previews--obligatory-payments-target": "frequency",
+                                    action: "change->previews--obligatory-payments#updateFrequency",
+                                }
+                            }
+                        ) %>
+
+                        <%= render Forms::InputComponent.new(
+                            name: :frequency_value,
+                            form: recurrence_form,
+                            type: :number,
+                            options: {
+                                placeholder: "1",
+                                help_text: "Cada cuántas unidades (ej: 1 = cada mes, 3 = cada 3 meses)",
+                                required: true,
+                                value: recurrence_form.object.frequency_value || 1,
+                                data: {
+                                    "previews--obligatory-payments-target": "frequencyValue",
+                                    action: "input->previews--obligatory-payments#updateNextDate",
+                                }
+                            }
+                        ) %>
+                    </div>
+                <% end %>
+            </div>
         </div>
 
         <!-- Right Column -->

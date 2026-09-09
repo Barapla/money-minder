@@ -23,12 +23,28 @@
         </div>
     </div>
 
+    <!-- Filtros -->
+    <%= form_with url: obligatory_payments_path, method: :get, local: true, html: { class: "flex flex-wrap gap-4 mb-6" } do %>
+        <div>
+            <%= label_tag :reminder_type, t('.filter_type_label'), class: "block text-sm font-medium text-bunker-200 mb-1" %>
+            <%= select_tag :reminder_type,
+                options_for_select([[t('.filter_all'), ''], [t('.filter_payment'), 'payment'], [t('.filter_income'), 'income']], params[:reminder_type]),
+                class: "form-control", onchange: "this.form.requestSubmit()" %>
+        </div>
+        <div>
+            <%= label_tag :recurrence_filter, t('.filter_recurrence_label'), class: "block text-sm font-medium text-bunker-200 mb-1" %>
+            <%= select_tag :recurrence_filter,
+                options_for_select([[t('.filter_all'), ''], [t('.filter_recurring'), 'recurring'], [t('.filter_one_time'), 'one_time']], params[:recurrence_filter]),
+                class: "form-control", onchange: "this.form.requestSubmit()" %>
+        </div>
+    <% end %>
+
     <% if @obligatory_payments.any? %>
         <!-- Grid de Pagos -->
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <% @obligatory_payments.each do |payment| %>
                 <% rec = payment.get_recurrence %>
-                <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6 hover:bg-bunker-900/60 transition-all duration-200">
+                <div class="<%= payment.income? ? 'reminder-income' : 'reminder-payment' %> bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6 hover:bg-bunker-900/60 transition-all duration-200">
                     <!-- Header -->
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center gap-3">
@@ -40,6 +56,9 @@
                                 <p class="text-sm text-bunker-400"><%= payment.category&.name %></p>
                             </div>
                         </div>
+                        <span class="text-xs font-medium px-2 py-1 rounded-lg <%= payment.income? ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300' %>">
+                            <%= ObligatoryPayment.human_attribute_name("reminder_type.#{payment.reminder_type}") %>
+                        </span>
                     </div>
 
                     <!-- Amount -->
@@ -61,9 +80,25 @@
                             </svg>
                             <span class="text-orange-300"><%= t('.next_due_prefix') %> <%= payment.next_due_date&.strftime('%d/%m/%Y') || t('.no_due_date') %></span>
                         </div>
+                    <% elsif payment.due_date %>
+                        <div class="flex items-center gap-2 mb-4 text-sm text-bunker-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span><%= t('.one_time_prefix') %> <%= payment.due_date.strftime('%d/%m/%Y') %></span>
+                        </div>
                     <% else %>
                         <div class="text-sm text-red-400 mb-4"><%= t('.no_recurrence') %></div>
                     <% end %>
+
+                    <!-- Estado -->
+                    <div class="mb-4">
+                        <%= button_to obligatory_payment_path(payment), method: :patch,
+                            params: { obligatory_payment: { done: !payment.done } },
+                            class: "w-full px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 #{payment.done? ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-bunker-800/60 text-bunker-300 border border-bunker-700/50 hover:bg-bunker-700/60'}" do %>
+                            <%= payment.done? ? t('.mark_pending_button') : t('.mark_done_button') %>
+                        <% end %>
+                    </div>
 
                     <!-- Actions -->
                     <div class="flex gap-2 pt-4 border-t border-bunker-800/50">

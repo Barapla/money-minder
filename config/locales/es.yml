@@ -81,6 +81,8 @@ es:
         category_id: "Categoría"
         icon_id: "Icono"
         color_id: "Color"
+        reminder_type: "Tipo de recordatorio"
+        due_date: "Fecha del recordatorio"
       recurrence:
         frequency_type_id: "Tipo de frecuencia"
         start_date: "Fecha de inicio"
