@@ -44,7 +44,8 @@ class ObligatoryPaymentsCalendarController < ApplicationController
     recurrence_map = build_recurrence_map(payment_ids)
 
     payments.select do |payment|
-      recurrence_map[payment.id]&.occurrences_in_range(date, date)&.any?
+      recurrence = recurrence_map[payment.id]
+      recurrence ? recurrence.occurrences_in_range(date, date).any? : payment.due_date == date
     end
   end
 
@@ -89,9 +90,12 @@ class ObligatoryPaymentsCalendarController < ApplicationController
   def accumulate_occurrences(payments, recurrence_map, date)
     payments.each_with_object({}) do |payment, occurrences|
       recurrence = recurrence_map[payment.id]
-      next unless recurrence
 
-      add_occurrences(occurrences, recurrence, payment, date)
+      if recurrence
+        add_occurrences(occurrences, recurrence, payment, date)
+      elsif payment.due_date&.between?(date.beginning_of_month, date.end_of_month)
+        (occurrences[payment.due_date] ||= []) << payment
+      end
     end
   end
 

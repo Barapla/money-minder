@@ -64,12 +64,51 @@
                 }
             ) %>
 
+            <!-- Tipo de recordatorio -->
+            <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6 mb-6">
+                <h3 class="text-lg font-semibold text-white mb-4">Tipo de Recordatorio</h3>
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2 text-bunker-200">
+                        <%= form.radio_button :reminder_type, :payment, class: "accent-orange-500" %>
+                        <%= ObligatoryPayment.human_attribute_name('reminder_type.payment') %>
+                    </label>
+                    <label class="flex items-center gap-2 text-bunker-200">
+                        <%= form.radio_button :reminder_type, :income, class: "accent-emerald-500" %>
+                        <%= ObligatoryPayment.human_attribute_name('reminder_type.income') %>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Recurrencia vs. recordatorio unico -->
+            <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6 mb-6">
+                <label class="flex items-center gap-2 text-bunker-200">
+                    <%= form.check_box :one_time,
+                        { checked: obligatory_payment.one_time?, class: "accent-purple-500",
+                          data: { "previews--obligatory-payments-target": "oneTime",
+                                  action: "change->previews--obligatory-payments#toggleRecurrence" } },
+                        "1", "0" %>
+                    Es único (sin recurrencia)
+                </label>
+
+                <div data-previews--obligatory-payments-target="dueDateWrapper">
+                    <%= render Forms::InputComponent.new(
+                        name: :due_date,
+                        form:,
+                        type: :date,
+                        options: {
+                            help_text: "Fecha en la que ocurre el recordatorio único",
+                            value: obligatory_payment.due_date
+                        }
+                    ) %>
+                </div>
+            </div>
+
             <!-- Recurrence fields -->
             <%= form.fields_for :recurrence do |recurrence_form| %>
                 <%= recurrence_form.hidden_field :recurrenceable_type_id,
                     value: Catalog.by_group_and_code('recurrenceable_types', 'obligatory_payment')&.id %>
 
-                <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
+                <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6" data-previews--obligatory-payments-target="recurrenceFields">
                     <h3 class="text-lg font-semibold text-white mb-4">Frecuencia de Pago</h3>
 
                     <%= render Forms::InputComponent.new(

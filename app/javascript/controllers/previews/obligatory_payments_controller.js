@@ -6,8 +6,19 @@ export default class extends PreviewBaseController {
     ...PreviewBaseController.targets,
     "amount", "previewAmount",
     "frequency", "previewFrequency",
-    "frequencyValue", "startDate", "previewNextDate"
+    "frequencyValue", "startDate", "previewNextDate",
+    "oneTime", "recurrenceFields", "dueDateWrapper"
   ]
+
+  connect() {
+    this.toggleRecurrence()
+  }
+
+  toggleRecurrence() {
+    const isOneTime = this.oneTimeTarget.checked
+    this.recurrenceFieldsTarget.classList.toggle("hidden", isOneTime)
+    this.dueDateWrapperTarget.classList.toggle("hidden", !isOneTime)
+  }
 
   updateAmount(event) {
     this.previewAmountTarget.textContent = `-$${this.amountTarget.value ? parseFloat(this.amountTarget.value).toFixed(2) : "0.00"}`;

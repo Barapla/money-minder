@@ -9,9 +9,25 @@ class ObligatoryPayment < ApplicationRecord
   # Accept nested attributes for recurrence
   accepts_nested_attributes_for :recurrence, allow_destroy: true
 
+  enum :reminder_type, { payment: 'payment', income: 'income' }, default: :payment
+
+  scope :one_time, -> { left_joins(:recurrence).where(recurrences: { id: nil }) }
+  scope :recurring, -> { left_joins(:recurrence).where.not(recurrences: { id: nil }) }
+  scope :by_type, ->(type) { where(reminder_type: type) if type.present? }
+
   # Quitas due_day de este modelo
   validates :name, presence: true
   validates :amount, numericality: { greater_than: 0 }, if: -> { amount.present? }
+  validates :due_date, presence: true, if: :one_time?
+
+  # Sin Recurrence asociada: el recordatorio ocurre una sola vez, en due_date.
+  def one_time?
+    recurrence.blank? || recurrence.marked_for_destruction?
+  end
+
+  def recurring?
+    !one_time?
+  end
 
   def next_occurrence_from(date = Date.current)
     rec = get_recurrence

@@ -7,7 +7,10 @@ class ObligatoryPaymentsController < ApplicationController
 
   # GET /obligatory_payments or /obligatory_payments.json
   def index
-    @obligatory_payments = current_user.obligatory_payments.includes(:category, :color, :icon, :recurrence)
+    @obligatory_payments = current_user.obligatory_payments
+                                       .includes(:category, :color, :icon, :recurrence)
+                                       .by_type(params[:reminder_type])
+    @obligatory_payments = apply_recurrence_filter(@obligatory_payments, params[:recurrence_filter])
   end
 
   # GET /obligatory_payments/1 or /obligatory_payments/1.json
@@ -26,7 +29,7 @@ class ObligatoryPaymentsController < ApplicationController
 
   # POST /obligatory_payments or /obligatory_payments.json
   def create
-    @obligatory_payment = current_user.obligatory_payments.build(obligatory_payment_params)
+    @obligatory_payment = current_user.obligatory_payments.build(creation_params)
 
     respond_to do |format|
       if @obligatory_payment.save
@@ -42,7 +45,7 @@ class ObligatoryPaymentsController < ApplicationController
   # PATCH/PUT /obligatory_payments/1 or /obligatory_payments/1.json
   def update
     respond_to do |format|
-      if @obligatory_payment.update(obligatory_payment_params)
+      if @obligatory_payment.update(update_params)
         format.html { redirect_to obligatory_payments_url, notice: t('obligatory_payments.update.success') }
         format.json { render :show, status: :ok, location: @obligatory_payment }
       else
@@ -71,10 +74,39 @@ class ObligatoryPaymentsController < ApplicationController
   def obligatory_payment_params
     params.require(:obligatory_payment).permit(
       :name, :amount, :category_id, :description, :color_id, :icon_id,
+      :reminder_type, :due_date, :one_time, :done,
       recurrence_attributes: %i[
         id frequency_type_id recurrenceable_type_id frequency_value
         day_of_month day_of_week month_of_year start_date end_date _destroy
       ]
     )
+  end
+
+  def creation_params
+    attrs = obligatory_payment_params
+    extract_one_time!(attrs)
+    attrs
+  end
+
+  def update_params
+    attrs = obligatory_payment_params
+    @obligatory_payment.get_recurrence&.destroy if extract_one_time!(attrs)
+    attrs
+  end
+
+  # :one_time no es un atributo del modelo: se usa solo para decidir si se
+  # descarta la recurrencia enviada por el form. Retorna true si es un recordatorio unico.
+  def extract_one_time!(attrs)
+    one_time = ActiveModel::Type::Boolean.new.cast(attrs.delete(:one_time))
+    attrs.delete(:recurrence_attributes) if one_time
+    one_time
+  end
+
+  def apply_recurrence_filter(payments, filter)
+    case filter
+    when 'recurring' then payments.recurring
+    when 'one_time' then payments.one_time
+    else payments
+    end
   end
 end
