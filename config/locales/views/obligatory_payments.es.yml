@@ -33,3 +33,7 @@ es:
       title: "Editar Pago Obligatorio"
       subtitle: "Actualiza la información del pago recurrente"
       form_section: "Información del Pago Obligatorio"
+    form:
+      reminder_type_heading: "Tipo de Recordatorio"
+      one_time_label: "Es único (sin recurrencia)"
+      due_date_help: "Fecha en la que ocurre el recordatorio único"

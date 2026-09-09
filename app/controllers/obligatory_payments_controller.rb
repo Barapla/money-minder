@@ -23,9 +23,7 @@ class ObligatoryPaymentsController < ApplicationController
   end
 
   # GET /obligatory_payments/1/edit
-  def edit
-    @obligatory_payment.build_recurrence unless @obligatory_payment.get_recurrence
-  end
+  def edit; end
 
   # POST /obligatory_payments or /obligatory_payments.json
   def create
@@ -90,7 +88,7 @@ class ObligatoryPaymentsController < ApplicationController
 
   def update_params
     attrs = obligatory_payment_params
-    @obligatory_payment.get_recurrence&.destroy if extract_one_time!(attrs)
+    mark_recurrence_for_destruction!(attrs) if extract_one_time!(attrs)
     attrs
   end
 
@@ -100,6 +98,14 @@ class ObligatoryPaymentsController < ApplicationController
     one_time = ActiveModel::Type::Boolean.new.cast(attrs.delete(:one_time))
     attrs.delete(:recurrence_attributes) if one_time
     one_time
+  end
+
+  # Marca la recurrencia existente para destruccion via nested attributes en vez de
+  # destruirla de inmediato: asi la baja ocurre atomicamente dentro de la misma
+  # transaccion de @obligatory_payment.update, sin dejarla a medio actualizar.
+  def mark_recurrence_for_destruction!(attrs)
+    recurrence = @obligatory_payment.get_recurrence
+    attrs[:recurrence_attributes] = { id: recurrence.id, _destroy: '1' } if recurrence
   end
 
   def apply_recurrence_filter(payments, filter)

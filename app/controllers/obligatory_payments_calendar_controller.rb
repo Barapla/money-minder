@@ -45,7 +45,7 @@ class ObligatoryPaymentsCalendarController < ApplicationController
 
     payments.select do |payment|
       recurrence = recurrence_map[payment.id]
-      recurrence ? recurrence.occurrences_in_range(date, date).any? : payment.due_date == date
+      recurrence ? recurrence.occurrences_in_range(date, date)&.any? : payment.due_date == date
     end
   end
 

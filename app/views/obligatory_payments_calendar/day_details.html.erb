@@ -89,7 +89,7 @@
                                             <% end %>
                                         </p>
                                     <% else %>
-                                        <p class="text-xs text-bunker-400">Recordatorio único</p>
+                                        <p class="text-xs text-bunker-400"><%= t('.one_time_label') %></p>
                                     <% end %>
                                 </div>
                             </div>
@@ -101,7 +101,7 @@
                                     <%= ObligatoryPayment.human_attribute_name("reminder_type.#{payment.reminder_type}") %>
                                 </div>
                                 <% if payment.done? %>
-                                    <div class="text-xs text-emerald-400 mt-1">Completado</div>
+                                    <div class="text-xs text-emerald-400 mt-1"><%= t('.done_label') %></div>
                                 <% end %>
                             </div>
                         </div>

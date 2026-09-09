@@ -1,5 +1,7 @@
 <%
-    all_payments = payment_occurrences.values.flatten.uniq
+    # Sin .uniq: un pago recurrente con varias ocurrencias en el mes debe sumar cada
+    # ocurrencia (values.flatten repite el mismo payment una vez por fecha en el mes).
+    all_payments = payment_occurrences.values.flatten
     payments_with_amount = all_payments.select { |payment| payment.amount.present? }
     income_total = payments_with_amount.select(&:income?).sum(&:amount)
     payment_total = payments_with_amount.select(&:payment?).sum(&:amount)
@@ -16,10 +18,10 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v6m0 0l-3-3m3 3l3-3M3 12a9 9 0 1118 0 9 9 0 01-18 0z"></path>
                 </svg>
             </div>
-            <span class="text-xs text-bunker-400 font-medium">GASTO</span>
+            <span class="text-xs text-bunker-400 font-medium"><%= t('.expense_label') %></span>
         </div>
         <div class="text-3xl font-bold text-red-400 mb-1"><%= number_to_currency(payment_total, unit: "$", precision: 2) %></div>
-        <div class="text-sm text-bunker-300">Pagos del mes</div>
+        <div class="text-sm text-bunker-300"><%= t('.expense_subtitle') %></div>
     </div>
 
     <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
@@ -29,10 +31,10 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v-6m0 0l-3 3m3-3l3 3M3 12a9 9 0 1118 0 9 9 0 01-18 0z"></path>
                 </svg>
             </div>
-            <span class="text-xs text-bunker-400 font-medium">GANANCIA</span>
+            <span class="text-xs text-bunker-400 font-medium"><%= t('.income_label') %></span>
         </div>
         <div class="text-3xl font-bold text-emerald-400 mb-1"><%= number_to_currency(ganancia_total, unit: "$", precision: 2) %></div>
-        <div class="text-sm text-bunker-300">Cobros y nómina del mes</div>
+        <div class="text-sm text-bunker-300"><%= t('.income_subtitle') %></div>
     </div>
 
     <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6">
@@ -42,9 +44,9 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
-            <span class="text-xs text-bunker-400 font-medium">BALANCE</span>
+            <span class="text-xs text-bunker-400 font-medium"><%= t('.balance_label') %></span>
         </div>
         <div class="text-3xl font-bold <%= balance_total.negative? ? 'text-red-400' : 'text-emerald-400' %> mb-1"><%= number_to_currency(balance_total, unit: "$", precision: 2) %></div>
-        <div class="text-sm text-bunker-300">Balance neto del mes</div>
+        <div class="text-sm text-bunker-300"><%= t('.balance_subtitle') %></div>
     </div>
 </div>
