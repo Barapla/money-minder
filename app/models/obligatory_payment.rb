@@ -22,7 +22,7 @@ class ObligatoryPayment < ApplicationRecord
 
   # Sin Recurrence asociada: el recordatorio ocurre una sola vez, en due_date.
   def one_time?
-    recurrence.blank? || recurrence.marked_for_destruction?
+    recurrence.nil? || recurrence.marked_for_destruction?
   end
 
   def recurring?
