@@ -24,18 +24,30 @@
     </div>
 
     <!-- Filtros -->
-    <%= form_with url: obligatory_payments_path, method: :get, local: true, html: { class: "flex flex-wrap gap-4 mb-6" } do %>
-        <div>
-            <%= label_tag :reminder_type, t('.filter_type_label'), class: "block text-sm font-medium text-bunker-200 mb-1" %>
-            <%= select_tag :reminder_type,
-                options_for_select([[t('.filter_all'), ''], [t('.filter_payment'), 'payment'], [t('.filter_income'), 'income']], params[:reminder_type]),
-                class: "form-control", onchange: "this.form.requestSubmit()" %>
+    <%= form_with url: obligatory_payments_path, method: :get, local: true, html: { class: "flex flex-wrap gap-4 mb-6" } do |filter_form| %>
+        <div class="w-48">
+            <%= render Forms::SelectComponent.new(
+                name: :reminder_type,
+                form: filter_form,
+                options_collection: [[t('.filter_all'), ''], [t('.filter_payment'), 'payment'], [t('.filter_income'), 'income']],
+                options: {
+                    text: t('.filter_type_label'),
+                    selected: params[:reminder_type],
+                    onchange: "this.form.requestSubmit()"
+                }
+            ) %>
         </div>
-        <div>
-            <%= label_tag :recurrence_filter, t('.filter_recurrence_label'), class: "block text-sm font-medium text-bunker-200 mb-1" %>
-            <%= select_tag :recurrence_filter,
-                options_for_select([[t('.filter_all'), ''], [t('.filter_recurring'), 'recurring'], [t('.filter_one_time'), 'one_time']], params[:recurrence_filter]),
-                class: "form-control", onchange: "this.form.requestSubmit()" %>
+        <div class="w-48">
+            <%= render Forms::SelectComponent.new(
+                name: :recurrence_filter,
+                form: filter_form,
+                options_collection: [[t('.filter_all'), ''], [t('.filter_recurring'), 'recurring'], [t('.filter_one_time'), 'one_time']],
+                options: {
+                    text: t('.filter_recurrence_label'),
+                    selected: params[:recurrence_filter],
+                    onchange: "this.form.requestSubmit()"
+                }
+            ) %>
         </div>
     <% end %>
 
