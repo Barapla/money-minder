@@ -1,0 +1,8 @@
+<div id="conversation_messages" class="flex-1 overflow-y-auto px-4 py-6" data-controller="chatbot-scroll">
+  <% if messages.empty? %>
+    <p class="text-sm text-bunker-400">Pregúntame sobre tu liquidez, proyecciones de ahorro, gasto por categoría, tus tarjetas o escenarios hipotéticos.</p>
+  <% end %>
+  <% messages.each do |message| %>
+    <%= render 'chatbot/message', message: message %>
+  <% end %>
+</div>

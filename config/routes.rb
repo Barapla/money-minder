@@ -92,6 +92,12 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
     end
   end
 
+  resources :conversations, path: 'chatbot', controller: 'chatbot', only: %i[index show create] do
+    member do
+      post :create_message
+    end
+  end
+
   get 'dashboard', to: 'dashboard#index', as: :dashboard
   get 'dashboard/saving_goals_recalculate',
       to: 'dashboard#saving_goals_recalculate',

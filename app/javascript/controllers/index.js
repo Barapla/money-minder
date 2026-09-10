@@ -34,6 +34,12 @@ application.register("charts--flow", Charts__FlowController)
 import Charts__MainController from "./charts/main_controller"
 application.register("charts--main", Charts__MainController)
 
+import ChatbotFormController from "./chatbot_form_controller"
+application.register("chatbot-form", ChatbotFormController)
+
+import ChatbotScrollController from "./chatbot_scroll_controller"
+application.register("chatbot-scroll", ChatbotScrollController)
+
 import CheckboxIconGroupController from "./checkbox_icon_group_controller"
 application.register("checkbox-icon-group", CheckboxIconGroupController)
 

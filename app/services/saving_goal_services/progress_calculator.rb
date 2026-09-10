@@ -20,10 +20,8 @@ module SavingGoalServices
       }
     end
 
-    private
-
-    attr_reader :user
-
+    # Publico: reutilizado por ChatbotServices::LiquidityCalculator (FEAT-031) para
+    # exponer el desglose de liquidez sin duplicar las queries de balance.
     def total_available_money
       @total_available_money ||=
         cash_balance + debit_balance + savings_balance - credit_debt - locked_term_savings_balance
@@ -66,6 +64,10 @@ module SavingGoalServices
       today = Date.current
       current_cycles_for(ids, today).sum(:closing_balance)
     end
+
+    private
+
+    attr_reader :user
 
     def current_cycles_for(ids, today)
       CreditCardCycle.where(credit_card_id: ids)

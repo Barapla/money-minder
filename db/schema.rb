@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_09_064644) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_10_042420) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -125,6 +125,30 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_09_064644) do
     t.index ["icon_id"], name: "index_categories_on_icon_id"
     t.index ["parent_category_id"], name: "index_categories_on_parent_category_id"
     t.index ["uuid"], name: "index_categories_on_uuid", unique: true
+  end
+
+  create_table "conversation_messages", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.bigint "conversation_id", null: false
+    t.integer "role", default: 0, null: false
+    t.text "content", null: false
+    t.jsonb "metadata", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_id", "created_at"], name: "index_conversation_messages_on_conversation_id_and_created_at"
+    t.index ["uuid"], name: "index_conversation_messages_on_uuid", unique: true
+  end
+
+  create_table "conversations", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.bigint "user_id", null: false
+    t.string "title", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "created_at"], name: "index_conversations_on_user_id_and_created_at"
+    t.index ["uuid"], name: "index_conversations_on_uuid", unique: true
   end
 
   create_table "credit_card_cycle_transactions", force: :cascade do |t|
@@ -539,6 +563,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_09_064644) do
   add_foreign_key "categories", "catalogs", column: "color_id", name: "fk_categories_color"
   add_foreign_key "categories", "catalogs", column: "icon_id", name: "fk_categories_icon"
   add_foreign_key "categories", "categories", column: "parent_category_id", name: "fk_categories_parent"
+  add_foreign_key "conversation_messages", "conversations", name: "fk_conversation_messages_conversation"
+  add_foreign_key "conversations", "users", name: "fk_conversations_user"
   add_foreign_key "credit_card_cycle_transactions", "credit_card_cycles", name: "fk_ccct_credit_card_cycles"
   add_foreign_key "credit_card_cycle_transactions", "transactions", name: "fk_ccct_transactions"
   add_foreign_key "credit_card_cycles", "credit_cards", name: "fk_credit_card_cycles_credit_card"

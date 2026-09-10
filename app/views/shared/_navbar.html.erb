@@ -76,6 +76,9 @@
         <!-- Reportes (enlace directo) -->
         <%= navbar_link_to(t('.reports_link'), reports_path) %>
 
+        <!-- Chatbot (enlace directo) -->
+        <%= navbar_link_to(t('.chatbot_link'), conversations_path) %>
+
         <!-- Dropdown: Administración -->
         <div class="relative"
              data-controller="navbar-dropdown"
@@ -210,6 +213,9 @@
 
       <!-- Reportes -->
       <%= navbar_link_to(t('.reports_link'), reports_path) %>
+
+      <!-- Chatbot -->
+      <%= navbar_link_to(t('.chatbot_link'), conversations_path) %>
 
       <!-- Grupo: Administración -->
       <div data-controller="navbar-dropdown" class="rounded-md overflow-hidden">
