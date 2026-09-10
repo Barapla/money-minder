@@ -216,15 +216,18 @@ class AiReport < ApplicationRecord
     begin
       # NUEVO: Manejar la estructura que viene de FinancialInsightsService
       if ai_response_data.is_a?(Hash)
-        # Si ya está parseado como JSON en 'insights'
-        if ai_response_data['insights'].present?
+        # Si ya está parseado como JSON (Hash) en 'insights'
+        if ai_response_data['insights'].is_a?(Hash)
           self.parsed_insights = ai_response_data['insights']
           return
         end
 
-        # Si viene en 'content' (formato original)
-        if ai_response_data['content'].present?
-          content = ai_response_data['content']
+        # Si viene texto crudo: en 'insights' (fallback de FinancialInsightsService
+        # cuando Claude no devolvió JSON parseable) o en 'content' (formato original)
+        raw_content = ai_response_data['insights'].is_a?(String) ? ai_response_data['insights'] : ai_response_data['content']
+
+        if raw_content.present?
+          content = raw_content
 
           # Extraer JSON de markdown code blocks
           if content.include?('```json')
