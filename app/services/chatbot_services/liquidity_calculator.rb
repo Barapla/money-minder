@@ -2,7 +2,7 @@
 
 module ChatbotServices
   # Liquidez actual: efectivo + debito + fondos de ahorro - deuda de tarjetas de credito.
-  # Reutiliza SavingGoalServices::ProgressCalculator en vez de duplicar las queries de balance.
+  # Reutiliza LiquidityServices::Calculator en vez de duplicar las queries de balance.
   class LiquidityCalculator
     CACHE_TTL = 5.minutes
     ASSUMPTIONS = [
@@ -26,7 +26,7 @@ module ChatbotServices
 
     def balances
       Rails.cache.fetch("chatbot/liquidity/#{user.id}", expires_in: CACHE_TTL) do
-        calc = SavingGoalServices::ProgressCalculator.new(user)
+        calc = LiquidityServices::Calculator.new(user)
         {
           cash: calc.cash_balance.to_f,
           debit: calc.debit_balance.to_f,

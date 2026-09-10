@@ -96,6 +96,9 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
     member do
       post :create_message
     end
+    collection do
+      get :widget
+    end
   end
 
   get 'dashboard', to: 'dashboard#index', as: :dashboard

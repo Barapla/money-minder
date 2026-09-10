@@ -61,6 +61,11 @@ RSpec.describe '/dashboard', type: :request do
         get root_path
         expect(response.body).to include('Sin gastos registrados este mes')
       end
+
+      it 'muestra la burbuja flotante del asesor financiero (accesible en cualquier pantalla)' do
+        get root_path
+        expect(response.body).to include('data-controller="chatbot-bubble"')
+      end
     end
   end
 

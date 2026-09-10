@@ -101,6 +101,13 @@ module FinancialTestHelpers
     card
   end
 
+  def make_recurring_transaction(user:, type_code:, amount:, frequency: 'monthly')
+    RecurringTransaction.create!(
+      user:, frequency:, start_date: Date.current,
+      transaction_options: { 'transaction_type_id' => transaction_type_for(type_code).id.to_s, 'amount' => amount.to_s }
+    )
+  end
+
   def make_transaction(user:, budget:, category:, amount:, type_code:)
     Transaction.create!(
       user:, budget:, category:,

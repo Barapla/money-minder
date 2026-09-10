@@ -9,12 +9,6 @@ module ChatbotServices
       'julio' => 7, 'agosto' => 8, 'septiembre' => 9, 'octubre' => 10, 'noviembre' => 11, 'diciembre' => 12
     }.freeze
 
-    MONTHLY_MULTIPLIERS = {
-      'daily' => 30, 'weekly' => 4.33, 'bi_weekly' => 2.17, 'monthly' => 1,
-      'bi_monthly' => 0.5, 'quarterly' => (1.0 / 3), 'semi_annually' => (1.0 / 6),
-      'annually' => (1.0 / 12)
-    }.freeze
-
     DEFAULT_HORIZON_MONTHS = 6
     INCOMPLETE_DATA_WARNING = 'No tienes pagos obligatorios registrados; ' \
                               'esta proyección podría no reflejar todos tus compromisos futuros.'
@@ -26,11 +20,6 @@ module ChatbotServices
 
     def calculate
       Result.success(data: { result: result_hash, assumptions: assumptions, warnings: warnings })
-    end
-
-    # Publico: reutilizado por ChatbotServices::ScenarioSimulator para el escenario base.
-    def monthly_net_flow
-      recurring_income_total - recurring_expense_total - monthly_obligatory_total
     end
 
     private
@@ -67,7 +56,11 @@ module ChatbotServices
     end
 
     def current_liquidity
-      @current_liquidity ||= SavingGoalServices::ProgressCalculator.new(user).total_available_money.to_f
+      @current_liquidity ||= LiquidityServices::Calculator.new(user).total_available_money.to_f
+    end
+
+    def monthly_net_flow
+      @monthly_net_flow ||= ChatbotServices::NetFlowCalculator.new(user).monthly_net_flow
     end
 
     def explicit_date?
@@ -86,42 +79,6 @@ module ChatbotServices
 
     def months_between(from, to)
       ((to.year - from.year) * 12 + (to.month - from.month)).clamp(1, 120)
-    end
-
-    def recurring_income_total
-      monthly_recurring_total('income')
-    end
-
-    def recurring_expense_total
-      monthly_recurring_total('expense')
-    end
-
-    def monthly_recurring_total(type_code)
-      type_id = Catalog.by_group_and_code('transaction_types', type_code)&.id
-      return 0.0 if type_id.nil?
-
-      user.recurring_transactions.active
-          .where("transaction_options->>'transaction_type_id' = ?", type_id.to_s)
-          .sum { |rt| rt.transaction_options['amount'].to_f * MONTHLY_MULTIPLIERS.fetch(rt.frequency, 1) }
-    end
-
-    def monthly_obligatory_total
-      user.obligatory_payments.recurring.sum do |payment|
-        monthly_equivalent(payment.amount.to_f, payment.get_recurrence)
-      end
-    end
-
-    def monthly_equivalent(amount, recurrence)
-      return 0.0 if recurrence.nil?
-
-      case recurrence.frequency_type.code
-      when 'daily' then amount * 30 / recurrence.frequency_value
-      when 'weekly' then amount * 4.33 / recurrence.frequency_value
-      when 'biweekly' then amount * 2.17
-      when 'monthly' then amount / recurrence.frequency_value
-      when 'yearly' then amount / 12.0 / recurrence.frequency_value
-      else 0.0
-      end
     end
 
     def one_time_obligatory_total(target)

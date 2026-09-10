@@ -30,6 +30,29 @@ RSpec.describe '/chatbot', type: :request do
       expect(response.body).to include('Consulta previa')
       expect(conversation).to be_persisted
     end
+
+    it 'no duplica la burbuja flotante en la pagina completa del chatbot (evita ids duplicados)' do
+      get conversations_path
+
+      expect(response.body).not_to include('data-controller="chatbot-bubble"')
+    end
+  end
+
+  describe 'GET /chatbot/widget' do
+    before { sign_in user }
+
+    it 'crea una conversacion si el usuario no tiene ninguna y renderiza el frame' do
+      expect { get widget_conversations_path }.to change(Conversation, :count).by(1)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('chatbot_bubble_frame')
+    end
+
+    it 'reutiliza la conversacion mas reciente existente en vez de crear una nueva' do
+      create(:conversation, user:)
+
+      expect { get widget_conversations_path }.not_to change(Conversation, :count)
+    end
   end
 
   describe 'CA8: POST /chatbot crea una conversacion independiente' do
@@ -105,6 +128,17 @@ RSpec.describe '/chatbot', type: :request do
     it 'rechaza un mensaje vacio sin crear registros' do
       expect do
         post create_message_conversation_path(conversation), params: { content: '  ' }
+      end.not_to change(ConversationMessage, :count)
+
+      expect(response).to redirect_to(conversation_path(conversation))
+    end
+
+    it 'no deja el mensaje del usuario huerfano si falla la creacion del mensaje del asistente' do
+      Conversation::MAX_MESSAGES.pred.times { create(:conversation_message, conversation:) }
+
+      expect do
+        post create_message_conversation_path(conversation), params: { content: 'una pregunta más' },
+                                                             as: :turbo_stream
       end.not_to change(ConversationMessage, :count)
 
       expect(response).to redirect_to(conversation_path(conversation))

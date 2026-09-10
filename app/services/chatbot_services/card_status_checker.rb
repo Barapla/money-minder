@@ -45,7 +45,7 @@ module ChatbotServices
     end
 
     def matching_card_budget
-      match = credit_card_budgets.find { |budget| message.include?(budget.name.downcase) }
+      match = credit_card_budgets.where("? ILIKE ('%' || budgets.name || '%')", message).first
       return match if match
 
       credit_card_budgets.count == 1 ? credit_card_budgets.first : nil

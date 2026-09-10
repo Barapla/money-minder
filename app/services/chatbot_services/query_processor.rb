@@ -15,6 +15,8 @@ module ChatbotServices
       scenario: /y si|escenario|recort[oa]/i
     }.freeze
 
+    FAILURE_CONTENT = 'No pudimos procesar tu consulta en este momento. Intenta reformularla en unos minutos.'
+
     def initialize(user:, conversation:, user_message:)
       @user = user
       @conversation = conversation
@@ -26,6 +28,9 @@ module ChatbotServices
       return calculator_failure_response(calc_result) if calc_result.failure?
 
       claude_response(calc_result.data)
+    rescue StandardError => e
+      Rails.logger.error("[ChatbotServices::QueryProcessor] #{e.class}: #{e.message}")
+      Result.success(data: { content: FAILURE_CONTENT, assumptions: [], warnings: [] })
     end
 
     private
@@ -38,11 +43,22 @@ module ChatbotServices
 
     def claude_response(data)
       claude_result = ChatbotServices::ClaudeClient.new.chat(
-        user_message: user_message, data: data[:result], context_messages: context_messages
+        user_message: user_message, data: data[:result], context_messages: context_messages,
+        advisor_context: payroll_context
       )
       content = claude_result.success? ? claude_result.data : fallback_content(data[:result])
 
       Result.success(data: { content: content, assumptions: data[:assumptions], warnings: data[:warnings] })
+    end
+
+    # Contexto de nomina/recordatorios (FEAT-007) para que el asesor pueda
+    # referenciarlo aunque la consulta no sea explicitamente sobre nomina.
+    def payroll_context
+      info = DashboardPresenter.new(user).next_payroll_info
+      return nil unless info
+
+      "#{info[:next_period_label]}: #{info[:net_amount_formatted]} el #{info[:payment_date].strftime('%d/%m/%Y')} " \
+        "(en #{info[:days_until]} días)."
     end
 
     def detect_query_type

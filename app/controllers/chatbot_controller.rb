@@ -16,8 +16,15 @@ class ChatbotController < ApplicationController
     @messages = @conversation.messages
   end
 
+  # Contenido de la burbuja de chat flotante (visible en cualquier pantalla): usa
+  # siempre la conversacion mas reciente del usuario, creando una si no existe.
+  def widget
+    @conversation = current_user.conversations.order(created_at: :desc).first || current_user.conversations.create!
+    @messages = @conversation.messages
+  end
+
   def create
-    conversation = current_user.conversations.create!(title: params[:title].presence)
+    conversation = current_user.conversations.create!(title: sanitized_title)
     redirect_to conversation_path(conversation)
   end
 
@@ -25,16 +32,32 @@ class ChatbotController < ApplicationController
     content = params[:content].to_s.strip
     return redirect_to conversation_path(@conversation), alert: 'El mensaje no puede estar vacío' if content.blank?
 
-    @user_message = @conversation.messages.create!(role: :user, content: content)
-    @assistant_message = build_assistant_message(content)
+    create_message_pair(content)
+    respond_to_created_message
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to conversation_path(@conversation), alert: e.record.errors.full_messages.to_sentence
+  end
 
+  private
+
+  def sanitized_title
+    ActionController::Base.helpers.strip_tags(params[:title].to_s).strip.presence
+  end
+
+  # Transaccion: si build_assistant_message falla, el mensaje del usuario tampoco se persiste.
+  def create_message_pair(content)
+    ActiveRecord::Base.transaction do
+      @user_message = @conversation.messages.create!(role: :user, content: content)
+      @assistant_message = build_assistant_message(content)
+    end
+  end
+
+  def respond_to_created_message
     respond_to do |format|
       format.turbo_stream
       format.html { redirect_to conversation_path(@conversation) }
     end
   end
-
-  private
 
   def build_assistant_message(content)
     result = ChatbotServices::QueryProcessor.new(user: current_user, conversation: @conversation,

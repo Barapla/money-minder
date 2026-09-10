@@ -2,7 +2,7 @@
 
 # ConversationMessage model — un turno (user/assistant) dentro de una Conversation (FEAT-031).
 class ConversationMessage < ApplicationRecord
-  belongs_to :conversation
+  belongs_to :conversation, counter_cache: :messages_count
 
   enum :role, { user: 0, assistant: 1 }
 
@@ -14,7 +14,7 @@ class ConversationMessage < ApplicationRecord
   def conversation_message_limit_not_reached
     return unless conversation
 
-    return if conversation.messages.count < Conversation::MAX_MESSAGES
+    return if conversation.messages_count < Conversation::MAX_MESSAGES
 
     errors.add(:base, 'La conversación alcanzó el límite de 100 mensajes')
   end

@@ -56,6 +56,34 @@ RSpec.describe ChatbotServices::QueryProcessor, type: :service do
     expect(result.data[:content]).to include('500')
   end
 
+  it 'incluye el contexto de nomina en la llamada a Claude cuando el usuario la tiene configurada' do
+    create(:employment_information, user:, payment_frequency: 'monthly_payment', start_date: 10.days.ago.to_date)
+    received_advisor_context = nil
+    fake_client = instance_double(ChatbotServices::ClaudeClient)
+    allow(fake_client).to receive(:chat) do |advisor_context:, **|
+      received_advisor_context = advisor_context
+      Result.success(data: 'ok')
+    end
+    allow(ChatbotServices::ClaudeClient).to receive(:new).and_return(fake_client)
+    allow_any_instance_of(ChatbotServices::LiquidityCalculator).to receive(:calculate)
+      .and_return(Result.success(data: { result: { primary_metric: 0, breakdown: [] }, assumptions: [], warnings: [] }))
+
+    described_class.new(user:, conversation:, user_message: '¿Cuánto tengo disponible?').process
+
+    expect(received_advisor_context).to be_present
+  end
+
+  it 'cae a un mensaje de error generico si el calculador lanza una excepcion inesperada' do
+    stub_claude
+    allow_any_instance_of(ChatbotServices::LiquidityCalculator).to receive(:calculate).and_raise(StandardError, 'boom')
+
+    processor = described_class.new(user:, conversation:, user_message: '¿Cuánto dinero tengo disponible?')
+    result = processor.process
+
+    expect(result).to be_success
+    expect(result.data[:content]).to match(/no pudimos procesar/i)
+  end
+
   it 'CA2: envia solo los ultimos 10 mensajes de contexto a Claude' do
     12.times { |i| create(:conversation_message, conversation:, content: "mensaje #{i}") }
     received_context = nil

@@ -34,7 +34,7 @@ RSpec.describe ChatbotServices::LiquidityCalculator, type: :service do
 
   context 'cuando la deuda de tarjetas supera la liquidez' do
     it 'advierte sobre el saldo negativo' do
-      allow(SavingGoalServices::ProgressCalculator).to receive(:new).and_wrap_original do |method, u|
+      allow(LiquidityServices::Calculator).to receive(:new).and_wrap_original do |method, u|
         calc = method.call(u)
         allow(calc).to receive_messages(cash_balance: 0.0, debit_balance: 0.0, savings_balance: 0.0, credit_debt: 100.0,
                                         total_available_money: -100.0)

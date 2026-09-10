@@ -26,8 +26,9 @@ RSpec.describe ChatbotServices::SavingsProjector, type: :service do
     end
 
     it 'incluye el gasto obligatorio recurrente en el flujo neto mensual' do
-      projector = described_class.new(user:, message: 'proyección')
-      expect(projector.monthly_net_flow).to eq(-100.0)
+      result = described_class.new(user:, message: 'proyección').calculate
+      net_flow_row = result.data[:result][:breakdown].find { |row| row[:label] == 'Flujo neto mensual estimado' }
+      expect(net_flow_row[:amount]).to eq(-100.0)
     end
   end
 

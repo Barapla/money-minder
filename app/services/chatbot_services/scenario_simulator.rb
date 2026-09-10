@@ -63,11 +63,11 @@ module ChatbotServices
     end
 
     def base_net_flow
-      ChatbotServices::SavingsProjector.new(user: user, message: '').monthly_net_flow
+      ChatbotServices::NetFlowCalculator.new(user).monthly_net_flow
     end
 
     def current_liquidity
-      SavingGoalServices::ProgressCalculator.new(user).total_available_money.to_f
+      LiquidityServices::Calculator.new(user).total_available_money.to_f
     end
 
     def extract_percentage
