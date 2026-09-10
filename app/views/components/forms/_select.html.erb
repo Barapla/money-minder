@@ -9,7 +9,7 @@
     options = component.options || {} %>
 
 <div class="form-group">
-    <%= render Forms::LabelComponent.new(form:, name:, required:) %>
+    <%= render Forms::LabelComponent.new(form:, name:, text: component.text, required:) %>
     
     <div class="<%= component.send(:wrapper_classes) %>">
         <% if icon %>

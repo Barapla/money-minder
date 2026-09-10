@@ -87,9 +87,10 @@
             <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6 mb-6">
                 <h3 class="text-lg font-semibold text-white mb-4">Frecuencia de Pago</h3>
 
-                <label class="flex items-center gap-2 text-bunker-200 mb-4">
+                <label class="flex items-center gap-3 text-bunker-200 mb-4 cursor-pointer">
                     <%= form.check_box :one_time,
-                        { checked: obligatory_payment.one_time?, class: "accent-purple-500",
+                        { checked: obligatory_payment.one_time?,
+                          class: "w-5 h-5 rounded border-bunker-700 bg-bunker-800 text-purple-500 focus:ring-purple-500 focus:ring-offset-0 cursor-pointer",
                           data: { "previews--obligatory-payments-target": "oneTime",
                                   action: "change->previews--obligatory-payments#toggleRecurrence" } },
                         "1", "0" %>

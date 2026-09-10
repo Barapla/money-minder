@@ -71,7 +71,7 @@
             <% exists_icons = @filter.present? && @filter[:icons].present? %>
             <% categories.each do |category| %>
                 <%= render Forms::Checkbox::IconComponent.new(name: category.code, options:
-                                                                                { title: category.name, svg_icon: category.icon.value, 
+                                                                                { title: category.name, svg_icon: category.icon&.value || '',
                                                                                     checked: exists_icons ? @filter[:icons].include?(category.code) : true, value: category.code, color: "purple",
                                                                                     data: { checkbox_icon_group_target: "checkbox", 
                                                                                     calendar_filter_target: "icon_checkbox" }})  %>
