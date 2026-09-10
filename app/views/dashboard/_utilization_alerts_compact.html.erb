@@ -26,7 +26,7 @@
           </div>
           <div class="text-bunker-400 text-xs">
             <%= t('.suggested_payment', amount: alert[:suggested_payment_formatted]) %>
-            <% if alert[:cutting_date] %>
+            <% if alert[:cutting_date].respond_to?(:strftime) %>
               &bull; <%= t('.cutting_date_label') %> <%= alert[:cutting_date].strftime('%d/%m') %>
             <% end %>
           </div>

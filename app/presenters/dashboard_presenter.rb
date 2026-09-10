@@ -63,7 +63,7 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
   # Próximas fechas de pago (información principal del dashboard) — máx. 5, orden ascendente
   def upcoming_payment_dates
     entries = credit_card_budgets.filter_map { |budget| build_due_date_entry(budget) }
-    entries.sort_by { |c| c[:payment_due_date] }.first(5)
+    entries.select { |c| c[:payment_due_date] }.sort_by { |c| c[:payment_due_date] }.first(5)
   end
 
   # Tarjetas con utilización mayor al 30% — incluye monto para bajar al 30%
@@ -210,11 +210,36 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     return nil unless card.cutting_day.present?
 
     cutting_date = next_cutting_date_for(card)
-    payment_due_date = cutting_date + card.payment_due_days.to_i.days
+    payment_due_date = payment_due_date_for(card, cutting_date)
     current_debt = card.current_debt.to_f
     { card_name: budget.name, cutting_date:, payment_due_date:,
-      days_until_cutting: days_until(cutting_date), days_until_payment: days_until(payment_due_date),
+      days_until_cutting: days_until(cutting_date),
+      days_until_payment: payment_due_date && days_until(payment_due_date),
       current_debt:, current_debt_formatted: format_currency(current_debt) }
+  end
+
+  # Fecha de pago del ciclo vigente: se calcula desde el corte YA cerrado (aunque
+  # haya sido este mismo mes), no desde el próximo corte futuro. Si ese pago ya
+  # venció, se recurre al corte futuro (siguiente ciclo).
+  def payment_due_date_for(card, next_cutting_date)
+    return nil unless card.payment_due_days.present?
+
+    days = card.payment_due_days.to_i
+    candidate = previous_cutting_date_for(card) + days.days
+    candidate >= Date.current ? candidate : next_cutting_date + days.days
+  end
+
+  def previous_cutting_date_for(card)
+    today = Date.current
+    day = card.cutting_day.to_i
+    return clamped_date(today, day) if today.day >= day
+
+    clamped_date(today << 1, day)
+  end
+
+  # Limita el día al último del mes de base_date para evitar fechas inválidas (ej: 31 en febrero).
+  def clamped_date(base_date, day)
+    Date.new(base_date.year, base_date.month, [day, base_date.end_of_month.day].min)
   end
 
   def days_until(date)
@@ -252,12 +277,9 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
 
     today = Date.current
     day = card.cutting_day.to_i
-    if today.day < day
-      Date.new(today.year, today.month, day)
-    else
-      next_month = today >> 1
-      Date.new(next_month.year, next_month.month, [day, next_month.end_of_month.day].min)
-    end
+    return Date.new(today.year, today.month, day) if today.day < day
+
+    clamped_date(today >> 1, day)
   end
 
   def utilization_percentage(card)

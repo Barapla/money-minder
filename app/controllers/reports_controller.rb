@@ -13,7 +13,7 @@ class ReportsController < ApplicationController
     @spent_transaction_types_datasets = @report_filter.distribution_dataset('expense')
     @report_datasets = @report_filter.report_dataset
     @comparison_datasets = @report_filter.comparison_dataset
-    @ai_financial_report = AiReport.latest_for_user_and_type(current_user.id, 'general')
+    @ai_financial_report = latest_ai_financial_report
   end
 
   def flow_chart

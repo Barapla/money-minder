@@ -141,17 +141,31 @@ RSpec.describe DashboardPresenter do
 
   describe '#upcoming_payment_dates' do
     it 'CA1: ordena por fecha de pago (no por fecha de corte)' do
-      travel_to Date.new(2026, 3, 1) do
-        # Corte más próximo, pero fecha de pago más lejana
+      travel_to Date.new(2026, 3, 10) do
+        # Corte de este ciclo ya pasó (día 8), pero su pago (día 8 + 25) cae lejos;
+        # el próximo corte futuro (abril 8) sí es el más cercano de los dos.
         card_a = budget_with_card(name: 'CorteCercano', limit_amount: 10_000, current_debt: 1_000,
-                                  cutting_day: 5, payment_due_days: 25)
-        # Corte más lejano, pero fecha de pago más próxima
+                                  cutting_day: 8, payment_due_days: 25)
+        # Corte de este ciclo también pasó (día 9), pero su pago (día 9 + 2) es inminente.
         card_b = budget_with_card(name: 'PagoCercano', limit_amount: 10_000, current_debt: 1_000,
-                                  cutting_day: 20, payment_due_days: 2)
+                                  cutting_day: 9, payment_due_days: 2)
         allow(presenter).to receive(:credit_card_budgets).and_return([card_a, card_b])
 
         results = presenter.upcoming_payment_dates
         expect(results.map { |r| r[:card_name] }).to eq(%w[PagoCercano CorteCercano])
+      end
+    end
+
+    it 'CA5: usa el corte ya cerrado del ciclo vigente, no el próximo corte futuro' do
+      travel_to Date.new(2026, 3, 10) do
+        # Hoy es 10, el corte fue el 7 (ya pasó) y el pago es a los 10 días (17).
+        # El pago debe caer este mes (17), no el mes siguiente.
+        card = budget_with_card(name: 'Visa', limit_amount: 10_000, current_debt: 1_000,
+                                cutting_day: 7, payment_due_days: 10)
+        allow(presenter).to receive(:credit_card_budgets).and_return([card])
+
+        result = presenter.upcoming_payment_dates.first
+        expect(result[:payment_due_date]).to eq(Date.new(2026, 3, 17))
       end
     end
 

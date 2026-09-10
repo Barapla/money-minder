@@ -12,7 +12,7 @@
   </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-    <% @presenter.upcoming_payment_dates.each do |card| %>
+    <% (@presenter&.upcoming_payment_dates || []).each do |card| %>
       <div class="bg-bunker-800/40 rounded-xl p-4">
         <div class="flex items-center justify-between mb-2">
           <span class="text-white text-sm font-medium line-clamp-1"><%= card[:card_name] %></span>

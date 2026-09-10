@@ -5,13 +5,6 @@
     <p class="text-bunker-300 mt-1"><%= t('.subtitle') %></p>
   </div>
 
-  <!-- Sección principal: próximas fechas de pago de tarjetas de crédito -->
-  <% if @presenter.upcoming_payment_dates.any? %>
-    <div class="mb-6">
-      <%= render 'payment_dates_card' %>
-    </div>
-  <% end %>
-
   <!-- Fila 1: Saldo Disponible + Próxima Nómina -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <%= render 'available_balance_card' %>
@@ -23,13 +16,21 @@
     <%= render 'monthly_budget_card' %>
   </div>
 
-  <!-- Fila 3: Metas de Ahorro + Alertas de utilización (con fecha de corte integrada) -->
+  <!-- Fila 3: Fechas de corte de tarjetas + fechas de pago próximas -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <%= render 'credit_cards_compact' %>
+    <% if @presenter.upcoming_payment_dates.any? %>
+      <%= render 'payment_dates_card' %>
+    <% end %>
+  </div>
+
+  <!-- Fila 4: Metas de Ahorro + Alertas de utilización (con fecha de corte integrada) -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <%= render 'saving_goals_compact' %>
     <%= render 'utilization_alerts_compact' %>
   </div>
 
-  <!-- Fila 4: Gastos Recurrentes + Próximos Pagos -->
+  <!-- Fila 5: Gastos Recurrentes + Próximos Pagos -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <%= render 'recurring_expenses_card' %>
     <%= render 'upcoming_payments_card' %>
