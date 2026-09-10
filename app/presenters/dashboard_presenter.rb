@@ -60,6 +60,12 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     entries.sort_by { |c| c[:cutting_date] }
   end
 
+  # Próximas fechas de pago (información principal del dashboard) — máx. 5, orden ascendente
+  def upcoming_payment_dates
+    entries = credit_card_budgets.filter_map { |budget| build_due_date_entry(budget) }
+    entries.sort_by { |c| c[:payment_due_date] }.first(5)
+  end
+
   # Tarjetas con utilización mayor al 30% — incluye monto para bajar al 30%
   def credit_utilization_alerts
     credit_card_budgets
@@ -204,13 +210,15 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     return nil unless card.cutting_day.present?
 
     cutting_date = next_cutting_date_for(card)
+    payment_due_date = cutting_date + card.payment_due_days.to_i.days
     current_debt = card.current_debt.to_f
-    { card_name: budget.name,
-      cutting_date: cutting_date,
-      payment_due_date: cutting_date + card.payment_due_days.to_i.days,
-      days_until_cutting: (cutting_date - Date.current).to_i,
-      current_debt: current_debt,
-      current_debt_formatted: format_currency(current_debt) }
+    { card_name: budget.name, cutting_date:, payment_due_date:,
+      days_until_cutting: days_until(cutting_date), days_until_payment: days_until(payment_due_date),
+      current_debt:, current_debt_formatted: format_currency(current_debt) }
+  end
+
+  def days_until(date)
+    (date - Date.current).to_i
   end
 
   # Tarjetas con deuda cero no generan alertas porque su utilización no representa riesgo.

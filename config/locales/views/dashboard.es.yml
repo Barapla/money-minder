@@ -8,15 +8,12 @@ es:
       balance_note: "Total efectivo + débito + ahorros"
       cash_label: "Efectivo"
       no_funds: "Sin fondos de ahorro ni débito configurados"
-    credit_cards_compact:
-      title: "Fechas de Corte"
+    payment_dates_card:
+      title: "Próximas Fechas de Pago"
       debt_label: "Deuda:"
       today_badge: "Hoy"
       tomorrow_badge: "Mañana"
-      cutting_date_label: "Corte:"
-      no_cards_text: "Sin tarjetas de crédito"
-      add_card_link: "Agregar tarjeta"
-      see_all: "Ver todas (%{count})"
+      payment_date_label: "Pago:"
     monthly_budget_card:
       title: "Presupuesto del Mes"
       subtitle_prefix: "Top categorías por gasto"
@@ -46,6 +43,7 @@ es:
     utilization_alerts_compact:
       title: "Alertas de Utilización"
       suggested_payment: "Pagar %{amount} para llegar al 30%"
+      cutting_date_label: "Corte:"
       healthy_title: "Utilización saludable"
       healthy_subtitle: "Todas tus tarjetas están bajo el 30%."
       no_cards: "Sin tarjetas de crédito configuradas."

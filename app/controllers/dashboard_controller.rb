@@ -6,6 +6,7 @@ class DashboardController < ApplicationController
 
   def index
     @presenter = DashboardPresenter.new(current_user)
+    @ai_financial_report = AiReport.latest_for_user_and_type(current_user.id, 'general')
   end
 
   def saving_goals_recalculate

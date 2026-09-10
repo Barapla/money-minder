@@ -139,6 +139,38 @@ RSpec.describe DashboardPresenter do
     end
   end
 
+  describe '#upcoming_payment_dates' do
+    it 'CA1: ordena por fecha de pago (no por fecha de corte)' do
+      travel_to Date.new(2026, 3, 1) do
+        # Corte más próximo, pero fecha de pago más lejana
+        card_a = budget_with_card(name: 'CorteCercano', limit_amount: 10_000, current_debt: 1_000,
+                                  cutting_day: 5, payment_due_days: 25)
+        # Corte más lejano, pero fecha de pago más próxima
+        card_b = budget_with_card(name: 'PagoCercano', limit_amount: 10_000, current_debt: 1_000,
+                                  cutting_day: 20, payment_due_days: 2)
+        allow(presenter).to receive(:credit_card_budgets).and_return([card_a, card_b])
+
+        results = presenter.upcoming_payment_dates
+        expect(results.map { |r| r[:card_name] }).to eq(%w[PagoCercano CorteCercano])
+      end
+    end
+
+    it 'CA1: limita el resultado a 5 tarjetas' do
+      cards = (1..6).map do |i|
+        budget_with_card(name: "Tarjeta#{i}", limit_amount: 10_000, current_debt: 100, cutting_day: i + 1)
+      end
+      allow(presenter).to receive(:credit_card_budgets).and_return(cards)
+
+      expect(presenter.upcoming_payment_dates.size).to eq(5)
+    end
+
+    it 'CA4: retorna vacío sin tarjetas de crédito' do
+      allow(presenter).to receive(:credit_card_budgets).and_return([])
+
+      expect(presenter.upcoming_payment_dates).to be_empty
+    end
+  end
+
   describe '#credit_utilization_alerts' do
     context 'CA4: tarjeta con 50% de utilización' do
       before do
