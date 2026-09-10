@@ -1,0 +1,34 @@
+<div class="bg-gradient-to-r from-blue-900/40 to-bunker-900/50 backdrop-blur-lg border border-blue-800/30 rounded-2xl p-6">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center">
+      <div class="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center mr-3">
+        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+      </div>
+      <h2 class="text-lg font-semibold text-white"><%= t('.title') %></h2>
+    </div>
+    <span class="text-bunker-400 text-xs"><%= t('.debt_label') %> <span class="text-red-300 font-medium"><%= @presenter.total_debt_formatted %></span></span>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <% (@presenter&.upcoming_payment_dates || []).each do |card| %>
+      <div class="bg-bunker-800/40 rounded-xl p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-white text-sm font-medium line-clamp-1"><%= card[:card_name] %></span>
+          <% days = card[:days_until_payment] %>
+          <% badge_class = days <= 3 ? 'bg-red-500/20 text-red-300' : days <= 7 ? 'bg-amber-500/20 text-amber-300' : 'bg-bunker-700/60 text-bunker-300' %>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-2 shrink-0 <%= badge_class %>">
+            <% if days == 0 %><%= t('.today_badge') %><% elsif days == 1 %><%= t('.tomorrow_badge') %><% else %><%= days %>d<% end %>
+          </span>
+        </div>
+        <div class="text-bunker-400 text-xs">
+          <%= t('.payment_date_label') %> <%= card[:payment_due_date].strftime('%d/%m') %>
+          <% if card[:current_debt].positive? %>
+            &bull; <span class="text-red-400"><%= card[:current_debt_formatted] %></span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -139,6 +139,52 @@ RSpec.describe DashboardPresenter do
     end
   end
 
+  describe '#upcoming_payment_dates' do
+    it 'CA1: ordena por fecha de pago (no por fecha de corte)' do
+      travel_to Date.new(2026, 3, 10) do
+        # Corte de este ciclo ya pasó (día 8), pero su pago (día 8 + 25) cae lejos;
+        # el próximo corte futuro (abril 8) sí es el más cercano de los dos.
+        card_a = budget_with_card(name: 'CorteCercano', limit_amount: 10_000, current_debt: 1_000,
+                                  cutting_day: 8, payment_due_days: 25)
+        # Corte de este ciclo también pasó (día 9), pero su pago (día 9 + 2) es inminente.
+        card_b = budget_with_card(name: 'PagoCercano', limit_amount: 10_000, current_debt: 1_000,
+                                  cutting_day: 9, payment_due_days: 2)
+        allow(presenter).to receive(:credit_card_budgets).and_return([card_a, card_b])
+
+        results = presenter.upcoming_payment_dates
+        expect(results.map { |r| r[:card_name] }).to eq(%w[PagoCercano CorteCercano])
+      end
+    end
+
+    it 'CA5: usa el corte ya cerrado del ciclo vigente, no el próximo corte futuro' do
+      travel_to Date.new(2026, 3, 10) do
+        # Hoy es 10, el corte fue el 7 (ya pasó) y el pago es a los 10 días (17).
+        # El pago debe caer este mes (17), no el mes siguiente.
+        card = budget_with_card(name: 'Visa', limit_amount: 10_000, current_debt: 1_000,
+                                cutting_day: 7, payment_due_days: 10)
+        allow(presenter).to receive(:credit_card_budgets).and_return([card])
+
+        result = presenter.upcoming_payment_dates.first
+        expect(result[:payment_due_date]).to eq(Date.new(2026, 3, 17))
+      end
+    end
+
+    it 'CA1: limita el resultado a 5 tarjetas' do
+      cards = (1..6).map do |i|
+        budget_with_card(name: "Tarjeta#{i}", limit_amount: 10_000, current_debt: 100, cutting_day: i + 1)
+      end
+      allow(presenter).to receive(:credit_card_budgets).and_return(cards)
+
+      expect(presenter.upcoming_payment_dates.size).to eq(5)
+    end
+
+    it 'CA4: retorna vacío sin tarjetas de crédito' do
+      allow(presenter).to receive(:credit_card_budgets).and_return([])
+
+      expect(presenter.upcoming_payment_dates).to be_empty
+    end
+  end
+
   describe '#credit_utilization_alerts' do
     context 'CA4: tarjeta con 50% de utilización' do
       before do

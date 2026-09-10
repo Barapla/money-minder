@@ -16,16 +16,26 @@
     <%= render 'monthly_budget_card' %>
   </div>
 
-  <!-- Fila 3: Fechas de Corte + Metas de Ahorro + Alertas (compactas, 3 columnas) -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+  <!-- Fila 3: Fechas de corte de tarjetas + fechas de pago próximas -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <%= render 'credit_cards_compact' %>
+    <% if @presenter.upcoming_payment_dates.any? %>
+      <%= render 'payment_dates_card' %>
+    <% end %>
+  </div>
+
+  <!-- Fila 4: Metas de Ahorro + Alertas de utilización (con fecha de corte integrada) -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <%= render 'saving_goals_compact' %>
     <%= render 'utilization_alerts_compact' %>
   </div>
 
-  <!-- Fila 4: Gastos Recurrentes + Próximos Pagos -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Fila 5: Gastos Recurrentes + Próximos Pagos -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <%= render 'recurring_expenses_card' %>
     <%= render 'upcoming_payments_card' %>
   </div>
+
+  <!-- Insights financieros -->
+  <%= render 'shared/financial_insights', ai_financial_report: @ai_financial_report %>
 </div>
