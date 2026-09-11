@@ -3,9 +3,9 @@
 module ChatbotServices
   # Orquesta una consulta del chatbot: detecta el tipo de pregunta, delega el
   # calculo al servicio especializado y pide a Claude que redacte la respuesta
-  # en lenguaje natural. Siempre retorna Result.success: si el calculador o
-  # Claude fallan, cae a una respuesta textual construida a partir de los datos
-  # calculados en vez de dejar al usuario sin respuesta.
+  # en lenguaje natural. Siempre retorna Result.success: si el calculador falla,
+  # muestra su mensaje; si Claude falla, muestra un mensaje de error amigable
+  # en vez de los datos crudos del calculador (ver BUG-010).
   class QueryProcessor
     QUERY_PATTERNS = {
       liquidity: /liquidez|disponible|tengo/i,
@@ -46,7 +46,7 @@ module ChatbotServices
         user_message: user_message, data: data[:result], context_messages: context_messages,
         advisor_context: payroll_context
       )
-      content = claude_result.success? ? claude_result.data : fallback_content(data[:result])
+      content = claude_result.success? ? claude_result.data : FAILURE_CONTENT
 
       Result.success(data: { content: content, assumptions: data[:assumptions], warnings: data[:warnings] })
     end
@@ -77,12 +77,6 @@ module ChatbotServices
 
     def context_messages
       conversation.messages.order(created_at: :desc).limit(10).to_a.reverse
-    end
-
-    def fallback_content(result)
-      lines = ["Resultado: #{result[:primary_metric]}"]
-      result[:breakdown].each { |item| lines << "- #{item[:label]}: #{item[:amount]}" }
-      lines.join("\n")
     end
   end
 end
