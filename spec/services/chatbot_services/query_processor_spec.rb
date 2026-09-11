@@ -39,7 +39,7 @@ RSpec.describe ChatbotServices::QueryProcessor, type: :service do
     expect(fake_client).not_to have_received(:chat)
   end
 
-  it 'cae a una respuesta textual construida con los datos cuando Claude falla' do
+  it 'BUG-010: muestra un mensaje de error amigable cuando Claude falla, no los datos crudos' do
     stub_claude(success: false, message: 'Límite de rate exceeded')
     liquidity_result = Result.success(
       data: {
@@ -53,7 +53,8 @@ RSpec.describe ChatbotServices::QueryProcessor, type: :service do
     result = processor.process
 
     expect(result).to be_success
-    expect(result.data[:content]).to include('500')
+    expect(result.data[:content]).to eq(ChatbotServices::QueryProcessor::FAILURE_CONTENT)
+    expect(result.data[:content]).not_to include('500')
   end
 
   it 'incluye el contexto de nomina en la llamada a Claude cuando el usuario la tiene configurada' do
@@ -71,6 +72,26 @@ RSpec.describe ChatbotServices::QueryProcessor, type: :service do
     described_class.new(user:, conversation:, user_message: '¿Cuánto tengo disponible?').process
 
     expect(received_advisor_context).to be_present
+  end
+
+  it 'incluye el resumen de recordatorios programados del mes en el contexto de Claude' do
+    make_obligatory_payment(user:, amount: 5000, reminder_type: 'income', recurring: false,
+                            due_date: Date.current.beginning_of_month + 2.days)
+    make_obligatory_payment(user:, amount: 1200, reminder_type: 'payment', recurring: false,
+                            due_date: Date.current.beginning_of_month + 5.days)
+    received_advisor_context = nil
+    fake_client = instance_double(ChatbotServices::ClaudeClient)
+    allow(fake_client).to receive(:chat) do |advisor_context:, **|
+      received_advisor_context = advisor_context
+      Result.success(data: 'ok')
+    end
+    allow(ChatbotServices::ClaudeClient).to receive(:new).and_return(fake_client)
+    allow_any_instance_of(ChatbotServices::LiquidityCalculator).to receive(:calculate)
+      .and_return(Result.success(data: { result: { primary_metric: 0, breakdown: [] }, assumptions: [], warnings: [] }))
+
+    described_class.new(user:, conversation:, user_message: '¿Cuánto tengo disponible?').process
+
+    expect(received_advisor_context).to include('$5,000.00').and include('$1,200.00')
   end
 
   it 'cae a un mensaje de error generico si el calculador lanza una excepcion inesperada' do

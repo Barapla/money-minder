@@ -40,7 +40,7 @@ module ChatbotServices
 
     def build_context(context_messages, advisor_context)
       parts = [SYSTEM_PROMPT]
-      parts << "Contexto de nómina del usuario:\n#{advisor_context}" if advisor_context.present?
+      parts << "Contexto de nómina y recordatorios del usuario:\n#{advisor_context}" if advisor_context.present?
       parts << "Historial reciente de la conversación:\n#{history_text(context_messages)}" if context_messages.present?
       parts.join("\n\n")
     end

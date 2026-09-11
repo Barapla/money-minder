@@ -16,7 +16,7 @@ module ChatbotServices
     end
 
     def monthly_net_flow
-      recurring_income_total - recurring_expense_total - monthly_obligatory_total
+      recurring_income_total + payroll_income_total - recurring_expense_total - monthly_obligatory_total
     end
 
     private
@@ -25,6 +25,16 @@ module ChatbotServices
 
     def recurring_income_total
       monthly_recurring_total('income')
+    end
+
+    # El sueldo de nomina no vive en recurring_transactions (ver FEAT-007), asi que
+    # sin esto el flujo neto de cualquier usuario que solo trackea su salario via
+    # EmploymentInformation/PayrollProfile sale negativo por el total de sus gastos.
+    def payroll_income_total
+      return 0.0 unless user.employment_information.present? && user.payroll_profile.present?
+
+      result = PayrollServices::Calculator.new(user.payroll_profile).call
+      result.success? ? result.data[:net_salary].to_f : 0.0
     end
 
     def recurring_expense_total

@@ -37,11 +37,12 @@ module FinancialTestHelpers
     Catalog.find_or_create_by!(code:, group_catalog: frequency_types_group) { |c| c.value = code }
   end
 
-  def make_obligatory_payment(user:, amount:, recurring: false, frequency_code: 'monthly', frequency_value: 1)
+  def make_obligatory_payment(user:, amount:, recurring: false, frequency_code: 'monthly', frequency_value: 1, # rubocop:disable Metrics/ParameterLists
+                              reminder_type: 'payment', due_date: Date.current + 5.days)
     payment = ObligatoryPayment.new(
-      user:, name: 'Pago de prueba', amount:,
+      user:, name: 'Pago de prueba', amount:, reminder_type:,
       category: category_for('Servicios'), color: color_catalog, icon: icon_catalog,
-      due_date: recurring ? nil : Date.current + 5.days
+      due_date: recurring ? nil : due_date
     )
     build_payment_recurrence(payment, frequency_code, frequency_value) if recurring
     payment.save!
