@@ -74,6 +74,26 @@ RSpec.describe ChatbotServices::QueryProcessor, type: :service do
     expect(received_advisor_context).to be_present
   end
 
+  it 'incluye el resumen de recordatorios programados del mes en el contexto de Claude' do
+    make_obligatory_payment(user:, amount: 5000, reminder_type: 'income', recurring: false,
+                            due_date: Date.current.beginning_of_month + 2.days)
+    make_obligatory_payment(user:, amount: 1200, reminder_type: 'payment', recurring: false,
+                            due_date: Date.current.beginning_of_month + 5.days)
+    received_advisor_context = nil
+    fake_client = instance_double(ChatbotServices::ClaudeClient)
+    allow(fake_client).to receive(:chat) do |advisor_context:, **|
+      received_advisor_context = advisor_context
+      Result.success(data: 'ok')
+    end
+    allow(ChatbotServices::ClaudeClient).to receive(:new).and_return(fake_client)
+    allow_any_instance_of(ChatbotServices::LiquidityCalculator).to receive(:calculate)
+      .and_return(Result.success(data: { result: { primary_metric: 0, breakdown: [] }, assumptions: [], warnings: [] }))
+
+    described_class.new(user:, conversation:, user_message: '¿Cuánto tengo disponible?').process
+
+    expect(received_advisor_context).to include('$5,000.00').and include('$1,200.00')
+  end
+
   it 'cae a un mensaje de error generico si el calculador lanza una excepcion inesperada' do
     stub_claude
     allow_any_instance_of(ChatbotServices::LiquidityCalculator).to receive(:calculate).and_raise(StandardError, 'boom')
