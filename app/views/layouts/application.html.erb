@@ -17,5 +17,7 @@
     </div>
 
     <%= turbo_frame_tag "modal_frame" %>
+    <%# La pagina /chatbot ya muestra el panel completo; evita ids duplicados (conversation_messages, chatbot_message_form) %>
+    <%= render "shared/chatbot_bubble" if user_signed_in? && controller_name != 'chatbot' %>
   </body>
 </html>

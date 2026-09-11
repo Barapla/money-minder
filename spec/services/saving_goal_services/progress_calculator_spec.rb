@@ -136,10 +136,10 @@ RSpec.describe SavingGoalServices::ProgressCalculator, type: :service do
     end
 
     context 'memoizacion de available_money' do
-      it 'calcula cash_balance una sola vez para multiples goals' do
+      it 'construye el LiquidityServices::Calculator una sola vez para multiples goals' do
         goal2 = build(:saving_goal, user:, target_amount: 20_000)
 
-        expect(calculator).to receive(:cash_balance).once.and_call_original
+        expect(LiquidityServices::Calculator).to receive(:new).once.and_call_original
         calculator.calculate_for(goal)
         calculator.calculate_for(goal2)
       end

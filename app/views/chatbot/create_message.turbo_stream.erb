@@ -1,0 +1,7 @@
+<%= turbo_stream.append 'conversation_messages' do %>
+  <%= render 'chatbot/message', message: @user_message %>
+  <%= render 'chatbot/message', message: @assistant_message %>
+<% end %>
+<%= turbo_stream.replace 'chatbot_message_form' do %>
+  <%= render 'chatbot/form', conversation: @conversation %>
+<% end %>

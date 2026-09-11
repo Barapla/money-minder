@@ -10,9 +10,6 @@ application.register("bonus-manager", BonusManagerController)
 import Budgets__PreviewController from "./budgets/preview_controller"
 application.register("budgets--preview", Budgets__PreviewController)
 
-import Previews__ObligatoryPaymentsController from "./previews/obligatory_payments_controller"
-application.register("previews--obligatory-payments", Previews__ObligatoryPaymentsController)
-
 import Calendar__MainController from "./calendar/main_controller"
 application.register("calendar--main", Calendar__MainController)
 
@@ -33,6 +30,15 @@ application.register("charts--flow", Charts__FlowController)
 
 import Charts__MainController from "./charts/main_controller"
 application.register("charts--main", Charts__MainController)
+
+import ChatbotBubbleController from "./chatbot_bubble_controller"
+application.register("chatbot-bubble", ChatbotBubbleController)
+
+import ChatbotFormController from "./chatbot_form_controller"
+application.register("chatbot-form", ChatbotFormController)
+
+import ChatbotScrollController from "./chatbot_scroll_controller"
+application.register("chatbot-scroll", ChatbotScrollController)
 
 import CheckboxIconGroupController from "./checkbox_icon_group_controller"
 application.register("checkbox-icon-group", CheckboxIconGroupController)
@@ -64,6 +70,12 @@ application.register("navbar-mobile", NavbarMobileController)
 import PaginationController from "./pagination_controller"
 application.register("pagination", PaginationController)
 
+import Previews__BaseController from "./previews/base_controller"
+application.register("previews--base", Previews__BaseController)
+
+import Previews__ObligatoryPaymentsController from "./previews/obligatory_payments_controller"
+application.register("previews--obligatory-payments", Previews__ObligatoryPaymentsController)
+
 import ProductSelectorController from "./product_selector_controller"
 application.register("product-selector", ProductSelectorController)
 
@@ -73,14 +85,14 @@ application.register("recurrence-form", RecurrenceFormController)
 import RecurringTransactionFormController from "./recurring_transaction_form_controller"
 application.register("recurring-transaction-form", RecurringTransactionFormController)
 
-import SelectToController from "./select_to_controller"
-application.register("select-to", SelectToController)
+import SavingsGoalsCalculatorController from "./savings_goals_calculator_controller"
+application.register("savings-goals-calculator", SavingsGoalsCalculatorController)
 
 import SavingsGoalsReorderController from "./savings_goals_reorder_controller"
 application.register("savings-goals-reorder", SavingsGoalsReorderController)
 
-import SavingsGoalsCalculatorController from "./savings_goals_calculator_controller"
-application.register("savings-goals-calculator", SavingsGoalsCalculatorController)
+import SelectToController from "./select_to_controller"
+application.register("select-to", SelectToController)
 
 import TooltipController from "./tooltip_controller"
 application.register("tooltip", TooltipController)

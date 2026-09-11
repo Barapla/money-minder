@@ -40,9 +40,6 @@ class ObligatoryPayment < ApplicationRecord
   end
 
   def get_recurrence
-    Recurrence.find_by(
-      recurrenceable_type: 'ObligatoryPayment',
-      recurrenceable_id: id
-    )
+    recurrence
   end
 end

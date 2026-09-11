@@ -3,7 +3,7 @@
 # Ahorro a plazo fijo que bloquea capital por un periodo definido con tasa de
 # rendimiento fija (ej. Ahorro Congelado Nu 7/28/90/180 dias). El dinero bloqueado
 # no cuenta como disponible para metas de ahorro mientras este activo y no haya
-# vencido (ver SavingGoalServices::ProgressCalculator, FEAT-024).
+# vencido (ver LiquidityServices::Calculator, FEAT-024).
 class TermSaving < ApplicationRecord
   include FinancialProductAssociable
 
