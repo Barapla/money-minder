@@ -24,6 +24,12 @@ RSpec.describe ChatbotServices::ScenarioSimulator, type: :service do
       expect(adjusted).to be > base
       expect(result.data[:warnings]).to be_empty
     end
+
+    it 'reconoce la categoria aunque el mensaje use el conector "en"' do
+      result = described_class.new(user:, message: '¿Y si recorto en restaurantes 30%?').calculate
+
+      expect(result.data[:warnings]).to be_empty
+    end
   end
 
   context 'cuando la categoria mencionada no existe en los gastos del mes' do

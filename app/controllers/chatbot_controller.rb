@@ -47,6 +47,7 @@ class ChatbotController < ApplicationController
   # Transaccion: si build_assistant_message falla, el mensaje del usuario tampoco se persiste.
   def create_message_pair(content)
     ActiveRecord::Base.transaction do
+      @conversation.lock!
       @user_message = @conversation.messages.create!(role: :user, content: content)
       @assistant_message = build_assistant_message(content)
     end

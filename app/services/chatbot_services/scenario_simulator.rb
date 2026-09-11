@@ -76,7 +76,7 @@ module ChatbotServices
     end
 
     def extract_category_keyword
-      match = message.match(/(?:recort[eaoi]r?|reduc[ei]r?)\s+([a-záéíóúñ\s]+?)(?:\s+\d|\s+un\b|\s+en\b|$)/i)
+      match = message.match(/(?:recort[eaoi]r?|reduc[ei]r?)\s+(?:en\s+)?([a-záéíóúñ\s]+?)(?:\s+\d|\s+un\b|\s+en\b|$)/i)
       match && match[1].strip.downcase.presence
     end
 

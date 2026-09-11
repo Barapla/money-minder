@@ -50,7 +50,7 @@ module ChatbotServices
     end
 
     def monthly_obligatory_total
-      user.obligatory_payments.recurring.sum do |payment|
+      user.obligatory_payments.recurring.includes(:recurrence).sum do |payment|
         monthly_equivalent(payment.amount.to_f, payment.get_recurrence)
       end
     end
