@@ -1,0 +1,30 @@
+<%
+    headers = headers_table_index + [{ name: t('budgets.index.table_actions'), size: 'min-w-[120px]' }]
+    values = values_table_format(budgets)
+%>
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl overflow-hidden mb-6">
+    <div class="px-6 py-4 border-b border-bunker-800/50 flex items-center justify-between">
+        <h2 class="text-xl font-semibold text-white"><%= budget_section_title(budget_type_code, budgets) %></h2>
+        <span class="text-sm text-bunker-400"><%= t('budgets.index.sections.count', count: budgets.size) %></span>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-bunker-800/30">
+                <tr>
+                    <% headers.each do |header| %>
+                        <%= render Table::HeaderComponent.new(name: header[:name], size: header[:size]) %>
+                    <% end %>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-bunker-800/30">
+                <% values.each do |items| %>
+                    <tr class="hover:bg-bunker-800/20 transition-colors duration-200">
+                        <% items.each do |item| %>
+                            <%= render Table::TdComponent.new(item:) %>
+                        <% end %>
+                    </tr>
+                <% end %>
+            </tbody>
+        </table>
+    </div>
+</div>

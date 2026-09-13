@@ -119,6 +119,18 @@ class Budget < ApplicationRecord
     date_change
   end
 
+  # Agrupa los budgets del scope actual por codigo de budget_type para el index
+  # segmentado (FEAT-032), ordenado alfabeticamente: credit_card, debit_card,
+  # savings_fund (satisface el orden pedido en el AC4 sin acoplarse a una lista fija).
+  # Agrupar por code (no por el registro de budget_type) evita crear una seccion por
+  # cada fila de catalogo si llegara a existir mas de una con el mismo code.
+  def self.grouped_by_type
+    includes(:budget_type, :credit_card, :savings_fund, :term_savings)
+      .order(created_at: :desc)
+      .group_by { |budget| budget.budget_type.code }
+      .sort
+  end
+
   def categories_with_more_transactions(limit = 5, transaction_type = 'expense',
                                         from_date = Date.today.at_beginning_of_month)
     transactions
