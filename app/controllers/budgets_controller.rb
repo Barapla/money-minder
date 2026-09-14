@@ -2,6 +2,8 @@
 
 # BudgetsController handles the display of budgets.
 class BudgetsController < ApplicationController
+  include PaginationHelper
+  include BudgetsHelper
   before_action :authenticate_user!
   before_action :set_budget, only: %i[show show_transactions edit update destroy]
 
@@ -18,6 +20,19 @@ class BudgetsController < ApplicationController
   # GET /budgets.json
   def index
     @budgets_by_type = current_user.budgets.grouped_by_type
+  end
+
+  # POST /budgets/budgets_table
+  # Pagina, via AJAX, la seccion de un tipo de presupuesto puntual (tabs del index, FEAT-032).
+  def budgets_table
+    per_page = params[:perPage].to_i
+    page_budgets, total_budgets = paginated_budgets_by_type(params[:type], params[:page], per_page)
+
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: budgets_table_stream(params[:id], page_budgets, params[:page], per_page, total_budgets)
+      end
+    end
   end
 
   def show
@@ -217,5 +232,27 @@ class BudgetsController < ApplicationController
       ),
       turbo_stream.remove('button_show_transactions')
     ]
+  end
+
+  def paginated_budgets_by_type(type, page, per_page)
+    scoped = current_user.budgets.joins(:budget_type).where(catalogs: { code: type }).order(created_at: :desc)
+    total = scoped.count
+    [scoped.offset((page.to_i - 1) * per_page).limit(per_page), total]
+  end
+
+  def budgets_table_stream(id, budgets, current_page, per_page, total_budgets)
+    locals = table_partial_locals(id, budgets, current_page, per_page, total_budgets)
+    turbo_stream.update("table-#{id}", partial: 'components/table/main/table', locals:)
+  end
+
+  def table_partial_locals(id, budgets, current_page, per_page, total_budgets)
+    total_pages = total_pages(per_page, total_budgets)
+    {
+      id:, per_page:, current_page:, total_pages:,
+      total_collections: total_budgets,
+      pagination_pages: pagination_pages(current_page, total_pages),
+      headers: headers_table_index.push({ name: 'Acciones', size: 'min-w-[120px]' }),
+      values: values_table_format(budgets)
+    }
   end
 end

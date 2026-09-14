@@ -19,6 +19,7 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   resources :budgets do
     collection do
       post :change_budget_type
+      post :budgets_table
       get :wizard_step2
       get :wizard_step3
       get :wizard_step4

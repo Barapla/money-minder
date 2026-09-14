@@ -95,4 +95,25 @@ RSpec.describe 'Index segmentado de presupuestos (FEAT-032)', type: :request do
       expect(response.body).not_to include('Ajeno')
     end
   end
+
+  # Tabs + paginacion pedidas en el review de FEAT-032: cada seccion pagina via AJAX
+  # contra POST /budgets/budgets_table, filtrando por tipo y por usuario.
+  describe 'POST /budgets/budgets_table' do
+    it 'pagina solo los presupuestos del tipo pedido, del usuario actual' do
+      create_budget('credit_card', name: 'Tarjeta Nu')
+      create_budget('savings_fund', name: 'Ahorro BBVA')
+      other_user = create(:user)
+      Budget.create!(name: 'Ajeno', user: other_user, budget_type: create_budget_type('credit_card'), color:, icon:,
+                     current_amount: 0)
+
+      post budgets_table_budgets_path(type: 'credit_card'),
+           params: { id: 'budget-section-credit_card', page: 1, perPage: 10 },
+           as: :json, headers: { 'Accept' => 'text/vnd.turbo-stream.html' }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('Tarjeta Nu')
+      expect(response.body).not_to include('Ahorro BBVA')
+      expect(response.body).not_to include('Ajeno')
+    end
+  end
 end

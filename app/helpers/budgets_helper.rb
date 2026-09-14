@@ -13,7 +13,7 @@ module BudgetsHelper
 
   def budget_section_title(code, budgets)
     key = SECTION_TITLE_I18N_KEYS[code]
-    key ? t("budgets.index.sections.#{key}") : budgets.first.budget_type.value
+    key ? t("budgets.index.sections.#{key}") : budgets.first&.budget_type&.value
   end
 
   def headers_table_index

@@ -127,8 +127,8 @@ class Budget < ApplicationRecord
   def self.grouped_by_type
     includes(:budget_type, :credit_card, :savings_fund, :term_savings)
       .order(created_at: :desc)
-      .group_by { |budget| budget.budget_type.code }
-      .sort
+      .group_by { |budget| budget.budget_type&.code }
+      .sort_by { |code, _budgets| code.to_s }
   end
 
   def categories_with_more_transactions(limit = 5, transaction_type = 'expense',

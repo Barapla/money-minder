@@ -34,8 +34,24 @@
             <%= link_to t('.empty.cta'), new_budget_path, class: 'inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-500 hover:bg-purple-600' %>
         </div>
     <% else %>
-        <% @budgets_by_type.each do |budget_type_code, budgets| %>
-            <%= render 'budget_section', budget_type_code:, budgets: %>
-        <% end %>
+        <div data-controller="budget-tabs">
+            <div class="flex flex-wrap gap-2 mb-6" role="tablist">
+                <% @budgets_by_type.each_with_index do |(budget_type_code, budgets), index| %>
+                    <button type="button"
+                            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 <%= index.zero? ? 'bg-purple-500 text-white' : 'bg-bunker-900/50 text-bunker-300 hover:bg-bunker-800/50' %>"
+                            data-budget-tabs-target="tab"
+                            data-type="<%= budget_type_code %>"
+                            data-action="click->budget-tabs#select">
+                        <%= budget_section_title(budget_type_code, budgets) %> (<%= budgets.size %>)
+                    </button>
+                <% end %>
+            </div>
+
+            <% @budgets_by_type.each_with_index do |(budget_type_code, budgets), index| %>
+                <div data-budget-tabs-target="panel" data-type="<%= budget_type_code %>" class="<%= 'hidden' unless index.zero? %>">
+                    <%= render 'budget_section', budget_type_code:, budgets: %>
+                </div>
+            <% end %>
+        </div>
     <% end %>
 </div>
