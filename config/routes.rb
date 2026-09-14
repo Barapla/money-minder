@@ -85,6 +85,8 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
 
       post 'auth/login', to: 'auth#login'
       get 'auth/me', to: 'auth#me'
+
+      resource :dashboard, only: [:show], controller: 'dashboard'
     end
   end
 
