@@ -28,12 +28,28 @@ class User < ApplicationRecord
   after_initialize :set_default_role
   after_create :create_personal_budget
 
+  JWT_EXPIRATION = 30.days
+
   def self.seed_unique_keys
     [:email]
   end
 
+  def self.decode_jwt_token(token)
+    JWT.decode(token, Rails.application.secret_key_base, true, algorithm: 'HS256')
+  rescue JWT::DecodeError, JWT::ExpiredSignature
+    nil
+  end
+
   def personal_budget
     budgets.find_by(personal: true)
+  end
+
+  def generate_jwt_token
+    expires_at = JWT_EXPIRATION.from_now
+    payload = { user_id: id, exp: expires_at.to_i }
+    token = JWT.encode(payload, Rails.application.secret_key_base, 'HS256')
+
+    { token: token, expires_at: expires_at.iso8601 }
   end
 
   def admin?

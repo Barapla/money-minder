@@ -14,7 +14,7 @@ Describe the authentication mechanism used by this API.
 | Method | Header | Description |
 |---|---|---|
 | API Key | `X-Api-Key` | For external integrations |
-| JWT Bearer | `Authorization: Bearer <token>` | For management endpoints |
+| JWT Bearer | `Authorization: Bearer <token>` | For mobile app endpoints (obtained via POST /api/v1/auth/login) |
 
 ---
 
@@ -28,11 +28,8 @@ Describe the authentication mechanism used by this API.
 | POST | /api/v1/users | API Key | `{ user: {...} }` | `{ record: {...} }` | Create user |
 | PUT | /api/v1/users/:id | API Key | `{ user: {...} }` | `{ record: {...} }` | Update user |
 | DELETE | /api/v1/users/:id | API Key | — | `{ record: {...} }` | Delete user |
-| GET | /api/v1/auth | API Key | — | `{ records: [...] }` | List auth |
-| GET | /api/v1/auth/:id | API Key | — | `{ record: {...} }` | Get auth |
-| POST | /api/v1/auth | API Key | `{ auth: {...} }` | `{ record: {...} }` | Create auth |
-| PUT | /api/v1/auth/:id | API Key | `{ auth: {...} }` | `{ record: {...} }` | Update auth |
-| DELETE | /api/v1/auth/:id | API Key | — | `{ record: {...} }` | Delete auth |
+| POST | /api/v1/auth/login | — | `{ email, password }` | `{ record: { token, expires_at } }` | Login para app movil, retorna JWT |
+| GET | /api/v1/auth/me | JWT Bearer | — | `{ record: { id, email, name } }` | Datos del usuario autenticado por token |
 
 ---
 
@@ -112,77 +109,68 @@ Describe the authentication mechanism used by this API.
 
 ---
 
-### GET /api/v1/auth
+### POST /api/v1/auth/login
 
-**Auth:** API Key
+**Auth:** Ninguna (endpoint publico)
 
-#### Response Body
-
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| id | integer | Database ID |
-| created_at | datetime | ISO8601 timestamp |
-| updated_at | datetime | ISO8601 timestamp |
-
----
-
-### GET /api/v1/auth/:id
-
-**Auth:** API Key
-
-#### Response Body
-
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| id | integer | Database ID |
-| created_at | datetime | ISO8601 timestamp |
-| updated_at | datetime | ISO8601 timestamp |
-
----
-
-### POST /api/v1/auth
-
-**Auth:** API Key
+Autentica un usuario con email y password, y retorna un token JWT valido por 30 dias. Usado por la app movil para iniciar sesion.
 
 #### Request Body
 
 | Campo | Tipo | Requerido | Descripción |
 |-------|------|-----------|-------------|
-| field_name | string | Yes/No | Field description |
+| email | string | Si | Email del usuario |
+| password | string | Si | Password del usuario |
 
-#### Response Body
+#### Response Body (200)
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| id | integer | Database ID |
-| created_at | datetime | ISO8601 timestamp |
-| updated_at | datetime | ISO8601 timestamp |
-
----
-
-### PUT /api/v1/auth/:id
-
-**Auth:** API Key
-
-#### Request Body
-
-| Campo | Tipo | Requerido | Descripción |
-|-------|------|-----------|-------------|
-| field_name | string | Yes/No | Field description |
-
-#### Response Body
+```json
+{
+  "record": {
+    "token": "eyJhbGciOiJIUzI1NiJ9...",
+    "expires_at": "2026-10-14T05:38:11-06:00"
+  }
+}
+```
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| id | integer | Database ID |
-| created_at | datetime | ISO8601 timestamp |
-| updated_at | datetime | ISO8601 timestamp |
+| token | string | JWT firmado con HS256, contiene `user_id` y `exp` |
+| expires_at | datetime | ISO8601, 30 dias desde la generacion |
+
+#### Response Body (401)
+
+```json
+{ "errors": ["Credenciales inválidas"] }
+```
 
 ---
 
-### DELETE /api/v1/auth/:id
+### GET /api/v1/auth/me
 
-**Auth:** API Key
+**Auth:** JWT Bearer (`Authorization: Bearer <token>`)
+
+Retorna los datos basicos del usuario dueño del token, para restaurar sesiones guardadas en la app movil.
+
+#### Response Body (200)
+
+```json
+{
+  "record": {
+    "id": 123,
+    "email": "user@example.com",
+    "name": "Usuario Ejemplo"
+  }
+}
+```
+
+#### Response Body (401)
+
+Se retorna cuando el token esta ausente, es invalido, expiro, o el usuario ya no existe:
+
+```json
+{ "errors": ["Token inválido o expirado"] }
+```
 
 ---
 

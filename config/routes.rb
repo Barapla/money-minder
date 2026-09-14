@@ -82,6 +82,9 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
           get :net_salary
         end
       end
+
+      post 'auth/login', to: 'auth#login'
+      get 'auth/me', to: 'auth#me'
     end
   end
 

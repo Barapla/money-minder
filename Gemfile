@@ -95,3 +95,4 @@ gem 'sidekiq', '~> 6.5'
 gem 'sidekiq-cron'
 # Actualizado por seguridad: versiones anteriores de concurrent-ruby contienen vulnerabilidades conocidas
 gem "concurrent-ruby", ">= 1.3.7"
+gem 'jwt'
