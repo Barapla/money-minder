@@ -6,6 +6,17 @@ es:
       new_button: "Nuevo Presupuesto"
       table_title: "Lista de Presupuestos"
       table_actions: "Acciones"
+      sections:
+        credit_cards: "Tarjetas de Crédito"
+        debit_cards: "Tarjetas de Débito"
+        savings_funds: "Fondos de Ahorro"
+        count:
+          one: "%{count} presupuesto"
+          other: "%{count} presupuestos"
+      empty:
+        title: "No hay presupuestos"
+        subtitle: "Comienza creando tu primer presupuesto"
+        cta: "Crear Presupuesto"
     new:
       title: "Nuevo Presupuesto"
       subtitle: "Crea un nuevo presupuesto para controlar tus gastos"

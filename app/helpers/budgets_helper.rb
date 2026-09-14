@@ -2,6 +2,20 @@
 
 # BudgetsHelper
 module BudgetsHelper
+  # Los unicos 3 tipos con seccion propia pedida por el ticket (FEAT-032 AC1-AC3);
+  # cualquier otro budget_type (cash, term_saving) cae al fallback de budget_type.value
+  # para no perder esos budgets de la vista sin necesitar una traduccion dedicada.
+  SECTION_TITLE_I18N_KEYS = {
+    'credit_card' => 'credit_cards',
+    'debit_card' => 'debit_cards',
+    'savings_fund' => 'savings_funds'
+  }.freeze
+
+  def budget_section_title(code, budgets)
+    key = SECTION_TITLE_I18N_KEYS[code]
+    key ? t("budgets.index.sections.#{key}") : budgets.first&.budget_type&.value
+  end
+
   def headers_table_index
     [
       { name: 'Tipo de Presupuesto', size: 'min-w-[180px]' },
