@@ -30,6 +30,7 @@ Describe the authentication mechanism used by this API.
 | DELETE | /api/v1/users/:id | API Key | — | `{ record: {...} }` | Delete user |
 | POST | /api/v1/auth/login | — | `{ email, password }` | `{ record: { token, expires_at } }` | Login para app movil, retorna JWT |
 | GET | /api/v1/auth/me | JWT Bearer | — | `{ record: { id, email, name } }` | Datos del usuario autenticado por token |
+| GET | /api/v1/dashboard | JWT Bearer | — | `{ record: { financial_summary, upcoming_payments, credit_cards, latest_ai_insight, budgets_summary } }` | Dashboard financiero consolidado para app movil |
 
 ---
 
@@ -167,6 +168,58 @@ Retorna los datos basicos del usuario dueño del token, para restaurar sesiones 
 #### Response Body (401)
 
 Se retorna cuando el token esta ausente, es invalido, expiro, o el usuario ya no existe:
+
+```json
+{ "errors": ["Token inválido o expirado"] }
+```
+
+---
+
+### GET /api/v1/dashboard
+
+**Auth:** JWT Bearer (`Authorization: Bearer <token>`)
+
+Devuelve el dashboard financiero consolidado del usuario autenticado, optimizado para la app movil: resumen del mes, proximos pagos obligatorios, tarjetas de credito con cortes proximos, ultimo insight de IA (cacheado 15 minutos) y estadisticas de presupuestos activos. Todas las consultas se aislan por el usuario del token.
+
+#### Response Body (200)
+
+```json
+{
+  "record": {
+    "financial_summary": {
+      "total_income": 15000.0, "total_expenses": 8000.0, "balance": 7000.0,
+      "month": 9, "year": 2026
+    },
+    "upcoming_payments": [
+      { "id": 1, "description": "Renta", "amount": 5000.0,
+        "payment_due_date": "2026-09-30", "days_until_due": 16, "category": "Vivienda" }
+    ],
+    "credit_cards": [
+      { "id": 1, "name": "Tarjeta Oro", "calculated_balance": 2000.0,
+        "cutting_date": "2026-09-25", "payment_due_date": "2026-09-30" }
+    ],
+    "latest_ai_insight": {
+      "summary": { "raw_content": "..." },
+      "generated_at": "2026-09-10T12:00:00-06:00",
+      "report_type": "general"
+    },
+    "budgets_summary": {
+      "total_budgeted": 12000.0, "total_spent": 4500.0,
+      "percentage_used": 37.5, "active_count": 4
+    }
+  }
+}
+```
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| financial_summary | object | Ingresos, gastos y balance del mes actual |
+| upcoming_payments | array | Maximo 10 pagos obligatorios en los proximos 30 dias, ordenados por fecha |
+| credit_cards | array | Tarjetas de credito activas, ordenadas por proxima fecha de corte |
+| latest_ai_insight | object o null | Ultimo reporte IA exitoso (tipo `general`), cacheado 15 minutos; `null` si no hay reporte |
+| budgets_summary | object | Totales de presupuestos activos del usuario |
+
+#### Response Body (401)
 
 ```json
 { "errors": ["Token inválido o expirado"] }
