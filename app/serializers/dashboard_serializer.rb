@@ -7,8 +7,9 @@ class DashboardSerializer
   AI_INSIGHT_CACHE_TTL = 15.minutes
   NO_CUTTING_DATE = Date.new(9999, 12, 31)
 
-  def initialize(user)
+  def initialize(user, date_range: Date.current.beginning_of_month..Date.current.end_of_month)
     @user = user
+    @date_range = date_range
   end
 
   def as_json(*)
@@ -23,22 +24,26 @@ class DashboardSerializer
 
   private
 
-  attr_reader :user
+  attr_reader :user, :date_range
 
   def financial_summary
     today = Date.current
-    dataset = monthly_report_filter(today).report_dataset
+    dataset = report_filter.report_dataset
 
     { total_income: dataset[:incomeData].to_f,
       total_expenses: dataset[:expenseData].to_f,
       balance: dataset[:balanceData].to_f,
       month: today.month,
-      year: today.year }
+      year: today.year,
+      category_breakdown: category_breakdown }
   end
 
-  def monthly_report_filter(today)
-    ReportFilter.new(user: user, start_date: today.beginning_of_month,
-                     end_date: today.end_of_month, period: 'monthly')
+  def report_filter
+    ReportFilter.new(user: user, start_date: date_range.begin, end_date: date_range.end, period: 'monthly')
+  end
+
+  def category_breakdown
+    CategoryBreakdownCalculator.new(user, date_range).call
   end
 
   def upcoming_payments

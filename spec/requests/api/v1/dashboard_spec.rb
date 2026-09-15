@@ -110,4 +110,118 @@ RSpec.describe '/api/v1/dashboard', type: :request do
       end
     end
   end
+
+  describe 'GET /api/v1/dashboard?period=... (FEAT-037)' do
+    let(:budget) { make_budget(user:, type_code: 'cash', amount: 0, personal: true) }
+    let(:category) { category_for('Comida') }
+
+    context 'FEAT-037 CA1: period=month' do
+      it 'incluye solo transacciones del mes calendario actual' do
+        make_transaction(user:, budget:, category:, amount: 500, type_code: 'expense', transaction_date: Date.current)
+        make_transaction(user:, budget:, category:, amount: 1000, type_code: 'expense',
+                         transaction_date: 2.months.ago.to_date)
+
+        get api_v1_dashboard_path, params: { period: 'month' }, headers: auth_headers
+
+        expect(response.parsed_body['record']['financial_summary']['total_expenses']).to eq(500.0)
+      end
+    end
+
+    context 'FEAT-037 CA2: period=30days' do
+      it 'incluye solo transacciones de los ultimos 30 dias naturales' do
+        make_transaction(user:, budget:, category:, amount: 200, type_code: 'expense',
+                         transaction_date: 25.days.ago.to_date)
+        make_transaction(user:, budget:, category:, amount: 900, type_code: 'expense',
+                         transaction_date: 40.days.ago.to_date)
+
+        get api_v1_dashboard_path, params: { period: '30days' }, headers: auth_headers
+
+        expect(response.parsed_body['record']['financial_summary']['total_expenses']).to eq(200.0)
+      end
+    end
+
+    context 'FEAT-037 CA3: period=year' do
+      it 'incluye solo transacciones del año calendario actual' do
+        make_transaction(user:, budget:, category:, amount: 300, type_code: 'expense',
+                         transaction_date: Date.current.beginning_of_year)
+        make_transaction(user:, budget:, category:, amount: 700, type_code: 'expense',
+                         transaction_date: 1.year.ago.to_date)
+
+        get api_v1_dashboard_path, params: { period: 'year' }, headers: auth_headers
+
+        expect(response.parsed_body['record']['financial_summary']['total_expenses']).to eq(300.0)
+      end
+    end
+
+    context 'FEAT-037 CA4: sin period param' do
+      it 'usa month por defecto' do
+        make_transaction(user:, budget:, category:, amount: 500, type_code: 'expense', transaction_date: Date.current)
+        make_transaction(user:, budget:, category:, amount: 1000, type_code: 'expense',
+                         transaction_date: 2.months.ago.to_date)
+
+        get api_v1_dashboard_path, headers: auth_headers
+
+        expect(response.parsed_body['record']['financial_summary']['total_expenses']).to eq(500.0)
+      end
+    end
+
+    context 'FEAT-037 CA5: period=invalid' do
+      it 'retorna 400 con mensaje de periodos permitidos' do
+        get api_v1_dashboard_path, params: { period: 'invalid' }, headers: auth_headers
+
+        expect(response).to have_http_status(:bad_request)
+        expect(response.parsed_body.dig('error', 'code')).to eq('invalid_period')
+        expect(response.parsed_body.dig('error', 'message')).to eq('Invalid period. Allowed: month, 30days, year')
+      end
+    end
+
+    context 'FEAT-037 CA6: category_breakdown' do
+      it 'retorna categorias ordenadas por amount DESC con category_name, amount y percentage' do
+        make_transaction(user:, budget:, category:, amount: 600, type_code: 'expense')
+        make_transaction(user:, budget:, category: category_for('Transporte'), amount: 400, type_code: 'expense')
+        make_transaction(user:, budget:, category:, amount: 5000, type_code: 'income')
+
+        get api_v1_dashboard_path, headers: auth_headers
+
+        breakdown = response.parsed_body['record']['financial_summary']['category_breakdown']
+        expect(breakdown).to eq(
+          [
+            { 'category_name' => 'Comida', 'amount' => 600.0, 'percentage' => 60.0 },
+            { 'category_name' => 'Transporte', 'amount' => 400.0, 'percentage' => 40.0 }
+          ]
+        )
+      end
+    end
+
+    context 'FEAT-037 CA7: transacciones sin categoria' do
+      it "expone la entrada 'Sin categoría' que retorna CategoryBreakdownCalculator" do
+        fake_breakdown = [{ category_name: 'Sin categoría', amount: 500.0, percentage: 100.0 }]
+        allow(CategoryBreakdownCalculator).to receive(:new)
+          .and_return(instance_double(CategoryBreakdownCalculator, call: fake_breakdown))
+
+        get api_v1_dashboard_path, headers: auth_headers
+
+        breakdown = response.parsed_body['record']['financial_summary']['category_breakdown']
+        expect(breakdown).to eq([{ 'category_name' => 'Sin categoría', 'amount' => 500.0, 'percentage' => 100.0 }])
+      end
+    end
+
+    context 'FEAT-037 CA8: porcentajes' do
+      it 'suman 100.0 cuando hay gastos y 0 (array vacio) cuando no hay gastos' do
+        make_transaction(user:, budget:, category:, amount: 600, type_code: 'expense')
+        make_transaction(user:, budget:, category: category_for('Transporte'), amount: 400, type_code: 'expense')
+
+        get api_v1_dashboard_path, headers: auth_headers
+        breakdown = response.parsed_body['record']['financial_summary']['category_breakdown']
+
+        expect(breakdown.sum { |item| item['percentage'] }).to eq(100.0)
+
+        other_user = create(:user)
+        other_token = other_user.generate_jwt_token[:token]
+        get api_v1_dashboard_path, headers: { 'Authorization' => "Bearer #{other_token}" }
+
+        expect(response.parsed_body['record']['financial_summary']['category_breakdown']).to eq([])
+      end
+    end
+  end
 end
