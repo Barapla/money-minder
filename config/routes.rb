@@ -87,6 +87,7 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
       get 'auth/me', to: 'auth#me'
 
       resource :dashboard, only: [:show], controller: 'dashboard'
+      resources :transactions, only: %i[index show]
     end
   end
 

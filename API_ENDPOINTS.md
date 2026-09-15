@@ -30,7 +30,9 @@ Describe the authentication mechanism used by this API.
 | DELETE | /api/v1/users/:id | API Key | — | `{ record: {...} }` | Delete user |
 | POST | /api/v1/auth/login | — | `{ email, password }` | `{ record: { token, expires_at } }` | Login para app movil, retorna JWT |
 | GET | /api/v1/auth/me | JWT Bearer | — | `{ record: { id, email, name } }` | Datos del usuario autenticado por token |
-| GET | /api/v1/dashboard | JWT Bearer | — | `{ record: { financial_summary, upcoming_payments, credit_cards, latest_ai_insight, budgets_summary } }` | Dashboard financiero consolidado para app movil |
+| GET | /api/v1/dashboard | JWT Bearer | — | `{ record: { financial_summary, upcoming_payments, credit_cards, latest_ai_insight, budgets_summary } }` | Dashboard financiero consolidado para app movil. Soporta `?period=month\|30days\|year` |
+| GET | /api/v1/transactions | JWT Bearer | — | `{ records: [...], meta: { current_page, total_pages, total_count } }` | Listado paginado de transacciones del usuario, orden `transaction_date DESC` |
+| GET | /api/v1/transactions/:id | JWT Bearer | — | `{ record: {...} }` | Detalle de una transaccion del usuario |
 
 ---
 
@@ -179,7 +181,13 @@ Se retorna cuando el token esta ausente, es invalido, expiro, o el usuario ya no
 
 **Auth:** JWT Bearer (`Authorization: Bearer <token>`)
 
-Devuelve el dashboard financiero consolidado del usuario autenticado, optimizado para la app movil: resumen del mes, proximos pagos obligatorios, tarjetas de credito con cortes proximos, ultimo insight de IA (cacheado 15 minutos) y estadisticas de presupuestos activos. Todas las consultas se aislan por el usuario del token.
+Devuelve el dashboard financiero consolidado del usuario autenticado, optimizado para la app movil: resumen del periodo, distribucion de gastos por categoria, proximos pagos obligatorios, tarjetas de credito con cortes proximos, ultimo insight de IA (cacheado 15 minutos) y estadisticas de presupuestos activos. Todas las consultas se aislan por el usuario del token.
+
+#### Query Params
+
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| period | string | No | Rango de `financial_summary`: `month` (default), `30days` o `year`. Invalido → 400 |
 
 #### Response Body (200)
 
@@ -188,7 +196,11 @@ Devuelve el dashboard financiero consolidado del usuario autenticado, optimizado
   "record": {
     "financial_summary": {
       "total_income": 15000.0, "total_expenses": 8000.0, "balance": 7000.0,
-      "month": 9, "year": 2026
+      "month": 9, "year": 2026,
+      "category_breakdown": [
+        { "category_name": "Comida", "amount": 3000.0, "percentage": 60.0 },
+        { "category_name": "Sin categoría", "amount": 2000.0, "percentage": 40.0 }
+      ]
     },
     "upcoming_payments": [
       { "id": 1, "description": "Renta", "amount": 5000.0,
@@ -213,11 +225,84 @@ Devuelve el dashboard financiero consolidado del usuario autenticado, optimizado
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| financial_summary | object | Ingresos, gastos y balance del mes actual |
+| financial_summary | object | Ingresos, gastos, balance y `category_breakdown` del periodo solicitado |
+| financial_summary.category_breakdown | array | Gastos agrupados por categoria: `category_name`, `amount`, `percentage`; ordenado por `amount` DESC; los porcentajes suman 100.0 |
 | upcoming_payments | array | Maximo 10 pagos obligatorios en los proximos 30 dias, ordenados por fecha |
 | credit_cards | array | Tarjetas de credito activas, ordenadas por proxima fecha de corte |
 | latest_ai_insight | object o null | Ultimo reporte IA exitoso (tipo `general`), cacheado 15 minutos; `null` si no hay reporte |
 | budgets_summary | object | Totales de presupuestos activos del usuario |
+
+#### Response Body (400)
+
+```json
+{ "error": { "code": "invalid_period", "message": "Invalid period. Allowed: month, 30days, year" } }
+```
+
+#### Response Body (401)
+
+```json
+{ "errors": ["Token inválido o expirado"] }
+```
+
+---
+
+### GET /api/v1/transactions
+
+**Auth:** JWT Bearer (`Authorization: Bearer <token>`)
+
+Listado paginado de las transacciones del usuario autenticado, ordenadas por `transaction_date` descendente. Usado por la app movil para el listado de movimientos.
+
+#### Query Params
+
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| page | integer | No | Pagina solicitada, default 1 |
+| per_page | integer | No | Tamaño de pagina, default 20 |
+
+#### Response Body (200)
+
+```json
+{
+  "records": [
+    { "id": 1, "date": "2026-09-10", "amount": 300.0, "currency": "MXN",
+      "description": "Super", "category_name": "Comida", "transaction_type": "expense",
+      "created_at": "2026-09-10T12:00:00-06:00", "updated_at": "2026-09-10T12:00:00-06:00" }
+  ],
+  "meta": { "current_page": 1, "total_pages": 3, "total_count": 45 }
+}
+```
+
+#### Response Body (401)
+
+```json
+{ "errors": ["Token inválido o expirado"] }
+```
+
+---
+
+### GET /api/v1/transactions/:id
+
+**Auth:** JWT Bearer (`Authorization: Bearer <token>`)
+
+Detalle completo de una transaccion del usuario autenticado. Usado por la app movil para navegar del listado al detalle.
+
+#### Response Body (200)
+
+```json
+{
+  "record": {
+    "id": 1, "date": "2026-09-10", "amount": 300.0, "currency": "MXN",
+    "description": "Super", "category_name": "Comida", "transaction_type": "expense",
+    "created_at": "2026-09-10T12:00:00-06:00", "updated_at": "2026-09-10T12:00:00-06:00"
+  }
+}
+```
+
+#### Response Body (404)
+
+```json
+{ "error": { "code": "not_found", "message": "Recurso no encontrado" } }
+```
 
 #### Response Body (401)
 

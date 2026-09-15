@@ -1,0 +1,28 @@
+# frozen_string_literal: true
+
+# Serializa una transaccion para la API movil (FEAT-037).
+class TransactionSerializer
+  def initialize(transaction)
+    @transaction = transaction
+  end
+
+  # rubocop:disable Metrics/AbcSize, Metrics/MethodLength -- lectura plana de 9 campos, sin logica
+  def as_json(*)
+    {
+      id: transaction.id,
+      date: transaction.transaction_date,
+      amount: transaction.amount.to_f,
+      currency: transaction.currency&.code,
+      description: transaction.description,
+      category_name: transaction.category&.name,
+      transaction_type: transaction.transaction_type&.code,
+      created_at: transaction.created_at.iso8601,
+      updated_at: transaction.updated_at.iso8601
+    }
+  end
+  # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+
+  private
+
+  attr_reader :transaction
+end

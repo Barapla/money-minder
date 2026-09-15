@@ -109,7 +109,8 @@ module FinancialTestHelpers
     )
   end
 
-  def make_transaction(user:, budget:, category:, amount:, type_code:)
+  # rubocop:disable Metrics/ParameterLists
+  def make_transaction(user:, budget:, category:, amount:, type_code:, transaction_date: Date.current)
     Transaction.create!(
       user:, budget:, category:,
       amount:,
@@ -117,7 +118,8 @@ module FinancialTestHelpers
       color: color_catalog,
       icon: icon_catalog,
       currency: Currency.default || FactoryBot.create(:currency),
-      transaction_date: Date.current
+      transaction_date:
     )
   end
+  # rubocop:enable Metrics/ParameterLists
 end
