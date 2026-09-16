@@ -37,4 +37,14 @@ RSpec.describe BudgetProgressCalculator do
   it 'retorna array vacio cuando el usuario no tiene presupuestos' do
     expect(calculator.call).to eq([])
   end
+
+  it 'excluye fondos de ahorro (no son presupuestos de gasto)' do
+    make_budget(user:, type_code: 'cash', amount: 1000, personal: true)
+    make_savings_fund(user:, goal_amount: 20_000, current_amount: 5_000)
+
+    result = calculator.call
+
+    expect(result.size).to eq(1)
+    expect(result.first[:category_name]).to eq('Budget cash')
+  end
 end

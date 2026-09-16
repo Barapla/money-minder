@@ -243,7 +243,7 @@ Devuelve el dashboard financiero consolidado del usuario autenticado, optimizado
 | financial_summary.category_breakdown | array | Gastos agrupados por categoria: `category_name`, `amount`, `percentage`; ordenado por `amount` DESC; los porcentajes suman 100.0 |
 | trend_data | array | Ultimos 6 meses (incluye el actual), ordenados cronologicamente: `month` (YYYY-MM), `income`, `expenses`, `balance` |
 | upcoming_payments | array | Maximo 10 pagos obligatorios en los proximos 30 dias, ordenados por `due_date` ascendente |
-| active_budgets | array | Progreso de cada presupuesto activo del usuario contra el gasto del mes actual |
+| active_budgets | array | Progreso de cada presupuesto activo del usuario contra el gasto del mes actual. Excluye tipos `savings_fund` y `term_saving` (no son presupuestos de gasto; su progreso se expone en `savings_summary`) |
 | credit_cards_summary | array | Tarjetas de credito activas, ordenadas por `next_cutting_date` |
 | savings_summary | array | Fondos de ahorro activos con saldo actual y progreso hacia la meta |
 | recent_transactions | array | Ultimas 10 transacciones del usuario, ordenadas por `transaction_date` DESC |

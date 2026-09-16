@@ -14,8 +14,17 @@ class BudgetProgressCalculator
 
   attr_reader :user
 
+  # Excluye fondos de ahorro y ahorro a plazo: son vehiculos de acumulacion, no
+  # presupuestos de gasto, y su saldo/aportes producen porcentajes sin sentido
+  # (ej. una transferencia al fondo se contaba como "gasto" contra su saldo).
+  # Su progreso real ya se expone por separado via SavingsSummaryCalculator.
+  NON_BUDGET_TYPES = %w[savings_fund term_saving].freeze
+
   def budgets
-    user.budgets.where(active: true).includes(:color)
+    user.budgets.where(active: true)
+        .joins(:budget_type)
+        .where.not(catalogs: { code: NON_BUDGET_TYPES })
+        .includes(:color)
   end
 
   def entry_for(budget)
