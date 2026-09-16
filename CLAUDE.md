@@ -329,20 +329,25 @@ No hay `chromedriver`/navegador disponible en este sandbox (`selenium-webdriver`
 
 ---
 
-## API Movil — Dashboard, categorias y transacciones (FEAT-035/036/037)
+## API Movil — Dashboard, categorias y transacciones (FEAT-035/036/037/038)
 
 Endpoints JSON para Money Minder Movil, autenticados con JWT (`Authorization: Bearer <token>`, ver `Api::JwtAuthenticatable`). Contrato completo (request/response, query params, errores) documentado en `API_ENDPOINTS.md` — ese archivo es la fuente de verdad, esto es solo un resumen de capacidades.
 
 - `POST /api/v1/auth/login`, `GET /api/v1/auth/me` (FEAT-035).
-- `GET /api/v1/dashboard` (FEAT-036) — resumen financiero consolidado. `DashboardSerializer` agrega `financial_summary`, `upcoming_payments`, `credit_cards`, `latest_ai_insight` y `budgets_summary`.
-  - `?period=month|30days|year` (default `month`, FEAT-037) — `DashboardController#date_range_for` calcula el rango y lo pasa a `DashboardSerializer.new(user, date_range:)`; `period` invalido retorna 400.
+- `GET /api/v1/dashboard` (FEAT-036, extendido en FEAT-038) — dashboard financiero consolidado. `DashboardSerializer` agrega `financial_summary`, `trend_data`, `upcoming_payments`, `active_budgets`, `credit_cards_summary`, `savings_summary`, `recent_transactions` y `latest_insight`, delegando cada calculo a un service object dedicado: `TrendDataCalculator`, `BudgetProgressCalculator`, `CreditCardSummaryCalculator`, `SavingsSummaryCalculator`, `RecentTransactionsCalculator` (mas `CategoryBreakdownCalculator` de FEAT-037).
+  - `?period=month|30days|year` (default `month`, FEAT-037) — `DashboardController#date_range_for` calcula el rango y lo pasa a `DashboardSerializer.new(user, date_range:)`; `period` invalido retorna 400. Solo afecta `financial_summary`; `trend_data` siempre son los ultimos 6 meses fijos.
   - `financial_summary.category_breakdown` (FEAT-037) — distribucion de gastos por categoria (`category_name`, `amount`, `percentage`), calculada por `CategoryBreakdownCalculator` sobre el mismo `date_range`.
+  - FEAT-038 renombro/reemplazo las claves de FEAT-036/037 (`credit_cards`→`credit_cards_summary`, `latest_ai_insight`→`latest_insight`, `budgets_summary` agregado→`active_budgets` por-presupuesto) — cambio de contrato intencional, no retrocompatible.
 - `GET /api/v1/transactions`, `GET /api/v1/transactions/:id` (FEAT-037) — listado paginado (sin gema de paginación; `offset`/`limit` manual + `PaginationHelper#total_pages`, ya usado por las vistas web) y detalle, ambos vía `current_api_user.transactions` con `includes(:category, :currency, :transaction_type)` para evitar N+1. `TransactionSerializer` expone `date` (mapea `transaction_date`), `currency` (`Currency#code`) y `transaction_type` (`Catalog#code`).
 
 ### Decisiones de diseño
 
-- No existe `DashboardService`: la agregación vive en `DashboardSerializer`, que ya existía desde FEAT-036 — se extendió en vez de introducir una capa nueva.
+- No existe `DashboardService`: la agregación vive en `DashboardSerializer`, que ya existía desde FEAT-036 — se extendió en vez de introducir una capa nueva. Los calculos complejos si se extrajeron a service objects (FEAT-038) siguiendo el patron ya establecido por `CategoryBreakdownCalculator`.
 - `category_breakdown` no maneja `category_id` nulo con datos reales: `transactions.category_id` es `NOT NULL` con FK a `categories`, así que ese camino es defensivo (cubierto con specs que mockean la consulta agregada, no con datos reales).
+- `active_budgets`/`credit_cards_summary`/`savings_summary` (FEAT-038) no tienen una tabla "categoria" propia: `Budget` no tiene `belongs_to :category`, asi que `category_name`/`category_color` en `active_budgets` usan el propio `budget.name`/`budget.color` (igual que el resto del dashboard web trata estos campos).
+- `budgeted_amount` en `active_budgets` es `budget.current_amount` (saldo vivo post-gasto, no un techo fijo) — mismo criterio ya documentado para `budgets_summary` en FEAT-036/037.
+- `credit_cards_summary.credit_limit`/`available_credit` usan `CreditCard#limit_amount` y el metodo `#available_credit` (`limit_amount - total_debt`); las columnas `credit_limit`/`available_credit`/`current_balance` de la tabla `credit_cards` son scaffolding sin usar (nunca se escriben), no confundir con estas.
+- `TrendDataCalculator` agrupa con `TO_CHAR(transaction_date, 'YYYY-MM')` (2 queries totales, income+expense) en vez de iterar `ReportFilter` 6 veces — mismo patron SQL que `ReportFilter#generate_monthly_array`.
 
 ---
 
