@@ -24,7 +24,7 @@ class BudgetProgressCalculator
     user.budgets.where(active: true)
         .joins(:budget_type)
         .where.not(catalogs: { code: NON_BUDGET_TYPES })
-        .includes(:color)
+        .includes(:color, :budget_type)
   end
 
   def entry_for(budget)
@@ -35,6 +35,7 @@ class BudgetProgressCalculator
     { budget_id: budget.id,
       category_name: budget.name,
       category_color: budget.color&.value,
+      budget_type: budget.budget_type&.code,
       budgeted_amount: budgeted,
       spent_amount: spent,
       remaining_amount: (budgeted - spent).round(2),

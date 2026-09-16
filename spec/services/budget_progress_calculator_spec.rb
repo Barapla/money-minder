@@ -15,7 +15,8 @@ RSpec.describe BudgetProgressCalculator do
 
     expect(result).to eq(
       [{ budget_id: budget.id, category_name: budget.name, category_color: 'Purple',
-         budgeted_amount: 700.0, spent_amount: 300.0, remaining_amount: 400.0, percentage_used: 42.86 }]
+         budget_type: 'cash', budgeted_amount: 700.0, spent_amount: 300.0,
+         remaining_amount: 400.0, percentage_used: 42.86 }]
     )
   end
 
