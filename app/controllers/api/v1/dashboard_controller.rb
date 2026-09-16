@@ -24,22 +24,35 @@ module Api
     #           { "category_name": "Comida", "amount": 3000.0, "percentage": 37.5 }
     #         ]
     #       },
+    #       "trend_data": [
+    #         { "month": "2026-04", "income": 15000.0, "expenses": 9000.0, "balance": 6000.0 }
+    #       ],
     #       "upcoming_payments": [
-    #         { "id": 1, "description": "Renta", "amount": 5000.0,
-    #           "payment_due_date": "2026-09-30", "days_until_due": 16,
-    #           "category": "Vivienda" }
+    #         { "id": 1, "title": "Renta", "amount": 5000.0, "currency": "MXN",
+    #           "due_date": "2026-09-30", "days_until_due": 16, "category": "Vivienda" }
     #       ],
-    #       "credit_cards": [
-    #         { "id": 1, "name": "Tarjeta Oro", "calculated_balance": 2000.0,
-    #           "cutting_date": "2026-09-25", "payment_due_date": "2026-09-30" }
+    #       "active_budgets": [
+    #         { "budget_id": 1, "category_name": "Comida", "category_color": "Purple",
+    #           "budgeted_amount": 2000.0, "spent_amount": 800.0, "remaining_amount": 1200.0,
+    #           "percentage_used": 40.0 }
     #       ],
-    #       "latest_ai_insight": {
-    #         "summary": { "raw_content" => "..." }, "generated_at": "2026-09-10T12:00:00Z",
-    #         "report_type": "general"
-    #       },
-    #       "budgets_summary": {
-    #         "total_budgeted": 12000.0, "total_spent": 4500.0,
-    #         "percentage_used": 37.5, "active_count": 4
+    #       "credit_cards_summary": [
+    #         { "card_id": 1, "card_name": "Tarjeta Oro", "current_balance": 2000.0,
+    #           "credit_limit": 10000.0, "available_credit": 8000.0,
+    #           "next_cutting_date": "2026-09-25", "next_payment_date": "2026-09-30" }
+    #       ],
+    #       "savings_summary": [
+    #         { "fund_id": 1, "fund_name": "Fondo Emergencia", "current_amount": 5000.0,
+    #           "goal_amount": 20000.0, "percentage_achieved": 25.0 }
+    #       ],
+    #       "recent_transactions": [
+    #         { "id": 1, "description": "Super", "amount": 500.0, "currency": "MXN",
+    #           "transaction_date": "2026-09-14", "category_name": "Comida",
+    #           "category_color": "Purple", "transaction_type": "expense" }
+    #       ],
+    #       "latest_insight": {
+    #         "id": 1, "content": { "raw_content" => "..." },
+    #         "created_at": "2026-09-10T12:00:00Z", "expires_at": null
     #       }
     #     }
     #   }

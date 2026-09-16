@@ -30,7 +30,7 @@ Describe the authentication mechanism used by this API.
 | DELETE | /api/v1/users/:id | API Key | — | `{ record: {...} }` | Delete user |
 | POST | /api/v1/auth/login | — | `{ email, password }` | `{ record: { token, expires_at } }` | Login para app movil, retorna JWT |
 | GET | /api/v1/auth/me | JWT Bearer | — | `{ record: { id, email, name } }` | Datos del usuario autenticado por token |
-| GET | /api/v1/dashboard | JWT Bearer | — | `{ record: { financial_summary, upcoming_payments, credit_cards, latest_ai_insight, budgets_summary } }` | Dashboard financiero consolidado para app movil. Soporta `?period=month\|30days\|year` |
+| GET | /api/v1/dashboard | JWT Bearer | — | `{ record: { financial_summary, trend_data, upcoming_payments, active_budgets, credit_cards_summary, savings_summary, recent_transactions, latest_insight } }` | Dashboard financiero consolidado para app movil. Soporta `?period=month\|30days\|year` |
 | GET | /api/v1/transactions | JWT Bearer | — | `{ records: [...], meta: { current_page, total_pages, total_count } }` | Listado paginado de transacciones del usuario, orden `transaction_date DESC` |
 | GET | /api/v1/transactions/:id | JWT Bearer | — | `{ record: {...} }` | Detalle de una transaccion del usuario |
 
@@ -181,7 +181,7 @@ Se retorna cuando el token esta ausente, es invalido, expiro, o el usuario ya no
 
 **Auth:** JWT Bearer (`Authorization: Bearer <token>`)
 
-Devuelve el dashboard financiero consolidado del usuario autenticado, optimizado para la app movil: resumen del periodo, distribucion de gastos por categoria, proximos pagos obligatorios, tarjetas de credito con cortes proximos, ultimo insight de IA (cacheado 15 minutos) y estadisticas de presupuestos activos. Todas las consultas se aislan por el usuario del token.
+Devuelve el dashboard financiero consolidado del usuario autenticado, optimizado para la app movil: resumen del periodo, tendencia de los ultimos 6 meses, proximos pagos obligatorios, progreso de presupuestos activos, resumen de tarjetas de credito, resumen de fondos de ahorro, ultimas 10 transacciones y ultimo insight de IA (cacheado 15 minutos). Todas las consultas se aislan por el usuario del token.
 
 #### Query Params
 
@@ -202,22 +202,36 @@ Devuelve el dashboard financiero consolidado del usuario autenticado, optimizado
         { "category_name": "Sin categoría", "amount": 2000.0, "percentage": 40.0 }
       ]
     },
+    "trend_data": [
+      { "month": "2026-04", "income": 15000.0, "expenses": 9000.0, "balance": 6000.0 },
+      { "month": "2026-09", "income": 15000.0, "expenses": 8000.0, "balance": 7000.0 }
+    ],
     "upcoming_payments": [
-      { "id": 1, "description": "Renta", "amount": 5000.0,
-        "payment_due_date": "2026-09-30", "days_until_due": 16, "category": "Vivienda" }
+      { "id": 1, "title": "Renta", "amount": 5000.0, "currency": "MXN",
+        "due_date": "2026-09-30", "days_until_due": 16, "category": "Vivienda" }
     ],
-    "credit_cards": [
-      { "id": 1, "name": "Tarjeta Oro", "calculated_balance": 2000.0,
-        "cutting_date": "2026-09-25", "payment_due_date": "2026-09-30" }
+    "active_budgets": [
+      { "budget_id": 1, "category_name": "Comida", "category_color": "Purple",
+        "budgeted_amount": 2000.0, "spent_amount": 800.0, "remaining_amount": 1200.0,
+        "percentage_used": 40.0 }
     ],
-    "latest_ai_insight": {
-      "summary": { "raw_content": "..." },
-      "generated_at": "2026-09-10T12:00:00-06:00",
-      "report_type": "general"
-    },
-    "budgets_summary": {
-      "total_budgeted": 12000.0, "total_spent": 4500.0,
-      "percentage_used": 37.5, "active_count": 4
+    "credit_cards_summary": [
+      { "card_id": 1, "card_name": "Tarjeta Oro", "current_balance": 2000.0,
+        "credit_limit": 10000.0, "available_credit": 8000.0,
+        "next_cutting_date": "2026-09-25", "next_payment_date": "2026-09-30" }
+    ],
+    "savings_summary": [
+      { "fund_id": 1, "fund_name": "Fondo Emergencia", "current_amount": 5000.0,
+        "goal_amount": 20000.0, "percentage_achieved": 25.0 }
+    ],
+    "recent_transactions": [
+      { "id": 1, "description": "Super", "amount": 500.0, "currency": "MXN",
+        "transaction_date": "2026-09-14", "category_name": "Comida",
+        "category_color": "Purple", "transaction_type": "expense" }
+    ],
+    "latest_insight": {
+      "id": 1, "content": { "raw_content": "..." },
+      "created_at": "2026-09-10T12:00:00-06:00", "expires_at": null
     }
   }
 }
@@ -227,10 +241,13 @@ Devuelve el dashboard financiero consolidado del usuario autenticado, optimizado
 |-------|------|-------------|
 | financial_summary | object | Ingresos, gastos, balance y `category_breakdown` del periodo solicitado |
 | financial_summary.category_breakdown | array | Gastos agrupados por categoria: `category_name`, `amount`, `percentage`; ordenado por `amount` DESC; los porcentajes suman 100.0 |
-| upcoming_payments | array | Maximo 10 pagos obligatorios en los proximos 30 dias, ordenados por fecha |
-| credit_cards | array | Tarjetas de credito activas, ordenadas por proxima fecha de corte |
-| latest_ai_insight | object o null | Ultimo reporte IA exitoso (tipo `general`), cacheado 15 minutos; `null` si no hay reporte |
-| budgets_summary | object | Totales de presupuestos activos del usuario |
+| trend_data | array | Ultimos 6 meses (incluye el actual), ordenados cronologicamente: `month` (YYYY-MM), `income`, `expenses`, `balance` |
+| upcoming_payments | array | Maximo 10 pagos obligatorios en los proximos 30 dias, ordenados por `due_date` ascendente |
+| active_budgets | array | Progreso de cada presupuesto activo del usuario contra el gasto del mes actual |
+| credit_cards_summary | array | Tarjetas de credito activas, ordenadas por `next_cutting_date` |
+| savings_summary | array | Fondos de ahorro activos con saldo actual y progreso hacia la meta |
+| recent_transactions | array | Ultimas 10 transacciones del usuario, ordenadas por `transaction_date` DESC |
+| latest_insight | object o null | Ultimo reporte IA exitoso (tipo `general`), cacheado 15 minutos; `null` si no hay reporte |
 
 #### Response Body (400)
 

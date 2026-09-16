@@ -3,14 +3,6 @@
 # Helpers compartidos para construir catalogos y presupuestos en specs de
 # servicios financieros (chatbot, saving goals, etc.) sin depender de seeds.
 module FinancialTestHelpers
-  def budget_types_group
-    GroupCatalog.find_or_create_by!(code: 'budget_types') { |g| g.name = 'budget_types' }
-  end
-
-  def transaction_types_group
-    GroupCatalog.find_or_create_by!(code: 'transaction_types') { |g| g.name = 'transaction_types' }
-  end
-
   def color_catalog
     color_group = GroupCatalog.find_or_create_by!(code: 'colors') { |g| g.name = 'colors' }
     Catalog.find_or_create_by!(code: 'purple', group_catalog: color_group) { |c| c.value = 'Purple' }
@@ -22,19 +14,18 @@ module FinancialTestHelpers
   end
 
   def budget_type_for(code)
-    Catalog.find_or_create_by!(code:, group_catalog: budget_types_group) { |c| c.value = code }
+    group = GroupCatalog.find_or_create_by!(code: 'budget_types') { |g| g.name = 'budget_types' }
+    Catalog.find_or_create_by!(code:, group_catalog: group) { |c| c.value = code }
   end
 
   def transaction_type_for(code)
-    Catalog.find_or_create_by!(code:, group_catalog: transaction_types_group) { |c| c.value = code }
-  end
-
-  def frequency_types_group
-    GroupCatalog.find_or_create_by!(code: 'frequency_types') { |g| g.name = 'frequency_types' }
+    group = GroupCatalog.find_or_create_by!(code: 'transaction_types') { |g| g.name = 'transaction_types' }
+    Catalog.find_or_create_by!(code:, group_catalog: group) { |c| c.value = code }
   end
 
   def frequency_type_for(code)
-    Catalog.find_or_create_by!(code:, group_catalog: frequency_types_group) { |c| c.value = code }
+    group = GroupCatalog.find_or_create_by!(code: 'frequency_types') { |g| g.name = 'frequency_types' }
+    Catalog.find_or_create_by!(code:, group_catalog: group) { |c| c.value = code }
   end
 
   def make_obligatory_payment(user:, amount:, recurring: false, frequency_code: 'monthly', frequency_value: 1, # rubocop:disable Metrics/ParameterLists
@@ -100,6 +91,16 @@ module FinancialTestHelpers
     card = budget.credit_card || budget.build_credit_card
     card.update!(limit_amount:, initial_debt: 0, cutting_day:, payment_due_days: 5)
     card
+  end
+
+  # compound_frequency_id/account_type_id son NOT NULL: asignarlos antes del primer save.
+  def make_savings_fund(user:, goal_amount:, current_amount: 0, name: 'Fondo de prueba')
+    budget = Budget.new(name:, user:, budget_type: budget_type_for('savings_fund'),
+                        color: color_catalog, icon: icon_catalog, current_amount:, active: true)
+    budget.savings_fund.assign_attributes(goal_amount:, compound_frequency_id: FactoryBot.create(:catalog).id,
+                                          account_type_id: FactoryBot.create(:catalog).id)
+    budget.save!
+    budget.savings_fund
   end
 
   def make_recurring_transaction(user:, type_code:, amount:, frequency: 'monthly')
