@@ -59,7 +59,8 @@ RSpec.describe '/api/v1/auth', type: :request do
         expect(json).to eq(
           'id' => user.id,
           'email' => user.email,
-          'name' => "#{user.first_name} #{user.last_name}".strip
+          'name' => "#{user.first_name} #{user.last_name}".strip,
+          'currency' => nil
         )
       end
     end

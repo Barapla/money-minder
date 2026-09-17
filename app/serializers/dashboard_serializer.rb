@@ -74,13 +74,7 @@ class DashboardSerializer
   end
 
   def next_due_date_for(payment, end_date)
-    if payment.one_time?
-      return payment.due_date if payment.due_date&.between?(Date.current, end_date)
-
-      return nil
-    end
-
-    payment.recurrence.occurrences_in_range(Date.current, end_date).first
+    payment.occurrences_in_range(Date.current, end_date).first
   end
 
   def active_budgets

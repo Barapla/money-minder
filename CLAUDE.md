@@ -338,6 +338,12 @@ Endpoints JSON para Money Minder Movil, autenticados con JWT (`Authorization: Be
   - `?period=month|30days|year` (default `month`, FEAT-037) — `DashboardController#date_range_for` calcula el rango y lo pasa a `DashboardSerializer.new(user, date_range:)`; `period` invalido retorna 400. Solo afecta `financial_summary`; `trend_data` siempre son los ultimos 6 meses fijos.
   - `financial_summary.category_breakdown` (FEAT-037) — distribucion de gastos por categoria (`category_name`, `amount`, `percentage`), calculada por `CategoryBreakdownCalculator` sobre el mismo `date_range`.
   - FEAT-038 renombro/reemplazo las claves de FEAT-036/037 (`credit_cards`→`credit_cards_summary`, `latest_ai_insight`→`latest_insight`, `budgets_summary` agregado→`active_budgets` por-presupuesto) — cambio de contrato intencional, no retrocompatible.
+- Cuenta (app movil): `POST /auth/register`, `POST /auth/password` (recuperacion), `PATCH /auth/me` (nombre, moneda), `PATCH /auth/password`.
+- `GET /api/v1/catalogs` — opciones de formularios (`CatalogOptionsSerializer`). `GET /api/v1/calendar?month=YYYY-MM` — transacciones y ocurrencias de recordatorios del mes (`CalendarMonthSerializer`, usa `ObligatoryPayment#occurrences_in_range`, igual que `upcoming_payments`).
+- `GET/POST /api/v1/obligatory_payments`, `GET/POST /api/v1/saving_goals` (progreso por `SavingGoalServices::PriorityAllocator`).
+- `POST /api/v1/transactions` y filtros de `GET /api/v1/transactions` (`q`, `transaction_type`, `category`, `start_date`, `end_date`; `meta.net_total`).
+- Errores de validacion de la API: `render_validation_errors(record)` en `Api::JwtAuthenticatable` → 422 `{ error: { code: 'validation_error', message, details } }`. El concern tambien desactiva CSRF (la API no usa cookies).
+- `users.currency_id` apuntaba por error a `roles` desde la migracion original de Devise; `FixUsersCurrencyForeignKey` la corrige.
 - `GET /api/v1/transactions`, `GET /api/v1/transactions/:id` (FEAT-037) — listado paginado (sin gema de paginación; `offset`/`limit` manual + `PaginationHelper#total_pages`, ya usado por las vistas web) y detalle, ambos vía `current_api_user.transactions` con `includes(:category, :currency, :transaction_type)` para evitar N+1. `TransactionSerializer` expone `date` (mapea `transaction_date`), `currency` (`Currency#code`) y `transaction_type` (`Catalog#code`).
 
 ### Decisiones de diseño

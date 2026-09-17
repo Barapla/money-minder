@@ -164,7 +164,8 @@ RSpec.describe '/api/v1/dashboard', type: :request do
 
         expect(response.parsed_body['record']['savings_summary']).to eq(
           [{ 'fund_id' => fund.id, 'fund_name' => 'Fondo Emergencia', 'current_amount' => 5000.0,
-             'goal_amount' => 20_000.0, 'percentage_achieved' => 25.0 }]
+             'goal_amount' => 20_000.0, 'percentage_achieved' => 25.0,
+             'target_date' => nil, 'feasibility' => 'no_target_date' }]
         )
       end
     end

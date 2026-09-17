@@ -10,7 +10,8 @@ class UserSerializer
     {
       id: user.id,
       email: user.email,
-      name: "#{user.first_name} #{user.last_name}".strip
+      name: "#{user.first_name} #{user.last_name}".strip,
+      currency: user.currency&.code
     }
   end
 
