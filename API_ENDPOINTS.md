@@ -211,9 +211,9 @@ Devuelve el dashboard financiero consolidado del usuario autenticado, optimizado
         "due_date": "2026-09-30", "days_until_due": 16, "category": "Vivienda" }
     ],
     "active_budgets": [
-      { "budget_id": 1, "category_name": "Comida", "category_color": "Purple",
-        "budgeted_amount": 2000.0, "spent_amount": 800.0, "remaining_amount": 1200.0,
-        "percentage_used": 40.0 }
+      { "budget_id": 1, "category_name": "Plata", "category_color": "orange-500",
+        "budget_type": "credit_card", "debt_amount": 1023.7, "limit_amount": 30000.0,
+        "available_amount": 28976.3, "spent_this_month": 970.0, "percentage_used": 3.41 }
     ],
     "credit_cards_summary": [
       { "card_id": 1, "card_name": "Tarjeta Oro", "current_balance": 2000.0,
@@ -243,7 +243,7 @@ Devuelve el dashboard financiero consolidado del usuario autenticado, optimizado
 | financial_summary.category_breakdown | array | Gastos agrupados por categoria: `category_name`, `amount`, `percentage`; ordenado por `amount` DESC; los porcentajes suman 100.0 |
 | trend_data | array | Ultimos 6 meses (incluye el actual), ordenados cronologicamente: `month` (YYYY-MM), `income`, `expenses`, `balance` |
 | upcoming_payments | array | Maximo 10 pagos obligatorios en los proximos 30 dias, ordenados por `due_date` ascendente |
-| active_budgets | array | Progreso de cada presupuesto activo del usuario contra el gasto del mes actual |
+| active_budgets | array | Presupuestos activos con las mismas cifras que el index web (`Budget#debt_amount`/`#limit_amount`/`#current_amount`/`#budget_percentage`): `debt_amount` es la deuda de la tarjeta, `limit_amount` su linea de credito, `available_amount` el disponible y `percentage_used` = deuda/limite. En tipos sin linea de credito (`cash`, `debit_card`) deuda, limite y porcentaje son `0.0`; la referencia util ahi es `available_amount` + `spent_this_month`. `budget_type` es el code del catalogo, para agrupar igual que `Budget.grouped_by_type`. Excluye `savings_fund`/`term_saving` (ver `savings_summary`) |
 | credit_cards_summary | array | Tarjetas de credito activas, ordenadas por `next_cutting_date` |
 | savings_summary | array | Fondos de ahorro activos con saldo actual y progreso hacia la meta |
 | recent_transactions | array | Ultimas 10 transacciones del usuario, ordenadas por `transaction_date` DESC |

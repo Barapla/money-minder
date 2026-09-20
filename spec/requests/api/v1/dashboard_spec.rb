@@ -97,8 +97,8 @@ RSpec.describe '/api/v1/dashboard', type: :request do
 
         expect(response.parsed_body['record']['active_budgets']).to eq(
           [{ 'budget_id' => budget.id, 'category_name' => budget.name, 'category_color' => 'Purple',
-             'budgeted_amount' => 700.0, 'spent_amount' => 300.0, 'remaining_amount' => 400.0,
-             'percentage_used' => 42.86 }]
+             'budget_type' => 'cash', 'debt_amount' => 0.0, 'limit_amount' => 0.0,
+             'available_amount' => 700.0, 'spent_this_month' => 300.0, 'percentage_used' => 0.0 }]
         )
       end
     end
