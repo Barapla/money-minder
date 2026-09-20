@@ -24,43 +24,36 @@ module Utils
         # create_history_entry(transaction, target_cycle)
       end
 
+      # Ciclo que esta acumulando hoy. El dia del corte todavia pertenece a ese
+      # corte, asi que solo a partir del dia siguiente se pasa al del mes que viene.
       def current_cycle
         today = Date.current
-        cutting_date = if today.day >= cutting_day.to_i
-                         (today + 1.month).change(day: cutting_day.to_i)
-                       else
-                         Date.new(today.year, today.month, cutting_day.to_i)
-                       end
-        find_or_create_cycle_by_cutting_date(cutting_date)
+        base = today.day > cutting_day.to_i ? today >> 1 : today
+        find_or_create_cycle_by_cutting_date(clamped_cutting_date(base))
       end
 
       def last_month_cycle
         today = Date.current
-        cutting_date = if today.day >= cutting_day.to_i
-                         Date.new(today.year, today.month, cutting_day.to_i)
-                       else
-                         (today - 1.month).change(day: cutting_day.to_i)
-                       end
-        find_cycle_by_cutting_date(cutting_date)
+        base = today.day > cutting_day.to_i ? today : today << 1
+        find_cycle_by_cutting_date(clamped_cutting_date(base))
       end
 
-      # Métodos de consulta principales
-      def total_debt
-        credit_card_cycles.sum(:closing_balance)
-      end
-
+      # Deuda vigente de la tarjeta. `closing_balance` es un saldo corrido
+      # (cycle_balance + historical_balance) que se arrastra al siguiente ciclo,
+      # asi que sumarlo entre ciclos cuenta la misma deuda varias veces: el saldo
+      # del ciclo en curso ya incluye todo lo que se debe.
       def current_debt
         current_cycle&.closing_balance || 0.0
       end
 
       def available_credit
-        limit_amount - total_debt
+        limit_amount - current_debt
       end
 
       def utilization_percentage
         return 0 if limit_amount.zero?
 
-        (total_debt / limit_amount * 100).round(2)
+        (current_debt / limit_amount * 100).round(2)
       end
 
       # Método directo - ya no recalcula cutting_date si ya lo tienes

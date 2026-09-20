@@ -1,0 +1,40 @@
+<% locations = @presenter.money_locations %>
+<div>
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-base font-semibold text-white"><%= t('.title') %></h2>
+    <span class="text-bunker-400 text-xs"><%= t('.subtitle', total: @presenter.available_balance_formatted) %></span>
+  </div>
+
+  <% if locations.any? %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <% locations.first(8).each do |location| %>
+        <%
+          dot_class, bar_class, amount_class = case location[:kind]
+                                               when :savings then ['bg-emerald-400', 'bg-emerald-500', 'text-emerald-400']
+                                               when :debit   then ['bg-blue-400', 'bg-blue-500', 'text-blue-400']
+                                               else               ['bg-purple-400', 'bg-purple-500', 'text-purple-400']
+                                               end
+        %>
+        <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-4">
+          <div class="flex items-center gap-2.5 mb-3">
+            <span class="w-2.5 h-2.5 rounded-full <%= dot_class %>"></span>
+            <span class="text-white text-sm font-semibold line-clamp-1"><%= location[:name].presence || t('.cash_label') %></span>
+          </div>
+          <div class="font-mono text-xl font-bold <%= amount_class %> mb-2.5"><%= location[:balance_formatted] %></div>
+          <div class="w-full bg-bunker-950/70 rounded-full h-1.5 mb-1.5"
+               role="progressbar"
+               aria-label="<%= location[:name].presence || t('.cash_label') %>"
+               aria-valuenow="<%= location[:share_percent] %>" aria-valuemin="0" aria-valuemax="100">
+            <div class="h-1.5 rounded-full <%= bar_class %>" style="width: <%= location[:share_percent] %>%"></div>
+          </div>
+          <div class="text-bunker-400 text-xs"><%= t('.share', percent: location[:share_percent]) %></div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 text-center">
+      <p class="text-bunker-400 text-sm mb-2"><%= t('.no_locations') %></p>
+      <%= link_to t('.add_budget'), new_budget_path, class: "text-purple-400 text-xs hover:text-purple-300 underline" %>
+    </div>
+  <% end %>
+</div>

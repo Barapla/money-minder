@@ -24,6 +24,9 @@ module Utils
 
       private
 
+      # El espejo se crea con create! a proposito: si falla, el after_create revienta
+      # y la transferencia entera se revierte. Con create a secas el dinero salia del
+      # origen y nunca llegaba al destino, sin error visible.
       def create_related_transaction
         new_transaction_type = ::Catalog.by_group_and_code('transaction_types', 'income')
 
@@ -32,7 +35,7 @@ module Utils
                                           transaction_type: new_transaction_type,
                                           related_transaction_id: id)
 
-        ::Transaction.create(params)
+        ::Transaction.create!(params)
       end
 
       def transaction_params
@@ -43,6 +46,7 @@ module Utils
           transaction_date:,
           icon:,
           color:,
+          currency:,
           user:
         }
       end

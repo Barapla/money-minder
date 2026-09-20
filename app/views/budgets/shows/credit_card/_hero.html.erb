@@ -1,0 +1,70 @@
+<% p = @credit_card_presenter %>
+<nav class="flex items-center gap-2.5 text-[12.5px] text-bunker-400 mb-4" aria-label="<%= t('.breadcrumb_label') %>">
+  <%= link_to t('.breadcrumb_budgets'), budgets_path, class: "text-purple-300 hover:text-purple-200" %>
+  <span>/</span>
+  <span><%= t('.breadcrumb_credit_cards') %></span>
+  <span>/</span>
+  <span class="text-white"><%= p.name %></span>
+</nav>
+
+<div class="bg-gradient-to-r from-bunker-900/85 to-amber-900/25 backdrop-blur-lg border border-bunker-800/60 rounded-2xl p-6 sm:p-7 mb-5 flex flex-wrap gap-8 items-center justify-between">
+  <div class="flex-1 min-w-[min(100%,340px)]">
+    <div class="flex items-center gap-3.5 mb-4">
+      <div class="w-[52px] h-[52px] shrink-0 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-2xl">
+        <%= p.icon %>
+      </div>
+      <div>
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <h1 class="text-2xl sm:text-[26px] font-bold text-white"><%= p.name %></h1>
+          <span class="bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[11px] font-semibold px-2.5 py-1 rounded-full"><%= t('.type_badge') %></span>
+        </div>
+        <p class="text-bunker-400 text-[12.5px] mt-1">
+          <%= t('.summary', limit: p.limit_amount_formatted, day: p.cutting_day, last_change: p.last_change) %>
+        </p>
+      </div>
+    </div>
+
+    <div class="text-bunker-300 text-xs uppercase tracking-wider mb-1.5"><%= t('.balance_label') %></div>
+    <div class="flex items-baseline gap-3.5 flex-wrap mb-2.5">
+      <span class="font-mono text-4xl sm:text-5xl font-bold text-white leading-none"><%= p.current_balance_formatted %></span>
+      <span class="text-[15px] font-semibold <%= urgency_text_class(p.days_until_cutting) %>">
+        <%= t('.cuts_in', moment: relative_days(p.days_until_cutting)) %>
+      </span>
+    </div>
+    <p class="text-bunker-400 text-[13px] mb-4">
+      <%= t('.cycle_explainer', cutting: l(p.cutting_date, format: :only_month), minimum: p.minimum_payment_formatted) %>
+    </p>
+
+    <% if (statement = p.pending_statement) %>
+      <div class="bg-amber-500/10 border border-amber-500/25 rounded-xl px-4 py-3 mb-4">
+        <div class="text-amber-300 text-[13px] font-semibold">
+          <%= t('.statement_due', amount: statement[:amount_formatted], date: l(statement[:due_date], format: :only_month), moment: relative_days(statement[:days_until_due])) %>
+        </div>
+        <div class="text-amber-200/70 text-[11.5px] mt-0.5">
+          <%= t('.statement_minimum', amount: statement[:minimum_formatted]) %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="flex gap-2.5 flex-wrap">
+      <% payable = p.pending_statement %>
+      <% total = payable ? payable[:amount] : p.current_balance %>
+      <% minimum = payable ? payable[:minimum] : p.minimum_payment %>
+      <%= link_to t('.register_payment', amount: number_to_currency(total, unit: '$')),
+            pay_card_path(p.budget, total),
+            class: "bg-gradient-to-r from-purple-500 to-purple-600 text-white px-[18px] py-[11px] rounded-xl text-[13.5px] font-semibold hover:from-purple-400 hover:to-purple-500 transition-colors" %>
+      <%= link_to t('.pay_minimum', amount: number_to_currency(minimum, unit: '$')),
+            pay_card_path(p.budget, minimum),
+            class: "border border-bunker-700 text-bunker-200 px-[18px] py-[11px] rounded-xl text-[13.5px] font-medium hover:border-bunker-600 hover:text-white transition-colors" %>
+    </div>
+
+    <% if (streak = p.previous_full_payment) %>
+      <p class="text-emerald-300 text-[13px] mt-4">
+        <%= t('.previous_full_payment', amount: streak[:amount_formatted]) %>
+        <%= t('.streak', count: streak[:streak]) if streak[:streak] > 1 %>
+      </p>
+    <% end %>
+  </div>
+
+  <%= render 'budgets/shows/credit_card/utilization_donut' %>
+</div>

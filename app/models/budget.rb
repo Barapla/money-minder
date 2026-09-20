@@ -119,16 +119,21 @@ class Budget < ApplicationRecord
     date_change
   end
 
+  # Tipos que se muestran al final del index sin importar el orden alfabetico.
+  # El efectivo sigue disponible, pero casi nadie registra entradas y salidas de
+  # efectivo a mano, asi que no debe encabezar la lista ni abrir por defecto.
+  TRAILING_BUDGET_TYPES = %w[cash].freeze
+
   # Agrupa los budgets del scope actual por codigo de budget_type para el index
-  # segmentado (FEAT-032), ordenado alfabeticamente: credit_card, debit_card,
-  # savings_fund (satisface el orden pedido en el AC4 sin acoplarse a una lista fija).
+  # segmentado (FEAT-032), alfabeticamente (credit_card, debit_card, savings_fund)
+  # y con los tipos de TRAILING_BUDGET_TYPES hasta abajo.
   # Agrupar por code (no por el registro de budget_type) evita crear una seccion por
   # cada fila de catalogo si llegara a existir mas de una con el mismo code.
   def self.grouped_by_type
     includes(:budget_type, :credit_card, :savings_fund, :term_savings)
       .order(created_at: :desc)
       .group_by { |budget| budget.budget_type&.code }
-      .sort_by { |code, _budgets| code.to_s }
+      .sort_by { |code, _budgets| [TRAILING_BUDGET_TYPES.include?(code) ? 1 : 0, code.to_s] }
   end
 
   def categories_with_more_transactions(limit = 5, transaction_type = 'expense',

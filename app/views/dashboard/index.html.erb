@@ -1,41 +1,35 @@
-<div class="max-w-7xl mx-auto">
-  <!-- Header -->
-  <div class="bg-gradient-to-r from-bunker-900/80 to-purple-900/80 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 mb-6">
-    <h1 class="text-3xl font-bold text-white"><%= t('.title') %></h1>
-    <p class="text-bunker-300 mt-1"><%= t('.subtitle') %></p>
+<div class="max-w-7xl mx-auto space-y-5">
+  <!-- Encabezado -->
+  <div>
+    <h1 class="text-2xl sm:text-3xl font-bold text-white"><%= t('.title') %></h1>
+    <p class="text-bunker-400 text-sm mt-1">
+      <%= t('.subtitle', month: l(Date.current, format: '%B %Y'), day: Date.current.day, days: Date.current.end_of_month.day) %>
+    </p>
   </div>
 
-  <!-- Fila 1: Saldo Disponible + Próxima Nómina -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-    <%= render 'available_balance_card' %>
-    <%= render 'next_payroll_card' %>
+  <!-- Patrimonio neto: disponible − deuda, con nómina y gasto del mes -->
+  <%= render 'net_worth_hero' %>
+
+  <!-- Presupuesto del mes + reparto del gasto -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <div class="lg:col-span-2"><%= render 'monthly_budget_card' %></div>
+    <%= render 'expense_distribution_card' %>
   </div>
 
-  <!-- Fila 2: Presupuesto del Mes (ancho completo) -->
-  <div class="mb-6">
-    <%= render 'monthly_budget_card' %>
-  </div>
+  <!-- Dónde está el dinero -->
+  <%= render 'money_locations_card' %>
 
-  <!-- Fila 3: Fechas de corte de tarjetas + fechas de pago próximas -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-    <%= render 'credit_cards_compact' %>
+  <!-- Fechas de pago + fechas de corte (con alertas de utilización) -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
     <% if @presenter.upcoming_payment_dates.any? %>
       <%= render 'payment_dates_card' %>
     <% end %>
+    <%= render 'credit_cards_compact' %>
   </div>
 
-  <!-- Fila 4: Metas de Ahorro + Alertas de utilización (con fecha de corte integrada) -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <!-- Metas de ahorro + próximos pagos obligatorios -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
     <%= render 'saving_goals_compact' %>
-    <%= render 'utilization_alerts_compact' %>
-  </div>
-
-  <!-- Fila 5: Gastos Recurrentes + Próximos Pagos -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-    <%= render 'recurring_expenses_card' %>
     <%= render 'upcoming_payments_card' %>
   </div>
-
-  <!-- Insights financieros -->
-  <%# render 'shared/financial_insights', ai_financial_report: @ai_financial_report %>
 </div>

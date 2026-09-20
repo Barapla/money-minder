@@ -1,0 +1,72 @@
+<% p = @savings_fund_presenter %>
+<% share = p.share_of_savings %>
+<nav class="flex items-center gap-2.5 text-[12.5px] text-bunker-400 mb-4" aria-label="<%= t('.breadcrumb_label') %>">
+  <%= link_to t('.breadcrumb_budgets'), budgets_path, class: "text-purple-300 hover:text-purple-200" %>
+  <span>/</span>
+  <span><%= t('.breadcrumb_funds') %></span>
+  <span>/</span>
+  <span class="text-white"><%= p.name %></span>
+</nav>
+
+<div class="bg-gradient-to-r from-bunker-900/85 to-emerald-900/25 backdrop-blur-lg border border-bunker-800/60 rounded-2xl p-6 sm:p-7 mb-5 flex flex-wrap gap-8 items-center justify-between">
+  <div class="flex-1 min-w-[min(100%,340px)]">
+    <div class="flex items-center gap-3.5 mb-4">
+      <div class="w-[52px] h-[52px] shrink-0 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-2xl">
+        <%= p.icon %>
+      </div>
+      <div>
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <h1 class="text-2xl sm:text-[26px] font-bold text-white"><%= p.name %></h1>
+          <span class="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold px-2.5 py-1 rounded-full"><%= t('.type_badge') %></span>
+        </div>
+        <p class="text-bunker-400 text-[12.5px] mt-1">
+          <%= t('.summary', rate: p.annual_rate_formatted, last_change: p.last_change) %>
+        </p>
+      </div>
+    </div>
+
+    <div class="text-bunker-300 text-xs uppercase tracking-wider mb-1.5"><%= t('.balance_label') %></div>
+    <div class="flex items-baseline gap-3.5 flex-wrap mb-4">
+      <span class="font-mono text-4xl sm:text-5xl font-bold text-white leading-none"><%= p.balance_formatted %></span>
+      <% if p.projected_interest.positive? %>
+        <span class="text-emerald-300 text-[15px] font-semibold"><%= t('.projected_year', amount: p.projected_interest_formatted) %></span>
+      <% end %>
+    </div>
+
+    <% if p.goal? %>
+      <div class="h-2.5 rounded-full overflow-hidden bg-bunker-950/70 mb-2.5"
+           role="progressbar" aria-label="<%= t('.goal_label') %>"
+           aria-valuenow="<%= p.progress_percentage %>" aria-valuemin="0" aria-valuemax="100">
+        <div class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400" style="width: <%= p.progress_percentage %>%"></div>
+      </div>
+      <div class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-bunker-300">
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-sm bg-emerald-400"></span><%= t('.goal_progress', percent: p.progress_percentage, goal: p.goal_formatted) %></span>
+        <% if (missing = p.remaining_to_goal_formatted) %>
+          <span class="text-bunker-400"><%= t('.goal_remaining', amount: missing) %></span>
+        <% else %>
+          <span class="text-emerald-300"><%= t('.goal_reached') %></span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="flex flex-col items-center gap-3 shrink-0">
+    <div class="relative w-[180px] h-[180px] rounded-full"
+         role="img"
+         aria-label="<%= t('.share_aria', percent: share[:percent]) %>"
+         style="background: conic-gradient(#10b981 0 <%= share[:percent] %>%, rgba(23,26,31,.7) <%= share[:percent] %>% 100%)">
+      <div class="absolute inset-5 rounded-full bg-bunker-950 flex flex-col items-center justify-center text-center px-3.5">
+        <span class="font-mono text-[34px] font-bold text-white leading-none"><%= share[:percent] %>%</span>
+        <span class="text-[10px] text-bunker-400 uppercase tracking-wider mt-1.5"><%= t('.share_caption') %></span>
+      </div>
+    </div>
+    <div class="text-center max-w-[220px]">
+      <div class="text-white text-[13px] font-semibold">
+        <%= p.biggest? ? t('.biggest') : t('.rank', rank: share[:rank], count: share[:count]) %>
+      </div>
+      <div class="text-bunker-400 text-[11.5px] mt-1">
+        <%= t('.share_detail', amount: p.balance_formatted, total: share[:total_formatted], count: share[:count]) %>
+      </div>
+    </div>
+  </div>
+</div>

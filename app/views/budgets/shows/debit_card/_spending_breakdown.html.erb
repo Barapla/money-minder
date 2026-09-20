@@ -1,0 +1,28 @@
+<% p = @debit_card_presenter %>
+<% rows = p.spending_breakdown %>
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+  <h3 class="text-base font-semibold text-white mb-5"><%= t('.title') %></h3>
+
+  <% if rows.any? %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+      <% rows.each_with_index do |row, index| %>
+        <div>
+          <div class="flex justify-between items-center mb-1.5">
+            <span class="text-bunker-200 text-[13px] line-clamp-1"><%= row[:name] %></span>
+            <span class="font-mono text-white text-[12.5px] font-semibold ml-2 shrink-0"><%= row[:amount_formatted] %></span>
+          </div>
+          <div class="h-[7px] bg-bunker-950/70 rounded-full"
+               role="progressbar" aria-label="<%= row[:name] %>"
+               aria-valuenow="<%= row[:share] %>" aria-valuemin="0" aria-valuemax="100">
+            <div class="h-[7px] rounded-full" style="width: <%= row[:width] %>%; background: <%= donut_color(index) %>"></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    <div class="mt-5 pt-4 border-t border-bunker-700/50 text-bunker-400 text-[12.5px]">
+      <%= t('.top_share', category: rows.first[:name], percent: rows.first[:share]) %>
+    </div>
+  <% else %>
+    <p class="text-bunker-400 text-sm text-center py-8"><%= t('.empty') %></p>
+  <% end %>
+</div>

@@ -84,13 +84,13 @@ RSpec.describe CreditCard, type: :model do
     )
   end
 
-  def build_credit_card(initial_debt: 0)
+  def build_credit_card(initial_debt: 0, cutting_day: 15, payment_due_days: 5)
     CreditCard.create!(
       budget: budget,
       limit_amount: 20_000,
       initial_debt: initial_debt,
-      cutting_day: 15,
-      payment_due_days: 5
+      cutting_day: cutting_day,
+      payment_due_days: payment_due_days
     )
   end
 
@@ -109,12 +109,16 @@ RSpec.describe CreditCard, type: :model do
     }
   end
 
-  def build_expense(credit_card, amount)
-    Transaction.create!(transaction_attrs(credit_card, amount, 'Gasto de prueba', expense_type))
+  def build_expense(credit_card, amount, on: nil)
+    attrs = transaction_attrs(credit_card, amount, 'Gasto de prueba', expense_type)
+    attrs[:transaction_date] = on if on
+    Transaction.create!(attrs)
   end
 
-  def build_payment(credit_card, amount)
-    Transaction.create!(transaction_attrs(credit_card, amount, 'Pago de prueba', income_type))
+  def build_payment(credit_card, amount, on: nil)
+    attrs = transaction_attrs(credit_card, amount, 'Pago de prueba', income_type)
+    attrs[:transaction_date] = on if on
+    Transaction.create!(attrs)
   end
 
   describe 'cálculo de deuda con deuda_inicial (BUG-005)' do
@@ -229,6 +233,139 @@ RSpec.describe CreditCard, type: :model do
 
       expect(budget.reload.name).to eq('Tarjeta de Prueba')
       expect(card.financial_product_id).to be_nil
+    end
+  end
+  describe 'deuda vigente con varios ciclos encadenados (BUG: closing_balance es saldo corrido)' do
+    # El saldo de un ciclo se arrastra al historical_balance del siguiente, asi que
+    # sumar closing_balance entre ciclos contaba la misma deuda dos veces.
+    def chained_cycles!(card, balances)
+      base = Date.current.change(day: card.cutting_day)
+      balances.each_with_index do |balance, index|
+        cutting_date = base - (balances.size - 1 - index).months
+        cycle = card.credit_card_cycles.find_or_initialize_by(cutting_date: cutting_date)
+        cycle.update!(payment_due_date: cutting_date + 5.days, closing_balance: balance,
+                      status: status_open)
+      end
+    end
+
+    it 'toma solo el saldo del ciclo en curso, no la suma de todos' do
+      card = build_credit_card(initial_debt: 0)
+      chained_cycles!(card, [2_949.26, 3_326.62, 3_326.62])
+
+      expect(card.current_debt).to eq(3_326.62)
+    end
+
+    it 'calcula el credito disponible contra el saldo vigente' do
+      card = build_credit_card(initial_debt: 0)
+      chained_cycles!(card, [2_949.26, 3_326.62, 3_326.62])
+
+      expect(card.available_credit).to eq(16_673.38)
+    end
+
+    it 'calcula la utilizacion contra el saldo vigente' do
+      card = build_credit_card(initial_debt: 0)
+      chained_cycles!(card, [2_949.26, 3_326.62, 3_326.62])
+
+      expect(card.utilization_percentage).to eq(16.63)
+    end
+  end
+
+  describe 'asignacion de pagos al ciclo correcto (ventana de pago)' do
+    include ActiveSupport::Testing::TimeHelpers
+
+    # Reproduce el caso real: corte dia 17, 10 dias de ventana de pago.
+    # El pago del 26/08 cae dentro de la ventana del corte del 17/08, asi que
+    # liquida ese estado de cuenta, no el ciclo que ya empezo a correr.
+    def history_entries
+      [[:expense, 3_079.09, [2026, 7, 7]], [:payment, 3_079.09, [2026, 7, 21]],
+       [:expense, 2_949.26, [2026, 8, 12]], [:payment, 2_949.26, [2026, 8, 26]],
+       [:expense, 3_326.62, [2026, 9, 10]]]
+    end
+
+    def card_with_history
+      card = travel_to(Date.new(2026, 7, 1)) do
+        build_credit_card(initial_debt: 0, cutting_day: 17, payment_due_days: 10)
+      end
+      history_entries.each do |kind, amount, parts|
+        date = Date.new(*parts)
+        travel_to(date + 1) { send("build_#{kind}", card, amount, on: date) }
+      end
+      card
+    end
+
+    def cycle_on(card, date)
+      card.credit_card_cycles.find_by(cutting_date: date)
+    end
+
+    it 'manda el pago dentro de la ventana al corte que acaba de cerrar' do
+      card = card_with_history
+      expect(cycle_on(card, Date.new(2026, 8, 17)).payments).to eq(2_949.26)
+      expect(cycle_on(card, Date.new(2026, 9, 17)).payments).to eq(0)
+    end
+
+    it 'deja el corte de agosto pagado por completo' do
+      card = card_with_history
+      expect(cycle_on(card, Date.new(2026, 8, 17)).payment_behavior).to eq('full_payment')
+    end
+
+    it 'deja el corte de septiembre sin pago y con su deuda intacta' do
+      card = card_with_history
+      cycle = cycle_on(card, Date.new(2026, 9, 17))
+      expect(cycle.statement_balance).to eq(3_326.62)
+      expect(cycle.payment_behavior).to eq('no_payment')
+    end
+
+    it 'manda un pago fuera de la ventana al ciclo que esta corriendo' do
+      card = card_with_history
+      travel_to(Date.new(2026, 9, 29)) { build_payment(card, 500, on: Date.new(2026, 9, 29)) }
+
+      expect(cycle_on(card, Date.new(2026, 10, 17)).payments).to eq(500)
+      expect(cycle_on(card, Date.new(2026, 9, 17)).payments).to eq(0)
+    end
+
+    it 'no altera la deuda vigente de la tarjeta' do
+      card = card_with_history
+      travel_to(Date.new(2026, 9, 19)) { expect(card.current_debt).to eq(3_326.62) }
+    end
+    it 'manda el abono al ciclo corriendo cuando el corte de la ventana esta en cero' do
+      # Un reembolso que cae en la ventana de un corte sin compras no tiene nada
+      # que liquidar ahi: debe aterrizar en el ciclo que esta acumulando.
+      card = nil
+      travel_to(Date.new(2026, 6, 1)) do
+        card = build_credit_card(initial_debt: 0, cutting_day: 13, payment_due_days: 20)
+      end
+      travel_to(Date.new(2026, 6, 20)) { build_expense(card, 8_360.36, on: Date.new(2026, 6, 19)) }
+      travel_to(Date.new(2026, 6, 24)) { build_payment(card, 5, on: Date.new(2026, 6, 23)) }
+
+      june = cycle_on(card, Date.new(2026, 6, 13))
+      expect([june.purchases, june.payments]).to eq([0, 0])
+      expect(june.payment_behavior).to eq('no_activity')
+      expect(cycle_on(card, Date.new(2026, 7, 13)).payments).to eq(5)
+    end
+
+    it 'manda al ciclo corriendo el pago que llega cuando el corte ya quedo saldado' do
+      card = nil
+      travel_to(Date.new(2026, 6, 1)) do
+        card = build_credit_card(initial_debt: 0, cutting_day: 13, payment_due_days: 20)
+      end
+      travel_to(Date.new(2026, 6, 5)) { build_expense(card, 1_000, on: Date.new(2026, 6, 4)) }
+      travel_to(Date.new(2026, 6, 15)) { build_payment(card, 1_000, on: Date.new(2026, 6, 14)) }
+      travel_to(Date.new(2026, 6, 20)) { build_payment(card, 300, on: Date.new(2026, 6, 19)) }
+
+      expect(cycle_on(card, Date.new(2026, 6, 13)).payments).to eq(1_000)
+      expect(cycle_on(card, Date.new(2026, 7, 13)).payments).to eq(300)
+    end
+
+    it 'incluye en el corte las compras del mismo dia del corte' do
+      # El estado de cuenta abarca "04-Ago al 03-Sep" e incluye los cargos del 03-Sep.
+      card = nil
+      travel_to(Date.new(2026, 8, 1)) do
+        card = build_credit_card(initial_debt: 0, cutting_day: 3, payment_due_days: 20)
+      end
+      travel_to(Date.new(2026, 9, 4)) { build_expense(card, 851, on: Date.new(2026, 9, 3)) }
+
+      expect(cycle_on(card, Date.new(2026, 9, 3)).purchases).to eq(851)
+      expect(cycle_on(card, Date.new(2026, 10, 3))&.purchases.to_f).to eq(0)
     end
   end
 end

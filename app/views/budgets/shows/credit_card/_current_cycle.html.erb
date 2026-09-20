@@ -1,0 +1,42 @@
+<% p = @credit_card_presenter %>
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+  <div class="flex justify-between items-center flex-wrap gap-2.5 mb-6">
+    <div>
+      <h3 class="text-base font-semibold text-white"><%= t('.title') %></h3>
+      <p class="text-bunker-400 text-xs mt-0.5">
+        <%= t('.period', from: l(p.period_start_date, format: :only_month), to: l(p.cutting_date, format: :only_month), due: l(p.payment_due_date, format: :short)) %>
+      </p>
+    </div>
+    <span class="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold px-2.5 py-1 rounded-full">
+      <%= t("budgets.shows.credit_card.lifecycle.#{p.cycle_status_code}") %>
+    </span>
+  </div>
+
+  <div class="relative h-1.5 bg-bunker-950/70 rounded-full mb-2"
+       role="progressbar"
+       aria-label="<%= t('.title') %>"
+       aria-valuenow="<%= p.cycle_elapsed_percent %>" aria-valuemin="0" aria-valuemax="100">
+    <div class="h-1.5 bg-gradient-to-r from-amber-500 to-amber-300 rounded-full" style="width: <%= p.cycle_elapsed_percent %>%"></div>
+    <div class="absolute -top-[5px] w-0.5 h-4 bg-white" style="left: <%= p.cycle_elapsed_percent %>%"></div>
+  </div>
+  <div class="flex justify-between text-[11.5px] text-bunker-400 mb-6">
+    <span><%= t('.start', date: l(p.period_start_date, format: :short)) %></span>
+    <span class="text-white font-semibold"><%= t('.today', date: l(Date.current, format: :short)) %></span>
+    <span><%= t('.cut', date: l(p.cutting_date, format: :short)) %></span>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+    <div class="bg-bunker-950/40 border border-bunker-700/50 rounded-xl p-3.5">
+      <div class="text-bunker-400 text-[10.5px] uppercase tracking-wider mb-1.5"><%= t('.purchases') %></div>
+      <div class="font-mono text-lg font-bold text-amber-400"><%= p.cycle_purchases_formatted %></div>
+    </div>
+    <div class="bg-bunker-950/40 border border-bunker-700/50 rounded-xl p-3.5">
+      <div class="text-bunker-400 text-[10.5px] uppercase tracking-wider mb-1.5"><%= t('.payments') %></div>
+      <div class="font-mono text-lg font-bold text-bunker-400"><%= p.cycle_payments_formatted %></div>
+    </div>
+    <div class="bg-bunker-950/40 border border-bunker-700/50 rounded-xl p-3.5">
+      <div class="text-bunker-400 text-[10.5px] uppercase tracking-wider mb-1.5"><%= t('.balance_today') %></div>
+      <div class="font-mono text-lg font-bold text-white"><%= p.current_balance_formatted %></div>
+    </div>
+  </div>
+</div>

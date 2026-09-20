@@ -37,6 +37,9 @@ class BudgetsController < ApplicationController
 
   def show
     @budget_presenter = BudgetPresenter.new(@budget)
+    @credit_card_presenter = CreditCardPresenter.new(@budget) if @budget.budget_type.code == 'credit_card'
+    @savings_fund_presenter = SavingsFundPresenter.new(@budget) if @budget.savings_fund.present?
+    @debit_card_presenter = DebitCardPresenter.new(@budget) if @budget.budget_type.code == 'debit_card'
   end
 
   def show_transactions

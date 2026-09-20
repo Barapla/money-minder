@@ -1,0 +1,13 @@
+<%= fields_for "transaction", transaction do |form| %>
+    <%= render Forms::SelectComponent.new(
+            name: :budget_id,
+            form:,
+            options_collection: transaction_origin_budgets(transaction, @budgets || []).pluck(:name, :id),
+            options: {
+                help_text: transaction.transfer? ? "¿De qué cuenta sale el dinero?" : "Selecciona el presupuesto al que pertenece esta transacción",
+                required: true,
+                disabled: transaction.persisted?,
+                selected: transaction.budget_id
+            }
+        ) %>
+<% end %>

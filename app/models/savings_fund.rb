@@ -11,19 +11,15 @@ class SavingsFund < ApplicationRecord
     budget.current_amount
   end
 
-  # Obtener todas las contribuciones (transacciones de entrada)
-  def contributions
-    budget.transactions.where(transaction_type: %w[income transfer_in])
-  end
-
-  # Obtener intereses ganados
-  def interest_earned
-    budget.transactions.where(transaction_type: 'interest').sum(:amount)
+  # La tasa se captura como porcentaje anual (el campo trae sufijo "%"), asi que
+  # hay que bajarla a fraccion antes de usarla: 15.0 es 15%, no 1500%.
+  def monthly_rate
+    (interest_rate || 0).to_f / 100 / 12
   end
 
   # Proyección de saldo futuro
   def projected_balance_in_months(months)
-    rate_monthly = (interest_rate || 0) / 12
+    rate_monthly = monthly_rate
     current = closing_balance
     monthly = monthly_contribution || 0
 
@@ -40,7 +36,7 @@ class SavingsFund < ApplicationRecord
     return 0 if (goal_amount || 0) <= closing_balance
     return nil if (monthly_contribution || 0) <= 0
 
-    rate_monthly = (interest_rate || 0) / 12
+    rate_monthly = monthly_rate
     remaining = goal_amount - closing_balance
     monthly = monthly_contribution
 
@@ -68,7 +64,7 @@ class SavingsFund < ApplicationRecord
     return 0 if months_available <= 0
 
     remaining_amount = goal_amount - closing_balance
-    rate_monthly = (interest_rate || 0) / 12
+    rate_monthly = monthly_rate
 
     if rate_monthly.positive?
       future_value_current = closing_balance * ((1 + rate_monthly)**months_available)

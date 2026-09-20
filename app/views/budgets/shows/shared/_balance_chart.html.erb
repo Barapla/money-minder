@@ -13,25 +13,21 @@
         </div>
     </div>
 
-    <% if @budget.budget_type&.code != 'credit_card' %>
-        <!-- Resumen del período -->
-        <div class="grid grid-cols-3 gap-4 mb-6">
-            <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
-                <div class="text-emerald-400 text-lg font-semibold">+<%= @budget_presenter.earnings_last_days %></div>
-                <div class="text-bunker-300 text-sm">Ingresos</div>
-            </div>
-            <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
-                <div class="text-red-400 text-lg font-semibold">-<%= @budget_presenter.spent_last_days %></div>
-                <div class="text-bunker-300 text-sm">Gastos</div>
-            </div>
-            <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
-                <div class="text-orange-400 text-lg font-semibold"><%= @budget_presenter.difference_last_days %></div>
-                <div class="text-bunker-300 text-sm">Diferencia</div>
-            </div>
+    <!-- Resumen del período -->
+    <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
+            <div class="text-emerald-400 text-lg font-semibold">+<%= @budget_presenter.earnings_last_days %></div>
+            <div class="text-bunker-300 text-sm">Ingresos</div>
         </div>
-    <% else %>
-        <%= render partial: "budgets/shows/credit_card/progress_bar" %>
-    <% end %>
+        <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
+            <div class="text-red-400 text-lg font-semibold">-<%= @budget_presenter.spent_last_days %></div>
+            <div class="text-bunker-300 text-sm">Gastos</div>
+        </div>
+        <div class="bg-bunker-800/30 rounded-xl p-4 text-center">
+            <div class="text-orange-400 text-lg font-semibold"><%= @budget_presenter.difference_last_days %></div>
+            <div class="text-bunker-300 text-sm">Diferencia</div>
+        </div>
+    </div>
 
     <!-- Actividad Reciente -->
     <div class="bg-bunker-800/30 rounded-xl p-4">

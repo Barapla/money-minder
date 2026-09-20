@@ -84,23 +84,14 @@
         <!-- Right Column -->
         <div class="space-y-6">
             <!-- Budget -->
-            <%= render Forms::SelectComponent.new(
-                name: :budget_id,
-                form:,
-                options_collection: @budgets&.pluck(:name, :id) || [],
-                options: { 
-                    help_text: "Selecciona el presupuesto al que pertenece esta transacción",
-                    required: true,
-                    disabled: transaction.persisted?
-                }
-            ) %>
+            <%= turbo_frame_tag "budget_origin_frame" do %>
+                <%= render "transactions/forms/budget_origin", transaction: %>
+            <% end %>
 
             <!-- Related Budget -->
             <%= turbo_frame_tag "budget_related_frame" do  %>
-                <% unless transaction.new_record? %>
-                    <% if transaction.transfer? %>
-                        <%= render "transactions/forms/transfer/budget_related", transaction: %>
-                    <% end %>
+                <% if transaction.transfer? %>
+                    <%= render "transactions/forms/transfer/budget_related", transaction: %>
                 <% end %>
             <% end %>
 

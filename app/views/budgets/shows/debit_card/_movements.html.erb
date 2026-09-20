@@ -1,0 +1,40 @@
+<% p = @debit_card_presenter %>
+<% movements = p.movements %>
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+  <div class="flex justify-between items-center flex-wrap gap-2.5 mb-4">
+    <h3 class="text-base font-semibold text-white"><%= t('.title') %></h3>
+    <%= link_to "#{t('.see_all')} →", transactions_path, class: "text-purple-300 text-[13px] font-medium hover:text-purple-200" %>
+  </div>
+
+  <% if movements.any? %>
+    <div class="space-y-2.5">
+      <% movements.each do |entry| %>
+        <div class="flex items-center gap-3.5 rounded-xl px-4 py-3.5 border <%= entry[:incoming] ? 'bg-emerald-500/[0.08] border-emerald-500/20' : 'bg-bunker-950/40 border-bunker-700/50' %>">
+          <div class="w-9 h-9 shrink-0 rounded-[10px] flex items-center justify-center text-base <%= entry[:incoming] ? 'bg-emerald-500/15' : 'bg-blue-500/15' %>">
+            <%= entry[:icon] %>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-white text-[13.5px] font-semibold line-clamp-1"><%= entry[:title] %></div>
+            <div class="text-bunker-400 text-[11.5px]">
+              <%= l(entry[:transaction].transaction_date.to_date, format: :very_short) %> · <%= entry[:category] %>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            <div class="font-mono text-[15px] font-bold <%= entry[:incoming] ? 'text-emerald-400' : 'text-red-400' %>">
+              <%= entry[:incoming] ? '+' : '−' %><%= entry[:amount_formatted] %>
+            </div>
+            <% if entry[:has_balance] %>
+              <div class="text-bunker-400 text-[11px]"><%= t('.balance_after', amount: entry[:balance_formatted]) %></div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-6">
+      <p class="text-bunker-400 text-sm mb-2"><%= t('.empty') %></p>
+      <%= link_to t('.add_movement'), new_transaction_path(budget_id: p.budget.id, transaction_type: 'expense'),
+            class: "text-purple-300 text-xs hover:text-purple-200 underline" %>
+    </div>
+  <% end %>
+</div>

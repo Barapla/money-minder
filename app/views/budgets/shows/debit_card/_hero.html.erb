@@ -1,0 +1,90 @@
+<% p = @debit_card_presenter %>
+<% change = p.change_today %>
+<% payroll = p.next_payroll %>
+<nav class="flex items-center gap-2.5 text-[12.5px] text-bunker-400 mb-4" aria-label="<%= t('.breadcrumb_label') %>">
+  <%= link_to t('.breadcrumb_budgets'), budgets_path, class: "text-purple-300 hover:text-purple-200" %>
+  <span>/</span>
+  <span><%= t('.breadcrumb_debit') %></span>
+  <span>/</span>
+  <span class="text-white"><%= p.name %></span>
+</nav>
+
+<div class="bg-gradient-to-r from-bunker-900/85 to-blue-900/25 backdrop-blur-lg border border-bunker-800/60 rounded-2xl p-6 sm:p-7 mb-5">
+  <div class="flex items-center gap-3.5 mb-5">
+    <div class="w-[52px] h-[52px] shrink-0 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-2xl">
+      <%= p.icon %>
+    </div>
+    <div>
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <h1 class="text-2xl sm:text-[26px] font-bold text-white"><%= p.name %></h1>
+        <span class="bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[11px] font-semibold px-2.5 py-1 rounded-full"><%= t('.type_badge') %></span>
+      </div>
+      <p class="text-bunker-400 text-[12.5px] mt-1"><%= t('.summary', last_change: p.last_change) %></p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+    <div>
+      <div class="text-bunker-300 text-xs uppercase tracking-wider mb-1.5"><%= t('.balance_label') %></div>
+      <div class="flex items-baseline gap-3.5 flex-wrap mb-4">
+        <span class="font-mono text-4xl sm:text-5xl font-bold text-white leading-none"><%= p.balance_formatted %></span>
+        <% if change %>
+          <span class="text-[14px] font-semibold <%= change[:positive] ? 'text-emerald-300' : 'text-red-400' %>">
+            <%= change[:positive] ? '+' : '−' %><%= change[:formatted] %> <%= t('.vs_yesterday') %>
+          </span>
+        <% end %>
+      </div>
+      <div class="flex gap-2.5 flex-wrap">
+        <%= link_to t('.register_movement'), new_transaction_path(budget_id: p.budget.id, transaction_type: 'expense'),
+              class: "bg-gradient-to-r from-purple-500 to-purple-600 text-white px-[18px] py-[11px] rounded-xl text-[13.5px] font-semibold hover:from-purple-400 hover:to-purple-500 transition-colors" %>
+        <%= link_to t('.transfer_to_fund'), new_transaction_path(budget_id: p.budget.id, transaction_type: 'transfer'),
+              class: "border border-bunker-700 text-bunker-200 px-[18px] py-[11px] rounded-xl text-[13.5px] font-medium hover:border-bunker-600 hover:text-white transition-colors" %>
+      </div>
+    </div>
+
+    <div class="bg-bunker-950/40 border border-bunker-700/50 rounded-2xl p-5">
+      <div class="text-bunker-300 text-[11.5px] uppercase tracking-wider mb-3.5"><%= t('.before_payroll') %></div>
+      <dl class="flex flex-col gap-2.5 text-[13px]">
+        <div class="flex justify-between gap-3">
+          <dt class="text-bunker-300"><%= t('.balance_row') %></dt>
+          <dd class="font-mono text-white font-semibold"><%= p.balance_formatted %></dd>
+        </div>
+        <% p.commitments.first(3).each do |item| %>
+          <div class="flex justify-between gap-3">
+            <dt class="text-bunker-300 line-clamp-1"><%= item[:name] %> · <%= l(item[:date], format: :very_short) %></dt>
+            <dd class="font-mono text-red-400 font-semibold">−<%= item[:amount_formatted] %></dd>
+          </div>
+        <% end %>
+        <div class="flex justify-between gap-3 pt-2.5 border-t border-bunker-700">
+          <dt class="text-white font-semibold"><%= t('.free_to_spend') %></dt>
+          <dd class="font-mono font-bold text-[15px] <%= p.free_to_spend.negative? ? 'text-red-400' : 'text-amber-400' %>">
+            <%= p.free_to_spend_formatted %>
+          </dd>
+        </div>
+      </dl>
+      <% if p.balance.positive? %>
+        <div class="flex h-2.5 rounded-full overflow-hidden bg-bunker-950/70 mt-3.5"
+             role="progressbar" aria-label="<%= t('.before_payroll') %>"
+             aria-valuenow="<%= p.committed_percent %>" aria-valuemin="0" aria-valuemax="100">
+          <div class="bg-gradient-to-r from-red-600 to-red-400" style="width: <%= p.committed_percent %>%"></div>
+          <div class="bg-amber-400" style="width: <%= 100 - p.committed_percent %>%"></div>
+        </div>
+        <div class="flex gap-4 text-[11.5px] text-bunker-400 mt-2">
+          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-sm bg-red-400"></span><%= t('.committed', percent: p.committed_percent) %></span>
+          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-sm bg-amber-400"></span><%= t('.free', percent: 100 - p.committed_percent) %></span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <% if payroll %>
+    <div class="mt-5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3.5 text-emerald-300 text-[13px]">
+      <%= t('.payroll_note', amount: number_to_currency(payroll.net_amount, unit: '$'),
+                             date: l(payroll.date, format: :only_month),
+                             moment: relative_days((payroll.date - Date.current).to_i)) %>
+      <% if p.commitments.any? %>
+        <%= t('.payroll_covers', amount: p.commitments_total_formatted, count: p.commitments.size) %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

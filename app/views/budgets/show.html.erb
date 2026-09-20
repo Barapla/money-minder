@@ -1,3 +1,10 @@
+<% if @credit_card_presenter %>
+  <%= render 'budgets/shows/credit_card/page' %>
+<% elsif @savings_fund_presenter %>
+  <%= render 'budgets/shows/savings_fund/page' %>
+<% elsif @debit_card_presenter %>
+  <%= render 'budgets/shows/debit_card/page' %>
+<% else %>
 <div class="max-w-6xl mx-auto">
     <!-- Header (mantenemos el mismo) -->
     <%= render partial: "budgets/shows/shared/header" %>
@@ -70,3 +77,4 @@
         </div>
     </div>
 </div>
+<% end %>

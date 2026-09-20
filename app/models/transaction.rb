@@ -22,6 +22,7 @@ class Transaction < ApplicationRecord
   before_validation :set_default_values
 
   validate :budget_belongs_to_user, if: :budget_id?
+  validate :transfer_origin_must_hold_own_money, if: :transfer?
 
   scope :by_category, lambda { |category|
     joins(:category).where(categories: { name: category })
@@ -51,5 +52,16 @@ class Transaction < ApplicationRecord
     return if budget&.user_id == user_id
 
     errors.add(:budget_id, 'debe pertenecer al mismo usuario')
+  end
+
+  # Un traspaso mueve dinero que ya es tuyo. Desde una tarjeta de credito seria una
+  # disposicion de efectivo: cobra intereses desde el dia uno, tiene su propio limite
+  # y no entra al ciclo como compra ni como pago. Se bloquea en vez de reventar en
+  # determine_cycle_cutting_date_for_transaction con "Unsupported transaction type".
+  def transfer_origin_must_hold_own_money
+    return unless budget&.budget_type&.code == 'credit_card'
+
+    errors.add(:budget_id,
+               'no puede ser una tarjeta de crédito: un traspaso sale de efectivo, débito o un fondo de ahorro')
   end
 end

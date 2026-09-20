@@ -1,19 +1,23 @@
-<!-- Stats Overview -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <%= render Shared::CardComponent.new(
-            title: "GASTADO", subtitle: "de #{@budget_presenter.limit_amount}", 
-            main_text: @budget_presenter.debt_amount, 
-            options: { color: "orange", icon: "money" }) %>
-    <%= render Shared::CardComponent.new(
-            title: "DISPONIBLE", subtitle: "restante", 
-            main_text: @budget_presenter.current_amount, 
-            options: { color: "emerald", icon: "check" }) %>
-    <%= render Shared::CardComponent.new(
-            title: "PROGRESO", subtitle: "del límite", 
-            main_text: @budget_presenter.budget_percentage, 
-            options: { color: "purple", icon: "progress" }) %>
-    <%= render Shared::CardComponent.new(
-            title: "DÍAS RESTANTES", subtitle: "este mes", 
-            main_text: (@budget.payday.to_date - Time.now.to_date).to_i, 
-            options: { color: "blue", icon: "calendar" }) %>
+<% p = @credit_card_presenter %>
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
+  <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-5">
+    <div class="text-bunker-400 text-[10.5px] uppercase tracking-widest mb-2.5"><%= t('.available_credit') %></div>
+    <div class="font-mono text-2xl font-bold text-emerald-400 mb-1"><%= p.available_credit_formatted %></div>
+    <div class="text-bunker-400 text-[11.5px]"><%= t('.of_limit', limit: p.limit_amount_formatted) %></div>
+  </div>
+  <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-5">
+    <div class="text-bunker-400 text-[10.5px] uppercase tracking-widest mb-2.5"><%= t('.cycle_purchases') %></div>
+    <div class="font-mono text-2xl font-bold text-amber-400 mb-1"><%= p.cycle_purchases_formatted %></div>
+    <div class="text-bunker-400 text-[11.5px]"><%= t('.movements_count', count: p.cycle_transactions.size) %></div>
+  </div>
+  <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-5">
+    <div class="text-bunker-400 text-[10.5px] uppercase tracking-widest mb-2.5"><%= t('.minimum_payment') %></div>
+    <div class="font-mono text-2xl font-bold text-white mb-1"><%= p.minimum_payment_formatted %></div>
+    <div class="text-bunker-400 text-[11.5px]"><%= t('.minimum_payment_note', rate: (CreditCardCycle::MINIMUM_PAYMENT_RATE * 100).to_i) %></div>
+  </div>
+  <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-5">
+    <div class="text-bunker-400 text-[10.5px] uppercase tracking-widest mb-2.5"><%= t('.payment_due') %></div>
+    <div class="font-mono text-2xl font-bold text-white mb-1"><%= l(p.payment_due_date, format: :short) %></div>
+    <div class="text-bunker-400 text-[11.5px]"><%= t('.payment_due_note', moment: relative_days((p.payment_due_date - Date.current).to_i)) %></div>
+  </div>
 </div>

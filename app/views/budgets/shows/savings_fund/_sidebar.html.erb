@@ -1,0 +1,78 @@
+<% p = @savings_fund_presenter %>
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+  <h3 class="text-[15px] font-semibold text-white mb-4"><%= t('.actions_title') %></h3>
+  <div class="flex flex-col gap-2.5">
+    <%= link_to t('.action_contribution'), fund_contribution_path(p.budget),
+          class: "bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-3 rounded-xl text-[13.5px] font-semibold hover:from-purple-400 hover:to-purple-500 transition-colors" %>
+    <%= link_to t('.action_withdraw'), new_transaction_path(budget_id: p.budget.id, transaction_type: 'transfer'),
+          class: "bg-bunker-800/60 border border-bunker-700/50 text-white px-4 py-3 rounded-xl text-[13.5px] font-medium hover:bg-bunker-700/60 transition-colors" %>
+    <%= link_to t('.action_compare'), budgets_path,
+          class: "bg-bunker-800/60 border border-bunker-700/50 text-white px-4 py-3 rounded-xl text-[13.5px] font-medium hover:bg-bunker-700/60 transition-colors" %>
+  </div>
+</div>
+
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+  <h3 class="text-[15px] font-semibold text-white mb-4"><%= t('.projection_title') %></h3>
+  <dl class="flex flex-col gap-3 text-[12.5px]">
+    <div class="flex justify-between gap-3 pb-2.5 border-b border-bunker-700">
+      <dt class="text-bunker-300"><%= t('.projection_interest') %></dt>
+      <dd class="font-mono text-emerald-400 font-semibold">≈<%= p.projected_interest_formatted %></dd>
+    </div>
+    <div class="flex justify-between gap-3 pb-2.5 border-b border-bunker-700">
+      <dt class="text-bunker-300"><%= t('.projection_balance', date: l(p.projection_date, format: '%b %Y')) %></dt>
+      <dd class="font-mono text-white font-semibold">≈<%= p.projected_balance_formatted %></dd>
+    </div>
+    <div class="flex justify-between gap-3">
+      <dt class="text-bunker-300"><%= t('.projection_rate') %></dt>
+      <% position = p.rate_position %>
+      <dd class="font-semibold <%= position[:best] ? 'text-emerald-300' : 'text-bunker-200' %>">
+        <%= position[:best] ? t('.rate_best', count: position[:count]) : p.annual_rate_formatted %>
+      </dd>
+    </div>
+  </dl>
+  <p class="text-bunker-500 text-[11px] mt-3"><%= t('.projection_disclaimer') %></p>
+
+  <% if (move = p.better_here_than) %>
+    <div class="mt-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3">
+      <div class="text-emerald-300 text-[12.5px] font-semibold"><%= t('.move_title', name: move[:name], amount: move[:amount_formatted]) %></div>
+      <div class="text-emerald-200/70 text-[11.5px] mt-0.5"><%= t('.move_note', amount: move[:gain_formatted]) %></div>
+    </div>
+  <% end %>
+</div>
+
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+  <h3 class="text-[15px] font-semibold text-white mb-4"><%= t('.info_title') %></h3>
+  <dl class="flex flex-col gap-3 text-[12.5px]">
+    <% if p.institution.present? %>
+      <div class="flex justify-between gap-3 pb-2.5 border-b border-bunker-700">
+        <dt class="text-bunker-300"><%= t('.institution') %></dt>
+        <dd class="text-white font-medium"><%= p.institution %></dd>
+      </div>
+    <% end %>
+    <div class="flex justify-between gap-3 pb-2.5 border-b border-bunker-700">
+      <dt class="text-bunker-300"><%= t('.type') %></dt>
+      <dd class="text-white font-medium"><%= t('.type_value') %></dd>
+    </div>
+    <div class="flex justify-between gap-3 pb-2.5 border-b border-bunker-700">
+      <dt class="text-bunker-300"><%= t('.rate') %></dt>
+      <dd class="text-white font-medium font-mono"><%= p.annual_rate_formatted %></dd>
+    </div>
+    <div class="flex justify-between gap-3 pb-2.5 border-b border-bunker-700">
+      <dt class="text-bunker-300"><%= t('.state') %></dt>
+      <dd>
+        <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full <%= p.active? ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300' %>">
+          <%= p.active? ? t('.active') : t('.inactive') %>
+        </span>
+      </dd>
+    </div>
+    <div class="flex justify-between gap-3">
+      <dt class="text-bunker-300"><%= t('.last_update') %></dt>
+      <dd class="text-white font-medium"><%= t('.time_ago', time: p.last_change) %></dd>
+    </div>
+  </dl>
+  <div class="mt-3.5 pt-3.5 border-t border-bunker-700 flex gap-4 text-[12.5px] font-medium">
+    <%= link_to t('.edit'), edit_budget_path(p.budget), class: "text-purple-300 hover:text-purple-200" %>
+    <%= link_to t('.delete'), budget_path(p.budget), class: "text-red-400 hover:text-red-300",
+          data: { turbo_method: :delete, turbo_confirm: t('.delete_confirm') } %>
+  </div>
+</div>

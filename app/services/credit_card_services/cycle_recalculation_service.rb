@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module CreditCardServices
-  # Service to recalculate or create a credit card cycle based on transactions and cutting date
+  # Busca o crea el ciclo de una tarjeta para una fecha de corte dada y mantiene
+  # su status al dia. El status sale del calendario del ciclo (ver
+  # CreditCardCycle#lifecycle_status_code), no de sumar transacciones sueltas.
   class CycleRecalculationService
     attr_reader :credit_card
 
@@ -9,74 +11,38 @@ module CreditCardServices
       @credit_card = credit_card
     end
 
-    def find_or_create_cycle_for_date(cutting_date) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-      out_amount = get_out_amount_transactions_by_date_range(cutting_date - 30.days, cutting_date)
-      in_amount = get_in_amount_transactions_by_date_range(cutting_date - 30.days, cutting_date)
-
-      cycle_status = calculate_cycle_status(cutting_date, out_amount, in_amount)
-
-      main_cycle = credit_card.credit_card_cycles.find_or_create_by(cutting_date:) do |cycle|
-        prev_cycle = cycle.previous_cycle
-        cycle.payment_due_date = cutting_date + credit_card.payment_due_days.days
-        cycle.cycle_balance = 0
-        cycle.historical_balance = if prev_cycle.present?
-                                     prev_cycle.closing_balance || 0.0
-                                   else
-                                     credit_card.initial_debt || 0.0
-                                   end
-        cycle.purchases = 0
-        cycle.payments = 0
-        cycle.fees = 0.0
-        cycle.minimum_payment = 0
-        cycle.interest = 0.0
-        cycle.status = cycle_status
+    def find_or_create_cycle_for_date(cutting_date)
+      cycle = credit_card.credit_card_cycles.find_or_create_by(cutting_date:) do |new_cycle|
+        initialize_cycle(new_cycle, cutting_date)
       end
-
-      main_cycle.update(status: cycle_status) if main_cycle.status != cycle_status
-      main_cycle
+      refresh_status(cycle)
+      cycle
     end
 
     private
 
-    def calculate_minimum_payment(closing_balance)
-      # Si el saldo es 0 o negativo, no hay pago mínimo
-      return 0.0 if closing_balance <= 0
+    ZEROED_AMOUNTS = { cycle_balance: 0, purchases: 0, payments: 0,
+                       fees: 0.0, minimum_payment: 0, interest: 0.0 }.freeze
 
-      percentage_payment = closing_balance * 0.05 # 5%
-      minimum_fixed = 25.0
-
-      # Si el saldo total es menor al mínimo fijo, pagar el saldo total
-      if closing_balance < minimum_fixed
-        closing_balance
-      else
-        # Pagar el mayor entre el porcentaje y el mínimo fijo
-        [percentage_payment, minimum_fixed].max
-      end
+    def initialize_cycle(cycle, cutting_date)
+      cycle.assign_attributes(ZEROED_AMOUNTS)
+      cycle.payment_due_date = cutting_date + credit_card.payment_due_days.to_i.days
+      cycle.historical_balance = carried_balance_for(cycle)
+      cycle.status = status_for(cycle)
     end
 
-    def get_out_amount_transactions_by_date_range(start_date, end_date)
-      credit_card.transactions.by_transaction_type(%w[expense
-                                                      transaction]).where(transaction_date: start_date..end_date)
+    # Lo que quedo debiendo el ciclo anterior se arrastra a este.
+    def carried_balance_for(cycle)
+      cycle.previous_cycle&.closing_balance || credit_card.initial_debt || 0.0
     end
 
-    def get_in_amount_transactions_by_date_range(start_date, end_date)
-      credit_card.transactions.by_transaction_type(['income']).where(transaction_date: start_date..end_date)
+    def refresh_status(cycle)
+      status = status_for(cycle)
+      cycle.update(status:) if status && cycle.status_id != status.id
     end
 
-    def calculate_cycle_status(cutting_date, out_amount, in_amount) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-      if cutting_date + credit_card.payment_due_days.days < Date.today
-        if (out_amount.sum(:amount) - in_amount.sum(:amount)) <= 0
-          Status.find_by(code: 'closed')
-        else
-          Status.find_by(code: 'overdue')
-        end
-      elsif cutting_date <= Date.today
-        Status.find_by(code: 'open')
-      elsif (out_amount.sum(:amount) - in_amount.sum(:amount)) <= 0
-        Status.find_by(code: 'pending_payment')
-      else
-        Status.find_by(code: 'closed')
-      end
+    def status_for(cycle)
+      Status.find_by(code: cycle.lifecycle_status_code)
     end
   end
 end

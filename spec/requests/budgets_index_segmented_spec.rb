@@ -58,6 +58,17 @@ RSpec.describe 'Index segmentado de presupuestos (FEAT-032)', type: :request do
       expect(response.body).to include('Ahorro BBVA')
     end
 
+    it 'manda la seccion de efectivo hasta el final, despues de los demas tipos' do
+      create_budget('cash', name: 'Efectivo suelto')
+      create_budget('credit_card', name: 'Tarjeta Nu')
+      create_budget('savings_fund', name: 'Ahorro BBVA')
+
+      get budgets_path
+
+      expect(response.body.index('Tarjetas de Crédito')).to be < response.body.index('Efectivo suelto')
+      expect(response.body.index('Fondos de Ahorro')).to be < response.body.index('Efectivo suelto')
+    end
+
     it 'CA5: no muestra la seccion de un tipo sin presupuestos' do
       create_budget('credit_card', name: 'Tarjeta Nu')
 

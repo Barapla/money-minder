@@ -1,19 +1,25 @@
-<!-- Stats Overview -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <%= render Shared::CardComponent.new(
-            title: "SALDO DISPONIBLE", subtitle: "en tu cuenta", 
-            main_text: @budget_presenter.current_amount, 
-            options: { color: "emerald", icon: "money" }) %>
-    <%= render Shared::CardComponent.new(
-            title: "GASTADO ESTE MES", subtitle: "desde el #{DatePresenter.new(Date.today.at_beginning_of_month).date_in_words_only_month}", 
-            main_text: @budget_presenter.current_amount, 
-            options: { color: "orange", icon: "bag" }) %>
-    <%= render Shared::CardComponent.new(
-            title: "PROMEDIO DIARIO", subtitle: "últimos 15 días", 
-            main_text: @budget_presenter.budget_percentage, 
-            options: { color: "purple", icon: "stats" }) %>
-    <%= render Shared::CardComponent.new(
-            title: "ESTADO", subtitle: "sin bloqueos", 
-            main_text: @budget.active? ? "Activo" : "Inactivo", 
-            options: { color: "blue", icon: "calendar" }) %>
+<% p = @debit_card_presenter %>
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
+  <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-5">
+    <div class="text-bunker-400 text-[10.5px] uppercase tracking-widest mb-2.5"><%= t('.money_in') %></div>
+    <div class="font-mono text-2xl font-bold text-emerald-400 mb-1"><%= p.month_in_formatted %></div>
+    <div class="text-bunker-400 text-[11.5px]"><%= t('.movements_count', count: p.month_in_count) %></div>
+  </div>
+  <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-5">
+    <div class="text-bunker-400 text-[10.5px] uppercase tracking-widest mb-2.5"><%= t('.money_out') %></div>
+    <div class="font-mono text-2xl font-bold text-red-400 mb-1"><%= p.month_out_formatted %></div>
+    <div class="text-bunker-400 text-[11.5px]"><%= t('.movements_count', count: p.month_out_count) %></div>
+  </div>
+  <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-5">
+    <div class="text-bunker-400 text-[10.5px] uppercase tracking-widest mb-2.5"><%= t('.net_flow') %></div>
+    <div class="font-mono text-2xl font-bold mb-1 <%= p.net_flow.negative? ? 'text-red-400' : 'text-emerald-400' %>">
+      <%= p.net_flow.negative? ? '' : '+' %><%= p.net_flow_formatted %>
+    </div>
+    <div class="text-bunker-400 text-[11.5px]"><%= t('.net_flow_note', range: p.month_range_label) %></div>
+  </div>
+  <div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-5">
+    <div class="text-bunker-400 text-[10.5px] uppercase tracking-widest mb-2.5"><%= t('.daily_average') %></div>
+    <div class="font-mono text-2xl font-bold text-white mb-1"><%= p.average_daily_spent_formatted %></div>
+    <div class="text-bunker-400 text-[11.5px]"><%= t('.daily_average_note') %></div>
+  </div>
 </div>

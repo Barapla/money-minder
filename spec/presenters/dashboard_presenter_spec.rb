@@ -593,7 +593,7 @@ RSpec.describe DashboardPresenter do
       it 'CA4: incluye campos requeridos por la vista' do
         result = presenter.monthly_budget_summary
         expect(result.first).to include(:category_name, :amount, :amount_formatted,
-                                        :progress_percent, :status)
+                                        :progress_percent, :share_percent, :status)
       end
 
       it 'CA4: la categoría con mayor gasto tiene 100% de progreso' do
@@ -822,6 +822,139 @@ RSpec.describe DashboardPresenter do
 
       it 'CA4: retorna true' do
         expect(presenter.monthly_budget_summary?).to be true
+      end
+    end
+  end
+  describe '#net_worth' do
+    before do
+      allow(presenter).to receive(:available_balance).and_return(64_188.40)
+      allow(presenter).to receive(:total_debt).and_return(26_618.82)
+    end
+
+    it 'resta la deuda de tarjetas al saldo disponible' do
+      expect(presenter.net_worth).to be_within(0.01).of(37_569.58)
+    end
+
+    it 'formatea el patrimonio con simbolo de moneda' do
+      expect(presenter.net_worth_formatted).to include('$37,569.58')
+    end
+
+    it 'reparte el disponible entre patrimonio y deuda' do
+      expect(presenter.net_worth_share).to eq(58.5)
+      expect(presenter.debt_share).to eq(41.5)
+    end
+  end
+
+  describe '#net_worth_share' do
+    context 'sin saldo disponible' do
+      before do
+        allow(presenter).to receive(:available_balance).and_return(0)
+        allow(presenter).to receive(:total_debt).and_return(1_000.0)
+      end
+
+      it 'evita dividir entre cero' do
+        expect(presenter.net_worth_share).to eq(0.0)
+        expect(presenter.debt_share).to eq(100.0)
+      end
+    end
+
+    context 'con deuda mayor al disponible' do
+      before do
+        allow(presenter).to receive(:available_balance).and_return(1_000.0)
+        allow(presenter).to receive(:total_debt).and_return(5_000.0)
+      end
+
+      it 'limita el patrimonio a 0% en vez de un porcentaje negativo' do
+        expect(presenter.net_worth_share).to eq(0.0)
+      end
+    end
+  end
+
+  describe '#money_locations' do
+    before do
+      allow(presenter).to receive(:cash_balance).and_return(2_000.0)
+      allow(presenter).to receive(:debit_breakdown).and_return(
+        [{ name: 'Didi Cuenta', balance: 0.0, balance_formatted: '$0.00' }]
+      )
+      allow(presenter).to receive(:savings_breakdown).and_return(
+        [{ name: 'Klar', balance: 8_000.0, balance_formatted: '$8,000.00' }]
+      )
+      allow(presenter).to receive(:available_balance).and_return(10_000.0)
+    end
+
+    it 'ordena de mayor a menor saldo y omite las cuentas en cero' do
+      result = presenter.money_locations
+      expect(result.map { |entry| entry[:name] }).to eq(['Klar', nil])
+    end
+
+    it 'calcula el peso de cada cuenta sobre el disponible' do
+      expect(presenter.money_locations.map { |entry| entry[:share_percent] }).to eq([80, 20])
+    end
+  end
+
+  describe '#payroll_covered_payment' do
+    let(:early_payment) { { card_name: 'Mercado Pago', payment_due_date: Date.current + 1 } }
+    let(:late_payment) { { card_name: 'BBVA', payment_due_date: Date.current + 20 } }
+
+    before do
+      allow(presenter).to receive(:upcoming_payment_dates).and_return([early_payment, late_payment])
+    end
+
+    context 'con nomina configurada' do
+      before do
+        allow(presenter).to receive(:next_payroll_info).and_return(payment_date: Date.current + 3)
+      end
+
+      it 'retorna el primer pago que vence antes o el mismo dia que la nomina' do
+        expect(presenter.payroll_covered_payment).to eq(early_payment)
+      end
+    end
+
+    context 'sin nomina configurada' do
+      before { allow(presenter).to receive(:next_payroll_info).and_return(nil) }
+
+      it 'retorna nil' do
+        expect(presenter.payroll_covered_payment).to be_nil
+      end
+    end
+  end
+
+  describe '#top_saving_goal_gap' do
+    def goal_entry(name:, target:, allocated:)
+      { saving_goal: instance_double(SavingGoal, name: name), target_amount: target,
+        allocated_amount: allocated }
+    end
+
+    context 'con la meta prioritaria incompleta' do
+      before do
+        allow(presenter).to receive(:prioritized_saving_goals).and_return(
+          [goal_entry(name: 'Fondo de 3 meses', target: 40_000.0, allocated: 37_569.58)]
+        )
+      end
+
+      it 'retorna el faltante de la primera meta' do
+        expect(presenter.top_saving_goal_gap[:name]).to eq('Fondo de 3 meses')
+        expect(presenter.top_saving_goal_gap[:missing_formatted]).to include('$2,430.42')
+      end
+    end
+
+    context 'con la meta prioritaria ya cubierta' do
+      before do
+        allow(presenter).to receive(:prioritized_saving_goals).and_return(
+          [goal_entry(name: 'Fondo', target: 1_000.0, allocated: 1_000.0)]
+        )
+      end
+
+      it 'retorna nil' do
+        expect(presenter.top_saving_goal_gap).to be_nil
+      end
+    end
+
+    context 'sin metas activas' do
+      before { allow(presenter).to receive(:prioritized_saving_goals).and_return([]) }
+
+      it 'retorna nil' do
+        expect(presenter.top_saving_goal_gap).to be_nil
       end
     end
   end

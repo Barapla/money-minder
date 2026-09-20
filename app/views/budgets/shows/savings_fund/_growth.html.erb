@@ -1,0 +1,37 @@
+<% p = @savings_fund_presenter %>
+<% points = p.monthly_balances %>
+<% top = points.map { |point| point[:balance] }.max %>
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+  <div class="mb-6">
+    <h3 class="text-base font-semibold text-white"><%= t('.title') %></h3>
+    <p class="text-bunker-400 text-xs mt-0.5"><%= t('.subtitle') %></p>
+  </div>
+
+  <% if p.growth? %>
+    <div class="flex items-end gap-5 sm:gap-7 h-[170px] border-b border-bunker-700">
+      <% points.each do |point| %>
+        <% height = top.positive? ? [(point[:balance] / top * 100).round, 4].max : 4 %>
+        <div class="flex-1 h-full flex flex-col justify-end items-center gap-2">
+          <span class="font-mono text-xs <%= point[:projected] ? 'text-bunker-400' : 'text-bunker-200' %>">
+            <%= point[:projected] ? '≈' : '' %><%= number_to_currency(point[:balance], unit: '$', precision: point[:projected] ? 0 : 2) %>
+          </span>
+          <% if point[:projected] %>
+            <div class="w-full rounded-t-md border border-dashed border-emerald-300/45 border-b-0 bg-emerald-300/10" style="height: <%= height %>%"></div>
+          <% else %>
+            <div class="w-full rounded-t-md bg-gradient-to-t from-emerald-700 to-emerald-400" style="height: <%= height %>%"></div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    <div class="flex gap-5 sm:gap-7 mt-2.5 text-[11.5px] text-bunker-400">
+      <% points.each do |point| %>
+        <span class="flex-1 text-center <%= point[:projected] ? '' : 'text-bunker-300' %>">
+          <%= l(point[:label], format: '%b').capitalize %>
+          <%= point[:projected] ? t('.projected') : '' %>
+        </span>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="text-bunker-400 text-sm text-center py-10"><%= t('.empty') %></p>
+  <% end %>
+</div>

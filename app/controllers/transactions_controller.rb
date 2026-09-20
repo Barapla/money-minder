@@ -50,11 +50,12 @@ class TransactionsController < ApplicationController
   # GET /transactions/new
   def new
     @transaction = Transaction.new
-    @transaction.budget_id = params[:budget_id] if params[:budget_id].present?
-    @budgets = current_user.budgets.order(:name)
+    apply_new_transaction_prefill
+    @budgets = current_user.budgets.includes(:budget_type).order(:name)
   end
 
   def change_categories
+    @budgets = current_user.budgets.includes(:budget_type).order(:name)
     transaction_type = Catalog.find(params[:transaction][:transaction_type_id])
     stream = get_turbo_stream_for_transaction_type(transaction_type)
     respond_to do |format|
@@ -66,7 +67,7 @@ class TransactionsController < ApplicationController
 
   # GET /transactions/1/edit
   def edit
-    @budgets = current_user.budgets.order(:name)
+    @budgets = current_user.budgets.includes(:budget_type).order(:name)
   end
 
   # POST /transactions or /transactions.json
@@ -110,6 +111,16 @@ class TransactionsController < ApplicationController
 
   private
 
+  # Permite abrir el formulario con presupuesto, monto y tipo ya elegidos (ej.
+  # "Registrar pago" desde el detalle de una tarjeta abre directo un ingreso).
+  PREFILL_ATTRIBUTES = %i[budget_id related_budget_id amount].freeze
+
+  def apply_new_transaction_prefill
+    PREFILL_ATTRIBUTES.each { |attr| @transaction.public_send(:"#{attr}=", params[attr].presence) }
+    type_code = params[:transaction_type].presence
+    @transaction.transaction_type = Catalog.by_group_and_code('transaction_types', type_code) if type_code
+  end
+
   def set_transaction
     @transaction = current_user.transactions.find(params[:id])
   end
@@ -131,6 +142,11 @@ class TransactionsController < ApplicationController
       turbo_stream.update(
         'categories_frame',
         partial: "transactions/forms/#{transaction_type.code}/categories",
+        locals: { transaction: Transaction.new(transaction_type:) }
+      ),
+      turbo_stream.update(
+        'budget_origin_frame',
+        partial: 'transactions/forms/budget_origin',
         locals: { transaction: Transaction.new(transaction_type:) }
       )
     ]

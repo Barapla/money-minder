@@ -1,0 +1,15 @@
+<div class="max-w-7xl mx-auto">
+  <%= render 'budgets/shows/debit_card/hero' %>
+  <%= render 'budgets/shows/debit_card/stats' %>
+
+  <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-5">
+    <div class="flex flex-col gap-5">
+      <%= render 'budgets/shows/debit_card/daily_balance' %>
+      <%= render 'budgets/shows/debit_card/movements' %>
+      <%= render 'budgets/shows/debit_card/spending_breakdown' %>
+    </div>
+    <div class="flex flex-col gap-5">
+      <%= render 'budgets/shows/debit_card/sidebar' %>
+    </div>
+  </div>
+</div>

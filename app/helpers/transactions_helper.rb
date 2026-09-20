@@ -2,6 +2,17 @@
 
 # TransactionsHelper
 module TransactionsHelper
+  # Presupuestos de los que puede salir un traspaso: los que guardan dinero propio.
+  TRANSFER_ORIGIN_TYPES = %w[cash debit_card savings_fund].freeze
+
+  # En una transferencia el origen se limita a esos tipos; en gasto o ingreso
+  # cualquier presupuesto es valido, incluidas las tarjetas de credito.
+  def transaction_origin_budgets(transaction, budgets)
+    return budgets.to_a unless transaction.transfer?
+
+    budgets.select { |budget| TRANSFER_ORIGIN_TYPES.include?(budget.budget_type&.code) }
+  end
+
   def headers_table_transactions_index
     [
       { name: 'Tipo de Transacción', size: 'min-w-[180px]' },

@@ -168,6 +168,7 @@ es:
       financial_product_benefit: "Beneficio de Producto Financiero"
     errors:
       messages:
+        record_invalid: "La validación falló: %{errors}"
         blank: "no puede estar vacío"
         required: "es requerido"
         taken: "ya ha sido tomado"

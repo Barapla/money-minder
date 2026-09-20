@@ -31,6 +31,15 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
     monthly_budget_summary.any?
   end
 
+  # Gasto total del mes, incluyendo categorías fuera del top 8
+  def monthly_expense_total
+    @monthly_expense_total ||= monthly_expense_rows.values.sum.to_f
+  end
+
+  def monthly_expense_total_formatted
+    format_currency(monthly_expense_total)
+  end
+
   # Suma de efectivo, tarjetas de débito y fondos de ahorro activos
   def available_balance
     cash_balance + debit_balance + savings_balance
@@ -38,6 +47,55 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
 
   def available_balance_formatted
     format_currency(available_balance)
+  end
+
+  # Patrimonio neto: lo disponible menos la deuda del ciclo vigente de las tarjetas.
+  def net_worth
+    available_balance - total_debt
+  end
+
+  def net_worth_formatted
+    format_currency(net_worth)
+  end
+
+  # Porcentaje del disponible que queda como patrimonio; el resto es deuda.
+  def net_worth_share
+    return 0.0 if available_balance.to_f <= 0
+
+    (net_worth.to_f / available_balance * 100).clamp(0, 100).round(1)
+  end
+
+  def debt_share
+    (100 - net_worth_share).round(1)
+  end
+
+  # Dónde está el dinero: efectivo, cada débito y cada fondo, con su peso en el disponible.
+  # `name` viene nil para el efectivo (la vista pone la etiqueta traducida).
+  def money_locations
+    total = available_balance.to_f
+    money_location_entries
+      .reject { |entry| entry[:balance].zero? }
+      .sort_by { |entry| -entry[:balance] }
+      .map { |entry| entry.merge(money_location_shares(entry[:balance], total)) }
+  end
+
+  # Primer pago de tarjeta que vence antes o el mismo día que la próxima nómina.
+  def payroll_covered_payment
+    payroll = next_payroll_info
+    return nil unless payroll
+
+    upcoming_payment_dates.find { |card| card[:payment_due_date] <= payroll[:payment_date] }
+  end
+
+  # Faltante de la meta de ahorro prioritaria, o nil si ya está cubierta.
+  def top_saving_goal_gap
+    goal = prioritized_saving_goals.first
+    return nil if goal.nil?
+
+    missing = goal[:target_amount].to_f - goal[:allocated_amount].to_f
+    return nil unless missing.positive?
+
+    { name: goal[:saving_goal].name, missing_formatted: format_currency(missing) }
   end
 
   # Desglose: efectivo, tarjetas de débito y cada fondo de ahorro
@@ -94,8 +152,10 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
 
   # Metas de ahorro activas con asignación automática de saldo disponible por prioridad
   def prioritized_saving_goals
-    allocations = SavingGoalServices::PriorityAllocator.new(user).allocate
-    active_saving_goals.map { |goal| build_goal_entry(goal, allocations[goal.id] || 0) }
+    @prioritized_saving_goals ||= begin
+      allocations = SavingGoalServices::PriorityAllocator.new(user).allocate
+      active_saving_goals.map { |goal| build_goal_entry(goal, allocations[goal.id] || 0) }
+    end
   end
 
   def saving_goals?
@@ -137,6 +197,20 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
   private
 
   attr_reader :user
+
+  def money_location_entries
+    [{ name: nil, kind: :cash, balance: cash_balance.to_f }] +
+      debit_breakdown.map { |item| { name: item[:name], kind: :debit, balance: item[:balance].to_f } } +
+      savings_breakdown.map { |item| { name: item[:name], kind: :savings, balance: item[:balance].to_f } }
+  end
+
+  def money_location_shares(balance, total)
+    { balance_formatted: format_currency(balance), share_percent: share_of(balance, total) }
+  end
+
+  def share_of(amount, total)
+    total.positive? ? (amount / total * 100).round : 0
+  end
 
   def active_saving_goals
     @active_saving_goals ||= user.saving_goals.where(status: :active).order(:priority_order)
@@ -313,6 +387,10 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
   end
 
   def monthly_expense_rows
+    @monthly_expense_rows ||= build_monthly_expense_rows
+  end
+
+  def build_monthly_expense_rows
     start_date = Date.current.beginning_of_month
     end_date   = Date.current.end_of_month
     user.transactions
@@ -340,6 +418,7 @@ class DashboardPresenter # rubocop:disable Metrics/ClassLength
       amount: amount.to_f,
       amount_formatted: format_currency(amount.to_f),
       progress_percent: pct,
+      share_percent: share_of(amount.to_f, monthly_expense_total),
       status: budget_status(pct) }
   end
 
