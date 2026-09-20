@@ -6,7 +6,7 @@ RSpec.describe DashboardSerializer do
   let(:user) { create(:user) }
   let(:category) { category_for('Comida') }
 
-  before { allow(AiReport).to receive(:latest_for_user_and_type).and_return(nil) }
+  before { allow(AiReport).to receive(:latest_stored).and_return(nil) }
 
   def build_ai_report(summary:, created_at:, id: 1, expires_at: nil)
     report_type = Catalog.new(code: 'general')
@@ -81,8 +81,9 @@ RSpec.describe DashboardSerializer do
       result = described_class.new(user).as_json[:active_budgets]
 
       expect(result).to eq(
-        [{ budget_id: budget.id, category_name: budget.name, category_color: 'Purple',
-           budgeted_amount: 700.0, spent_amount: 300.0, remaining_amount: 400.0, percentage_used: 42.86 }]
+        [{ budget_id: budget.id, category_name: budget.name, category_color: 'Purple', budget_type: 'cash',
+           debt_amount: 0.0, limit_amount: 0.0, available_amount: 700.0, spent_this_month: 300.0,
+           percentage_used: 0.0 }]
       )
     end
 
@@ -119,7 +120,8 @@ RSpec.describe DashboardSerializer do
 
       expect(result).to eq(
         [{ fund_id: fund.id, fund_name: 'Fondo Emergencia', current_amount: 5000.0,
-           goal_amount: 20_000.0, percentage_achieved: 25.0 }]
+           goal_amount: 20_000.0, percentage_achieved: 25.0,
+           target_date: nil, feasibility: 'no_target_date' }]
       )
     end
   end
@@ -139,10 +141,12 @@ RSpec.describe DashboardSerializer do
   end
 
   describe 'latest_insight' do
+    before { allow(AiReportGenerationJob).to receive(:enqueue_once) }
+
     it 'CA8: retorna el reporte cacheado cuando existe uno exitoso' do
       created_at = Time.zone.parse('2026-09-01 10:00:00')
       report = build_ai_report(summary: { 'text' => 'ok' }, created_at:, id: 9)
-      allow(AiReport).to receive(:latest_for_user_and_type).with(user.id, 'general').and_return(report)
+      allow(AiReport).to receive(:latest_stored).with(user.id, 'general').and_return(report)
 
       result = described_class.new(user).as_json[:latest_insight]
 
@@ -155,6 +159,35 @@ RSpec.describe DashboardSerializer do
       result = described_class.new(user).as_json[:latest_insight]
 
       expect(result).to be_nil
+    end
+
+    it 'encola la generacion en segundo plano cuando no hay reporte, sin generarlo en el request' do
+      allow(AiReport).to receive(:generate_new_report)
+
+      described_class.new(user).as_json
+
+      expect(AiReportGenerationJob).to have_received(:enqueue_once).with(user.id)
+      expect(AiReport).not_to have_received(:generate_new_report)
+    end
+
+    it 'devuelve el reporte expirado y encola su regeneracion' do
+      report = build_ai_report(summary: { 'text' => 'viejo' }, created_at: 2.days.ago, id: 3)
+      report.expires_at = 1.day.ago
+      allow(AiReport).to receive(:latest_stored).with(user.id, 'general').and_return(report)
+
+      result = described_class.new(user).as_json[:latest_insight]
+
+      expect(result[:content]).to eq('text' => 'viejo')
+      expect(AiReportGenerationJob).to have_received(:enqueue_once).with(user.id)
+    end
+
+    it 'no encola nada si el reporte sigue vigente' do
+      report = build_ai_report(summary: { 'text' => 'ok' }, created_at: Time.current, id: 4)
+      allow(AiReport).to receive(:latest_stored).and_return(report)
+
+      described_class.new(user).as_json
+
+      expect(AiReportGenerationJob).not_to have_received(:enqueue_once)
     end
   end
 end

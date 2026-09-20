@@ -4,7 +4,6 @@
 class DashboardSerializer
   UPCOMING_PAYMENTS_LIMIT = 10
   UPCOMING_PAYMENTS_WINDOW_DAYS = 30
-  AI_INSIGHT_CACHE_TTL = 15.minutes
 
   def initialize(user, date_range: Date.current.beginning_of_month..Date.current.end_of_month)
     @user = user
@@ -74,13 +73,7 @@ class DashboardSerializer
   end
 
   def next_due_date_for(payment, end_date)
-    if payment.one_time?
-      return payment.due_date if payment.due_date&.between?(Date.current, end_date)
-
-      return nil
-    end
-
-    payment.recurrence.occurrences_in_range(Date.current, end_date).first
+    payment.occurrences_in_range(Date.current, end_date).first
   end
 
   def active_budgets
@@ -99,10 +92,11 @@ class DashboardSerializer
     RecentTransactionsCalculator.new(user).call
   end
 
+  # Nunca genera el reporte dentro del request (tarda ~1 min): devuelve el
+  # ultimo guardado, aunque haya expirado, y encola su regeneracion.
   def latest_insight
-    report = Rails.cache.fetch("dashboard_ai_insight/#{user.id}", expires_in: AI_INSIGHT_CACHE_TTL) do
-      AiReport.latest_for_user_and_type(user.id, 'general')
-    end
+    report = AiReport.latest_stored(user.id, 'general')
+    AiReportGenerationJob.enqueue_once(user.id) if report.nil? || report.expired?
     return nil unless report&.processing_success?
 
     { id: report.id,

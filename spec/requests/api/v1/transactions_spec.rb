@@ -34,7 +34,7 @@ RSpec.describe '/api/v1/transactions', type: :request do
         expect(records.map { |r| r['id'] }).to eq([newer.id, older.id])
         expect(records.first.keys).to contain_exactly(
           'id', 'date', 'amount', 'currency', 'description', 'category_name', 'transaction_type',
-          'created_at', 'updated_at'
+          'icon', 'color', 'created_at', 'updated_at'
         )
         expect(records.first['category_name']).to eq('Comida')
         expect(records.first['transaction_type']).to eq('expense')
@@ -49,7 +49,7 @@ RSpec.describe '/api/v1/transactions', type: :request do
 
         expect(response.parsed_body['records'].size).to eq(5)
         expect(response.parsed_body['meta']).to eq(
-          'current_page' => 2, 'total_pages' => 2, 'total_count' => 25
+          'current_page' => 2, 'total_pages' => 2, 'total_count' => 25, 'net_total' => -2800.0
         )
       end
 
@@ -136,6 +136,102 @@ RSpec.describe '/api/v1/transactions', type: :request do
 
         expect(response).to have_http_status(:unauthorized)
       end
+    end
+  end
+
+  describe 'GET /api/v1/transactions con filtros' do
+    let!(:super_tx) do
+      make_transaction(user:, budget:, category:, amount: 300, type_code: 'expense',
+                       transaction_date: Date.new(2026, 9, 10)).tap { |t| t.update!(description: 'Supermercado') }
+    end
+    let!(:salary) do
+      make_transaction(user:, budget:, category: category_for('Sueldo'), amount: 1000, type_code: 'income',
+                       transaction_date: Date.new(2026, 9, 1)).tap { |t| t.update!(description: 'Nómina') }
+    end
+    let!(:old_tx) do
+      make_transaction(user:, budget:, category:, amount: 50, type_code: 'expense',
+                       transaction_date: Date.new(2026, 8, 20)).tap { |t| t.update!(description: 'Tacos') }
+    end
+
+    def ids_for(params)
+      get api_v1_transactions_path, params:, headers: auth_headers
+      response.parsed_body['records'].map { |r| r['id'] }
+    end
+
+    it 'busca por descripcion o categoria sin distinguir mayusculas' do
+      expect(ids_for(q: 'SUPER')).to eq([super_tx.id])
+      expect(ids_for(q: 'comida')).to eq([super_tx.id, old_tx.id])
+    end
+
+    it 'filtra por tipo, categoria y rango de fechas' do
+      expect(ids_for(transaction_type: 'income')).to eq([salary.id])
+      expect(ids_for(category: 'Comida')).to eq([super_tx.id, old_tx.id])
+      expect(ids_for(start_date: '2026-09-01', end_date: '2026-09-30')).to eq([super_tx.id, salary.id])
+    end
+
+    it 'calcula total_count y net_total sobre el resultado filtrado' do
+      get api_v1_transactions_path, params: { start_date: '2026-09-01' }, headers: auth_headers
+
+      expect(response.parsed_body['meta']).to include('total_count' => 2, 'net_total' => 700.0)
+    end
+
+    it 'retorna 400 con una fecha invalida' do
+      get api_v1_transactions_path, params: { start_date: '10/09/2026' }, headers: auth_headers
+
+      expect(response).to have_http_status(:bad_request)
+      expect(response.parsed_body['error']['code']).to eq('invalid_date')
+    end
+  end
+
+  describe 'POST /api/v1/transactions' do
+    let!(:mxn) { Currency.default || create(:currency, code: 'MXN') }
+    let(:valid_params) do
+      { transaction: { transaction_type_id: transaction_type_for('expense').id, amount: 150.5,
+                       description: 'Cine', category_id: category.id, transaction_date: '2026-09-12',
+                       budget_id: budget.id, icon_id: icon_catalog.id, color_id: color_catalog.id } }
+    end
+
+    it 'crea la transaccion para el usuario autenticado' do
+      expect { post api_v1_transactions_path, params: valid_params, headers: auth_headers }
+        .to change(user.transactions, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body['record']).to include(
+        'description' => 'Cine', 'amount' => 150.5, 'date' => '2026-09-12', 'transaction_type' => 'expense',
+        'currency' => 'MXN'
+      )
+    end
+
+    it 'usa la moneda predeterminada del usuario si la tiene' do
+      usd = create(:currency, code: 'USD')
+      user.update!(currency: usd)
+
+      post api_v1_transactions_path, params: valid_params, headers: auth_headers
+
+      expect(response.parsed_body['record']['currency']).to eq('USD')
+    end
+
+    it 'rechaza un presupuesto de otro usuario con 422' do
+      other_budget = make_budget(user: create(:user), type_code: 'cash', amount: 0, personal: true)
+      params = valid_params.deep_merge(transaction: { budget_id: other_budget.id })
+
+      expect { post api_v1_transactions_path, params:, headers: auth_headers }
+        .not_to change(Transaction, :count)
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['error']['code']).to eq('validation_error')
+    end
+
+    it 'retorna 422 cuando faltan campos requeridos' do
+      post api_v1_transactions_path, params: { transaction: { amount: 10 } }, headers: auth_headers
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['error']['details']).to be_present
+    end
+
+    it 'retorna 401 sin token' do
+      post api_v1_transactions_path, params: valid_params
+
+      expect(response).to have_http_status(:unauthorized)
     end
   end
 end

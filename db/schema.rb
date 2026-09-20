@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_10_120000) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_16_233533) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -602,6 +602,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_10_120000) do
   add_foreign_key "transactions", "recurring_transactions", name: "fk_recurring_transaction_transactions"
   add_foreign_key "transactions", "transactions", column: "related_transaction_id", name: "fk_transactions_related_transaction"
   add_foreign_key "transactions", "users", name: "fk_transactions_user"
-  add_foreign_key "users", "roles", column: "currency_id", name: "fk_users_currency"
+  add_foreign_key "users", "currencies", name: "fk_users_currency"
   add_foreign_key "users", "roles", name: "fk_users_role"
 end
