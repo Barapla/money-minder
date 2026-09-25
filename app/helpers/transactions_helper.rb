@@ -2,6 +2,30 @@
 
 # TransactionsHelper
 module TransactionsHelper
+  # Tintes por tipo de movimiento, calcados del diseño: la pildora, el monto y el
+  # fondo de la fila. 'refund' toma el ambar que el diseño usaba para intereses,
+  # que no son un tipo en esta app.
+  TYPE_TINTS = {
+    'expense' => { badge: 'bg-red-500/15 text-red-300 border-red-500/25', amount: 'text-red-400', row: '' },
+    'income' => { badge: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25', amount: 'text-emerald-400',
+                  row: 'bg-emerald-500/[0.05]' },
+    'transfer' => { badge: 'bg-purple-500/15 text-purple-300 border-purple-500/25',
+                    amount: 'text-purple-400', row: '' },
+    'refund' => { badge: 'bg-amber-400/15 text-amber-300 border-amber-400/25', amount: 'text-emerald-400', row: '' }
+  }.freeze
+
+  def transaction_type_tint(code)
+    TYPE_TINTS.fetch(code, TYPE_TINTS['expense'])
+  end
+
+  # "Categoria · Cuenta", y el destino cuando el movimiento sale hacia otra cuenta.
+  def transaction_meta(transaction)
+    parts = [transaction.category&.name, transaction.budget&.name].compact_blank.join(' · ')
+    return parts unless transaction.related_budget
+
+    "#{parts} → #{transaction.related_budget.name}"
+  end
+
   # Presupuestos de los que puede salir un traspaso: los que guardan dinero propio.
   TRANSFER_ORIGIN_TYPES = %w[cash debit_card savings_fund].freeze
 

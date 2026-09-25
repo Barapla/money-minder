@@ -2,6 +2,13 @@
 
 Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   resources :obligatory_payments
+
+  resources :debts do
+    member do
+      patch :settle
+    end
+    resources :debt_allocations, only: %i[create update destroy], path: 'abonos'
+  end
   resources :saving_goals, only: %i[index new create edit update destroy] do
     collection do
       patch :reorder

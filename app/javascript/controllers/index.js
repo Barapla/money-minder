@@ -7,6 +7,9 @@ import { application } from "./application"
 import BonusManagerController from "./bonus_manager_controller"
 application.register("bonus-manager", BonusManagerController)
 
+import BudgetFiltersController from "./budget_filters_controller"
+application.register("budget-filters", BudgetFiltersController)
+
 import BudgetTabsController from "./budget_tabs_controller"
 application.register("budget-tabs", BudgetTabsController)
 
@@ -52,6 +55,9 @@ application.register("datatable-filters", DatatableFiltersController)
 import DatePickerController from "./date_picker_controller"
 application.register("date-picker", DatePickerController)
 
+import FormAutoSubmitController from "./form_auto_submit_controller"
+application.register("form-auto-submit", FormAutoSubmitController)
+
 import FormValidatorController from "./form_validator_controller"
 application.register("form-validator", FormValidatorController)
 
@@ -73,6 +79,9 @@ application.register("navbar-mobile", NavbarMobileController)
 import PaginationController from "./pagination_controller"
 application.register("pagination", PaginationController)
 
+import PasswordVisibilityController from "./password_visibility_controller"
+application.register("password-visibility", PasswordVisibilityController)
+
 import Previews__BaseController from "./previews/base_controller"
 application.register("previews--base", Previews__BaseController)
 
@@ -87,6 +96,9 @@ application.register("recurrence-form", RecurrenceFormController)
 
 import RecurringTransactionFormController from "./recurring_transaction_form_controller"
 application.register("recurring-transaction-form", RecurringTransactionFormController)
+
+import RevealController from "./reveal_controller"
+application.register("reveal", RevealController)
 
 import SavingsGoalsCalculatorController from "./savings_goals_calculator_controller"
 application.register("savings-goals-calculator", SavingsGoalsCalculatorController)

@@ -3,7 +3,11 @@
 require 'rails_helper'
 
 RSpec.describe Payroll::SavingsFundCalculator, type: :service do
-  let(:uma_cap) { (BigDecimal('113.14') * BigDecimal('30.4') * BigDecimal('1.3')).round(2) }
+  # Derivado de la constante, no hardcodeado: la UMA sube cada enero y el spec
+  # se rompia solo al actualizarla (paso al migrar de la de 2025 a la de 2026).
+  let(:uma_cap) do
+    (BigDecimal(PayrollConstants[:uma_daily].to_s) * BigDecimal('30.4') * BigDecimal('1.3')).round(2)
+  end
 
   describe '#call' do
     context 'CA3: salario $30,000 con 13% (sin exceder tope)' do

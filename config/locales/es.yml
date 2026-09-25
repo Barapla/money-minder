@@ -1,5 +1,20 @@
 es:
   app_name: "MoneyMinder"
+
+  auth:
+    pitch:
+      headline: "Tus cuentas, tarjetas y Sofipos en una sola cuenta clara."
+      subhead: "Sabe cuánto te queda libre después de lo que ya está comprometido, y qué se paga antes de tu próxima nómina."
+      free:
+        title: "Libre para gastar"
+        note: "El saldo menos lo que ya tiene dueño"
+      cards:
+        title: "Cortes y pagos al día"
+        note: "Cada tarjeta con su fecha real, no la del mes"
+      yields:
+        title: "Rendimiento de tus Sofipos"
+        note: "Cuál te paga más y cuánto llevas de interés"
+      privacy: "Tus datos se guardan en tu cuenta, no se comparten con tu banco."
   continue: "Continuar"
 
   date:
@@ -9,10 +24,16 @@ es:
       long: "%-d de %B de %Y"
       very_short: "%b %-d"
       only_month: "%-d de %B"
+      month_year: "%B %Y"
+      day_and_month: "%A %-d de %B"
     abbr_month_names:
       [~, Ene, Feb, Mar, Abr, May, Jun, Jul, Ago, Sep, Oct, Nov, Dic]
     month_names:
       [~, Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre]
+    day_names:
+      [Domingo, Lunes, Martes, Miércoles, Jueves, Viernes, Sábado]
+    abbr_day_names:
+      [Dom, Lun, Mar, Mié, Jue, Vie, Sáb]
   
   time:
     formats:
@@ -57,6 +78,7 @@ es:
         name: "Nombre"
         email: "Correo Electrónico"
         password: "Contraseña"
+        password_confirmation: "Confirma tu contraseña"
         role: "Rol"
       budget:
         name: "Nombre del presupuesto"

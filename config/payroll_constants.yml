@@ -1,5 +1,9 @@
 default: &default
-  uma_daily: 113.14
+  # UMA 2026: $117.31 diaria / $3,566.22 mensual / $42,794.64 anual.
+  # INEGI, DOF del 09-ene-2026, vigente desde el 1 de febrero de 2026.
+  # Se actualiza cada enero con la inflacion de diciembre (INPC).
+  uma_daily: 117.31
+  # Minimo de ley, articulo 87 LFT. Un patron puede dar mas, nunca menos.
   aguinaldo_days: 15
 
 development:

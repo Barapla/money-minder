@@ -1,0 +1,30 @@
+<% p = @show_presenter %>
+<%
+  rows = [
+    [t('.description'), p.description.presence || '—'],
+    [t('.category'), "#{p.icon} #{p.category&.name}"],
+    [t('.date'), p.date_long],
+    [t('.budget'), "#{p.budget&.icon&.value} #{p.budget&.name}"],
+    [t('.currency'), "#{p.currency&.name} (#{p.currency&.code}) #{p.currency&.symbol}"]
+  ]
+%>
+<div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl px-6 py-[22px]">
+  <h2 class="text-base font-semibold text-white mb-5"><%= t('.title') %></h2>
+
+  <dl class="grid gap-x-[26px] gap-y-3 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
+    <% rows.each do |label, value| %>
+      <div class="flex justify-between gap-3.5 pb-3 border-b border-bunker-700">
+        <dt class="text-bunker-300 text-[12.5px]"><%= label %></dt>
+        <dd class="text-white text-[12.5px] font-medium text-right"><%= value %></dd>
+      </div>
+    <% end %>
+    <div class="flex items-center justify-between gap-3.5 pb-3 border-b border-bunker-700">
+      <dt class="text-bunker-300 text-[12.5px]"><%= t('.status') %></dt>
+      <dd>
+        <span class="bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold px-2.5 py-[3px] rounded-full">
+          ✓ <%= t('.confirmed') %>
+        </span>
+      </dd>
+    </div>
+  </dl>
+</div>

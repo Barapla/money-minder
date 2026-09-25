@@ -1,0 +1,98 @@
+<%= form_with model: debt, class: "flex flex-col gap-5" do |form| %>
+  <% if debt.errors.any? %>
+    <div class="flex items-start gap-[11px] bg-red-500/10 border border-red-500/30 rounded-[11px] px-[15px] py-[13px]" role="alert">
+      <span class="text-sm leading-[1.3]">⚠️</span>
+      <div class="min-w-0">
+        <p class="text-red-300 text-[13px] font-semibold"><%= t('.errors', count: debt.errors.count) %></p>
+        <ul class="text-red-200/80 text-[11.5px] mt-1 space-y-0.5">
+          <% debt.errors.full_messages.each do |message| %><li><%= message %></li><% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl px-6 py-[22px] grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
+    <div class="form-group">
+      <%= form.label :direction, class: "form-label" %>
+      <div class="relative">
+        <%= form.select :direction,
+              Debt.directions.keys.map { |key| [t("debts.direction.#{key}"), key] },
+              {}, class: "form-control form-control-md" %>
+        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <svg class="w-5 h-5 text-bunker-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </div>
+      </div>
+      <p class="text-bunker-500 text-[11.5px] mt-1"><%= t('.direction_help') %></p>
+    </div>
+
+    <%= render Forms::InputComponent.new(form:, name: :name, options: { placeholder: true }) %>
+    <%= render Forms::InputComponent.new(form:, name: :counterparty, options: { placeholder: true, help_text: t('.counterparty_help') }) %>
+    <%= render Forms::InputComponent.new(form:, name: :principal_amount, type: :number, options: { placeholder: true, step: '0.01' }) %>
+    <%= render Forms::InputComponent.new(form:, name: :installment_amount, type: :number, options: { placeholder: true, step: '0.01', help_text: t('.installment_help') }) %>
+    <%= render Forms::InputComponent.new(form:, name: :started_on, type: :date,
+          options: { help_text: t('.started_help') }) %>
+    <%= render Forms::InputComponent.new(form:, name: :expected_end_on, type: :date, options: { help_text: t('.end_help') }) %>
+
+    <div class="form-group">
+      <%= label_tag :frequency, t('.frequency'), class: "form-label" %>
+      <div class="relative">
+        <%= select_tag :frequency,
+              options_for_select(DebtServices::ReminderBuilder::FREQUENCIES.map { |f| [t("debts.frequency.#{f}"), f] },
+                                 debt.obligatory_payment&.recurrence&.frequency_type&.code || 'weekly'),
+              class: "form-control form-control-md" %>
+        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <svg class="w-5 h-5 text-bunker-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </div>
+      </div>
+      <p class="text-bunker-500 text-[11.5px] mt-1"><%= t('.frequency_help') %></p>
+    </div>
+
+    <div class="form-group">
+      <%= form.label :budget_id, class: "form-label" %>
+      <div class="relative">
+        <%= form.select :budget_id,
+              options_from_collection_for_select(current_user.budgets.order(:name), :id, :name, debt.budget_id),
+              { include_blank: t('.no_budget') }, class: "form-control form-control-md" %>
+        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <svg class="w-5 h-5 text-bunker-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <%= form.label :category_id, class: "form-label" %>
+      <div class="relative">
+        <%= form.select :category_id,
+              options_from_collection_for_select(Category.order(:name), :id, :name, debt.category_id),
+              { include_blank: t('.no_category') }, class: "form-control form-control-md" %>
+        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <svg class="w-5 h-5 text-bunker-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-bunker-400 text-[12.5px] -mt-2">
+    <%= t('.loose_hint') %>
+  </p>
+
+  <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl px-6 py-[22px]">
+    <%= form.label :notes, class: "form-label" %>
+    <%= form.text_area :notes, rows: 3, class: "form-control form-control-md" %>
+  </div>
+
+  <div class="flex flex-wrap gap-2.5">
+    <%= form.submit t('.submit'),
+          class: "bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-2.5 rounded-[10px] text-[13px] font-semibold cursor-pointer hover:from-purple-400 hover:to-purple-500 transition-colors" %>
+    <%= link_to t('.cancel'), debt.persisted? ? debt_path(debt) : debts_path,
+          class: "border border-bunker-700/70 text-bunker-200 px-6 py-2.5 rounded-[10px] text-[13px] font-medium hover:border-purple-500/50 transition-colors" %>
+  </div>
+<% end %>

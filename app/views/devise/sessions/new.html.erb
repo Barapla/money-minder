@@ -1,19 +1,31 @@
-<h1 class="text-2xl font-bold text-bunker-950 mb-8"><%= t('.title') %> <span class="text-purple-500"><%= t('app_name') %></span></h1>
+<h1 class="text-2xl font-bold text-white mb-2 text-pretty">
+  <%= t('.title') %> <span class="text-purple-400"><%= t('app_name') %></span>
+</h1>
+<p class="text-bunker-400 text-[13.5px] mb-[30px]">
+  <%= t('.no_account') %>
+  <%= link_to t('.link'), new_registration_path(resource_name), class: "text-purple-300 font-semibold hover:text-purple-200" %>
+</p>
 
 <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |form| %>
-  <%= render Forms::InputComponent.new(form:, name: :email, options: { placeholder: true, autofocus: true, autocomplete: "email" }) %>
-  <%= render Forms::InputComponent.new(form:, name: :password, type: :password, options: { autocomplete: "new-password", placeholder: true }) %>
-  
+  <%= render Forms::InputComponent.new(form:, name: :email, type: :email, options: {
+        placeholder: true, autofocus: true, autocomplete: "email",
+        icon: '<span class="text-sm opacity-60">✉️</span>'
+      }) %>
+
+  <%= render "devise/shared/password_field", form:, name: :password, autocomplete: 'current-password',
+        label_link: link_to(t('.forgot_password'), new_password_path(resource_name),
+                            class: 'text-xs font-medium text-purple-300 hover:text-purple-200') %>
+
   <% if devise_mapping.rememberable? %>
-    <div class="field">
-      <%= form.check_box :remember_me %>
-      <%= form.label :remember_me %>
-    </div>
+    <label class="flex items-center gap-2.5 mb-6 cursor-pointer select-none">
+      <%= form.check_box :remember_me,
+            class: "w-[17px] h-[17px] rounded-[5px] bg-purple-500/25 border-purple-500/55 text-purple-500 focus:ring-purple-500 focus:ring-offset-0" %>
+      <span class="text-bunker-300 text-[13px]"><%= t('.remember_me') %></span>
+    </label>
   <% end %>
 
-  <div class="actions">
-    <%= render Forms::SubmitComponent.new(form:, text: t('continue'), options: { class: 'btn btn-full btn-bunker' } ) %>
-  </div>
+  <%= form.submit t('.sign_in'),
+        class: "w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white text-center py-[13px] rounded-[11px] text-[14.5px] font-semibold cursor-pointer hover:from-purple-400 hover:to-purple-500 transition-colors" %>
 <% end %>
 
-<%= render "devise/shared/links" %>
+<p class="text-bunker-500 text-[11.5px] leading-relaxed mt-[26px] text-pretty"><%= t('.terms') %></p>

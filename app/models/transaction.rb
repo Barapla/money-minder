@@ -15,6 +15,16 @@ class Transaction < ApplicationRecord
   belongs_to :icon, class_name: 'Catalog', foreign_key: 'icon_id'
   belongs_to :transaction_type, class_name: 'Catalog', foreign_key: 'transaction_type_id'
   belongs_to :recurring_transaction, optional: true
+  # Lo que este movimiento abona a una o varias deudas. El monto aplicado vive en
+  # DebtAllocation porque no siempre es el monto de la transaccion.
+  has_many :debt_allocations, dependent: :destroy, inverse_of: :transaction_record
+  has_many :debts, through: :debt_allocations
+
+  # Atajo para el formulario: el caso comun es una sola deuda. `debt_amount`
+  # vacio significa "abona el monto completo del movimiento".
+  attr_accessor :debt_id, :debt_amount
+
+  after_save :sync_debt_allocation, if: :debt_selection_given?
 
   has_one :transaction_history, dependent: :destroy
   has_one :credit_card_cycle_transaction, dependent: :destroy
@@ -46,7 +56,29 @@ class Transaction < ApplicationRecord
           .where(category:)
   end
 
+  def debt_allocation
+    debt_allocations.first
+  end
+
   private
+
+  # Solo toca las aplicaciones cuando el formulario mando el campo: asi editar
+  # una transaccion por otra via no borra un reparto hecho a mano.
+  def debt_selection_given?
+    !@debt_id.nil?
+  end
+
+  def sync_debt_allocation
+    if @debt_id.blank?
+      debt_allocations.destroy_all
+      return
+    end
+
+    applied = @debt_amount.presence&.to_d || amount
+    allocation = debt_allocations.find_or_initialize_by(debt_id: @debt_id)
+    allocation.update!(amount: applied)
+    debt_allocations.where.not(id: allocation.id).destroy_all
+  end
 
   def budget_belongs_to_user
     return if budget&.user_id == user_id

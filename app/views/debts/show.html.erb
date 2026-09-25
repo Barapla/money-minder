@@ -1,0 +1,196 @@
+<%
+  debt = @debt
+  fmt = ->(amount) { number_to_currency(amount.to_f, unit: '$') }
+  bar = debt.receivable? ? 'bg-emerald-500' : 'bg-red-400'
+%>
+<div class="max-w-5xl mx-auto">
+  <nav class="flex items-center flex-wrap gap-2.5 text-[12.5px] text-bunker-400 mb-4">
+    <%= link_to t('debts.index.title'), debts_path, class: "text-purple-300 hover:text-purple-200" %>
+    <span>/</span>
+    <span class="text-white line-clamp-1"><%= debt.name %></span>
+  </nav>
+
+  <div class="bg-gradient-to-r from-bunker-900/85 to-purple-900/55 border border-bunker-800/60 rounded-2xl px-7 py-[26px] mb-5">
+    <div class="flex items-start justify-between flex-wrap gap-7">
+      <div class="flex items-center gap-4 min-w-0 flex-1 basis-[300px]">
+        <span class="w-14 h-14 shrink-0 rounded-[15px] border border-bunker-700/50 flex items-center justify-center text-[25px] <%= color_bg_class(debt.color&.code, 40) %>">
+          <%= debt.icon&.value || '🤝' %>
+        </span>
+        <div class="min-w-0">
+          <h1 class="text-[27px] font-bold text-white mb-1.5 text-pretty"><%= debt.name %></h1>
+          <div class="flex items-center flex-wrap gap-2.5 text-[13px]">
+            <span class="border text-[11px] font-semibold px-2.5 py-[3px] rounded-full <%= debt.receivable? ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-red-500/15 text-red-300 border-red-500/30' %>">
+              <%= t("debts.direction.#{debt.direction}") %>
+            </span>
+            <% if debt.counterparty.present? %><span class="text-bunker-300"><%= debt.counterparty %></span><% end %>
+            <% if debt.started_on %>
+              <span class="text-bunker-500">·</span>
+              <span class="text-bunker-300"><%= t('.since', date: l(debt.started_on, format: :long)) %></span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-right shrink-0">
+        <div class="font-mono text-[42px] leading-none font-bold text-white mb-2"><%= fmt.(debt.remaining_amount) %></div>
+        <div class="text-bunker-400 text-[12.5px]"><%= t(".remaining_#{debt.direction}") %></div>
+      </div>
+    </div>
+
+    <div class="mt-[22px] pt-5 border-t border-bunker-700/50">
+      <div class="h-2.5 rounded-full bg-bunker-950/70 overflow-hidden mb-2.5">
+        <div class="h-full rounded-full <%= bar %>" style="width: <%= debt.progress_percentage %>%"></div>
+      </div>
+      <div class="flex justify-between flex-wrap gap-3 text-[11.5px] text-bunker-400">
+        <span><%= t('.paid', amount: fmt.(debt.paid_amount), percent: debt.progress_percentage) %></span>
+        <span><%= t('.principal', amount: fmt.(debt.principal_amount)) %></span>
+      </div>
+      <% if debt.overpaid_amount.positive? %>
+        <p class="mt-3 text-emerald-300 text-[12.5px]"><%= t('.overpaid', amount: fmt.(debt.overpaid_amount)) %></p>
+      <% end %>
+    </div>
+
+    <div class="flex flex-wrap gap-2.5 mt-[22px] pt-5 border-t border-bunker-700/50">
+      <%= link_to t('.edit'), edit_debt_path(debt),
+            class: "border border-bunker-700/70 text-bunker-200 px-[15px] py-[9px] rounded-[9px] text-[13px] font-medium hover:border-purple-500/50 hover:text-purple-300 transition-colors" %>
+      <%= link_to t('.register_payment'),
+            new_transaction_path(debt_id: debt.id, transaction_type: debt.transaction_type_code),
+            class: "border border-bunker-700/70 text-bunker-200 px-[15px] py-[9px] rounded-[9px] text-[13px] font-medium hover:border-purple-500/50 hover:text-purple-300 transition-colors" %>
+      <% if debt.active? %>
+        <%= button_to t('.settle'), settle_debt_path(debt), method: :patch,
+              form: { data: { turbo_confirm: t('.settle_confirm') } },
+              class: "border border-emerald-500/40 text-emerald-300 px-[15px] py-[9px] rounded-[9px] text-[13px] font-medium hover:bg-emerald-500/10 transition-colors" %>
+      <% end %>
+      <%= button_to t('.delete'), debt_path(debt), method: :delete,
+            form: { data: { turbo_confirm: t('.delete_confirm') }, class: 'ml-auto' },
+            class: "border border-red-500/45 text-red-300 px-[15px] py-[9px] rounded-[9px] text-[13px] font-medium hover:bg-red-500/10 transition-colors" %>
+    </div>
+  </div>
+
+  <div class="grid gap-5 items-start [grid-template-columns:repeat(auto-fit,minmax(320px,1fr))]">
+    <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl px-6 py-[22px]">
+      <h2 class="text-base font-semibold text-white mb-1"><%= t('.payments_title') %></h2>
+      <p class="text-bunker-400 text-[12.5px] mb-5"><%= t('.payments_count', count: @allocations.size) %></p>
+
+      <% if @allocations.any? %>
+        <div class="flex flex-col gap-2.5">
+          <% @allocations.each do |allocation| %>
+            <% payment = allocation.transaction_record %>
+            <div class="bg-bunker-950/40 border border-bunker-700/50 rounded-xl px-4 py-3">
+              <div class="flex items-center gap-3">
+                <span class="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-sm <%= color_bg_class(payment.color&.code, 40) %>">
+                  <%= payment.icon&.value %>
+                </span>
+                <%= link_to transaction_path(payment), class: "flex-1 min-w-0 group" do %>
+                  <span class="block text-white text-[13px] font-medium line-clamp-1 group-hover:text-purple-300 transition-colors">
+                    <%= payment.description %>
+                  </span>
+                  <span class="block text-bunker-400 text-[11px]"><%= l(payment.transaction_date, format: :long) %></span>
+                <% end %>
+
+                <%# El monto aplicado se edita aqui: es donde se ve si cuadra. %>
+                <%= form_with model: [debt, allocation], method: :patch,
+                              class: "flex items-center gap-1.5 shrink-0" do |f| %>
+                  <span class="text-bunker-500 text-[12px]">$</span>
+                  <%= f.number_field :amount, value: allocation.amount, step: 0.01, min: 0.01,
+                        "aria-label": t('.applied_amount'),
+                        class: "w-24 bg-bunker-900/70 border border-bunker-700/60 rounded-lg px-2 py-1 text-right font-mono text-[13px] text-emerald-400 focus:outline-none focus:border-purple-500" %>
+                  <%= f.submit t('.apply'), class: "text-purple-300 text-[11.5px] font-semibold px-1.5 cursor-pointer hover:text-purple-200" %>
+                <% end %>
+
+                <%= button_to debt_debt_allocation_path(debt, allocation), method: :delete,
+                      form: { data: { turbo_confirm: t('.unlink_confirm') }, class: 'shrink-0' },
+                      class: "text-bunker-500 text-[15px] px-1 hover:text-red-400 transition-colors",
+                      title: t('.unlink') do %>×<% end %>
+              </div>
+
+              <%# Solo se aclara cuando lo aplicado difiere del movimiento. %>
+              <% if allocation.partial? %>
+                <p class="text-bunker-400 text-[10.5px] mt-1.5 ml-11"><%= t('.applied_partial', amount: fmt.(payment.amount)) %></p>
+              <% elsif allocation.symbolic? %>
+                <p class="text-amber-300 text-[10.5px] mt-1.5 ml-11"><%= t('.applied_symbolic', amount: fmt.(payment.amount)) %></p>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-bunker-400 text-[12.5px] mb-5"><%= t('.no_payments') %></p>
+      <% end %>
+
+      <div class="mt-5 pt-5 border-t border-bunker-700">
+        <h3 class="text-bunker-200 text-[13px] font-semibold mb-1"><%= t('.link_title') %></h3>
+        <p class="text-bunker-400 text-[11.5px] mb-3"><%= t('.link_help') %></p>
+
+        <% if @candidates.any? %>
+          <%= form_with model: [debt, DebtAllocation.new], class: "flex flex-wrap items-end gap-2" do |f| %>
+            <div class="relative flex-1 min-w-[200px]">
+              <%= f.select :transaction_id,
+                    @candidates.map { |item|
+                      ["#{l(item.transaction_date, format: :very_short)} · #{item.description.to_s.truncate(28)} · #{fmt.(item.amount)}", item.id]
+                    },
+                    { prompt: t('.link_prompt') },
+                    class: "form-control form-control-sm" %>
+              <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg class="w-5 h-5 text-bunker-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <span class="text-bunker-500 text-[12px]">$</span>
+              <%= f.number_field :amount, step: 0.01, min: 0.01, required: true,
+                    placeholder: t('.link_amount'), "aria-label": t('.applied_amount'),
+                    class: "w-28 bg-bunker-900/70 border border-bunker-700/60 rounded-lg px-2 py-2 text-right font-mono text-[13px] text-white focus:outline-none focus:border-purple-500" %>
+            </div>
+
+            <%= f.submit t('.link_submit'),
+                  class: "bg-purple-500/20 border border-purple-500/35 text-purple-300 px-4 py-2 rounded-[10px] text-[12.5px] font-semibold cursor-pointer hover:bg-purple-500/30 transition-colors" %>
+          <% end %>
+        <% else %>
+          <p class="text-bunker-500 text-[11.5px]"><%= t('.no_candidates', type: t("debts.direction.#{debt.direction}").downcase) %></p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl px-6 py-[22px]">
+      <h2 class="text-base font-semibold text-white mb-5"><%= t('.plan_title') %></h2>
+      <dl class="flex flex-col gap-3 text-[12.5px]">
+        <% rows = [
+             [t('.plan_principal'), fmt.(debt.principal_amount)],
+             [t('.plan_paid'), fmt.(debt.paid_amount)],
+             [t('.plan_remaining'), fmt.(debt.remaining_amount)]
+           ]
+           if debt.installments?
+             rows << [t('.plan_installment'), fmt.(debt.installment_amount)]
+             rows << [t('.plan_remaining_installments'), debt.remaining_installments] if debt.active?
+           end
+           rows << [t('.plan_next_due'), l(debt.next_due_date, format: :long)] if debt.next_due_date
+           rows << [t('.plan_expected_end'), l(debt.expected_end_on, format: :long)] if debt.expected_end_on
+           rows << [t('.plan_budget'), debt.budget.name] if debt.budget %>
+        <% rows.each do |label, value| %>
+          <div class="flex justify-between gap-3 pb-[11px] border-b border-bunker-700">
+            <dt class="text-bunker-300"><%= label %></dt>
+            <dd class="font-mono text-white font-medium text-right"><%= value %></dd>
+          </div>
+        <% end %>
+      </dl>
+
+      <% unless debt.installments? %>
+        <p class="mt-4 text-bunker-400 text-[11.5px]"><%= t('.no_plan') %></p>
+      <% end %>
+
+      <% if debt.obligatory_payment %>
+        <p class="mt-4 text-bunker-400 text-[11.5px]">
+          <%= t('.reminder_linked_html',
+                link: link_to(debt.obligatory_payment.name, obligatory_payment_path(debt.obligatory_payment),
+                              class: 'text-purple-300 hover:text-purple-200')) %>
+        </p>
+      <% end %>
+
+      <% if debt.notes.present? %>
+        <p class="mt-4 pt-4 border-t border-bunker-700 text-bunker-300 text-[12.5px]"><%= debt.notes %></p>
+      <% end %>
+    </div>
+  </div>
+</div>
