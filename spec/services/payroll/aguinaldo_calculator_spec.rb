@@ -2,112 +2,82 @@
 
 require 'rails_helper'
 
+# Articulo 87 LFT: prestacion ANUAL de minimo 15 dias, proporcional al tiempo
+# trabajado dentro del año calendario que se paga.
 RSpec.describe Payroll::AguinaldoCalculator, type: :service do
-  let(:salary) { BigDecimal('30000') }
-  let(:base_date) { Date.new(2026, 6, 23) }
+  let(:salary) { BigDecimal('30000') }       # $1,000 diarios (30000/30)
+  let(:quince_dias) { BigDecimal('15000') }  # 15 dias completos
 
-  describe '#call' do
-    context 'CA1: usuario con 2 años completos de antigüedad' do
-      subject(:result) do
-        described_class.new(
-          monthly_gross_salary: salary,
-          hire_date: base_date - 2.years,
-          calculation_date: base_date
-        ).call
-      end
+  def calcular(hire_date:, calculation_date:)
+    described_class.new(monthly_gross_salary: salary, hire_date:, calculation_date:).call
+  end
 
-      it 'retorna un resultado exitoso' do
-        expect(result).to be_success
-      end
+  describe 'año trabajado completo' do
+    # La antiguedad NO multiplica: es la correccion al bug que daba 15 dias por
+    # cada año acumulado (5 años => 75 dias).
+    it 'da 15 días con dos años de antigüedad, no 30' do
+      result = calcular(hire_date: Date.new(2024, 6, 23), calculation_date: Date.new(2026, 6, 23))
 
-      it 'calcula aguinaldo de 2 años (15 días × 2)' do
-        expect(result.data[:amount]).to eq(BigDecimal('30000'))
-      end
-
-      it 'indica que no es proporcional' do
-        expect(result.data[:proportional]).to be(false)
-      end
+      expect(result).to be_success
+      expect(result.data[:amount]).to eq(quince_dias)
+      expect(result.data[:proportional]).to be(false)
     end
 
-    context 'CA2: usuario con 182 días de antigüedad (proporcional)' do
-      subject(:result) do
-        described_class.new(
-          monthly_gross_salary: salary,
-          hire_date: base_date - 182,
-          calculation_date: base_date
-        ).call
-      end
+    it 'da 15 días con cinco años de antigüedad' do
+      result = calcular(hire_date: Date.new(2021, 1, 10), calculation_date: Date.new(2026, 12, 20))
 
-      it 'retorna un resultado exitoso' do
-        expect(result).to be_success
-      end
-
-      it 'calcula aguinaldo proporcional' do
-        expected = (BigDecimal('30000') / 30 * 15 * 182 / BigDecimal('365')).round(2)
-        expect(result.data[:amount]).to eq(expected)
-      end
-
-      it 'indica que es proporcional' do
-        expect(result.data[:proportional]).to be(true)
-      end
+      expect(result.data[:amount]).to eq(quince_dias)
     end
 
-    context 'caso límite: 0 días trabajados' do
-      subject(:result) do
-        described_class.new(
-          monthly_gross_salary: salary,
-          hire_date: base_date,
-          calculation_date: base_date
-        ).call
-      end
+    it 'da 15 días exactos aunque el año sea bisiesto' do
+      result = calcular(hire_date: Date.new(2020, 3, 1), calculation_date: Date.new(2024, 12, 20))
 
-      it 'retorna resultado exitoso con monto cero' do
-        expect(result).to be_success
-        expect(result.data[:amount]).to eq(BigDecimal('0'))
-      end
+      expect(result.data[:days_in_year]).to eq(366)
+      expect(result.data[:amount]).to eq(quince_dias)
     end
 
-    context 'caso límite: 364 días (antes de completar un año)' do
-      subject(:result) do
-        described_class.new(
-          monthly_gross_salary: salary,
-          hire_date: base_date - 364,
-          calculation_date: base_date
-        ).call
-      end
+    # Entró en un año anterior, así que trabajó los 365 días del año que se paga.
+    it 'da el año completo a quien entró en un año previo' do
+      result = calcular(hire_date: Date.new(2025, 11, 3), calculation_date: Date.new(2026, 12, 20))
 
-      it 'calcula proporcional' do
-        expect(result.data[:proportional]).to be(true)
-      end
+      expect(result.data[:days_worked]).to eq(365)
+      expect(result.data[:amount]).to eq(quince_dias)
+    end
+  end
+
+  describe 'primer año incompleto' do
+    it 'reparte proporcional al tiempo trabajado en el año' do
+      result = calcular(hire_date: Date.new(2026, 7, 27), calculation_date: Date.new(2026, 12, 20))
+
+      # 27-jul al 31-dic = 158 días
+      expect(result.data[:days_worked]).to eq(158)
+      expect(result.data[:proportional]).to be(true)
+      expect(result.data[:amount]).to eq((BigDecimal('1000') * 15 * 158 / 365).round(2))
     end
 
-    context 'caso límite: exactamente 365 días (un año completo)' do
-      subject(:result) do
-        described_class.new(
-          monthly_gross_salary: salary,
-          hire_date: base_date - 365,
-          calculation_date: base_date
-        ).call
-      end
+    # El aguinaldo se paga antes del 20-dic pero cubre el año entero: la fecha
+    # de calculo no recorta los dias que faltan del mes.
+    it 'no recorta los días por calcularse antes de fin de año' do
+      diciembre = calcular(hire_date: Date.new(2026, 7, 27), calculation_date: Date.new(2026, 12, 20))
+      septiembre = calcular(hire_date: Date.new(2026, 7, 27), calculation_date: Date.new(2026, 9, 24))
 
-      it 'calcula por años completos' do
-        expect(result.data[:proportional]).to be(false)
-        expect(result.data[:amount]).to eq(BigDecimal('15000'))
-      end
+      expect(septiembre.data[:amount]).to eq(diciembre.data[:amount])
     end
 
-    context 'cuando la fecha de cálculo es anterior a la fecha de ingreso' do
-      subject(:result) do
-        described_class.new(
-          monthly_gross_salary: salary,
-          hire_date: base_date + 10,
-          calculation_date: base_date
-        ).call
-      end
+    it 'da el mínimo al que entró el último día del año' do
+      result = calcular(hire_date: Date.new(2026, 12, 31), calculation_date: Date.new(2026, 12, 31))
 
-      it 'retorna resultado fallido' do
-        expect(result).to be_failure
-      end
+      expect(result.data[:days_worked]).to eq(1)
+      expect(result.data[:amount]).to eq((BigDecimal('1000') * 15 / 365).round(2))
+    end
+  end
+
+  describe 'fechas inválidas' do
+    it 'rechaza calcular antes de la fecha de ingreso' do
+      result = calcular(hire_date: Date.new(2026, 6, 23), calculation_date: Date.new(2026, 1, 1))
+
+      expect(result).to be_failure
+      expect(result.error).to eq(:invalid_dates)
     end
   end
 end

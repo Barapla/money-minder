@@ -159,6 +159,14 @@
     </div>
 
 
+    <%# El ligado con deudas se hace desde la pantalla de la deuda, que es donde
+        estas viendo el saldo. Aqui solo viajan escondidos cuando llegas desde el
+        boton "Registrar un abono", para que ese camino no se corte a la mitad. %>
+    <% if transaction.debt_id.present? %>
+      <%= form.hidden_field :debt_id %>
+      <%= form.hidden_field :debt_amount %>
+    <% end %>
+
     <%= form.hidden_field :user_id, value: current_user&.id %>
     <!-- Form Actions -->
     <div class="flex items-center justify-between pt-8 mt-8 border-t border-bunker-800/50">

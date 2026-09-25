@@ -1,51 +1,30 @@
-<div class="max-w-5xl mx-auto">
-    <!-- Header -->
-    <%= render "transactions/shows/shared/header" %>
+<% p = @show_presenter %>
+<div class="max-w-6xl mx-auto">
+  <%= render 'transactions/shows/shared/hero' %>
 
-    <!-- Transaction Amount Card -->
-    <%= render "transactions/shows/shared/amount_card" %>
-
-    <!-- Main Content -->
-    <div class="grid lg:grid-cols-3 gap-8">
-        <!-- Transaction Details -->
-        <div class="lg:col-span-2 space-y-8">
-            <!-- Basic Information -->
-            <%= render "transactions/shows/shared/main/details" %>
-            
-            <!-- Impact Analysis -->
-            <%= render "transactions/shows/#{@transaction.transaction_type.code}/impact" %>
-
-            
-            <!-- Related Transactions (if transfer) -->
-            <%= render "transactions/shows/shared/main/related_transactions" %>
-
-            <!-- Recurring Transactions -->
-            <% if @transaction.recurring_transaction_id? %>
-                <%= render "transactions/shows/shared/main/recurrence/configuration", recurring_transaction: @transaction.recurring_transaction %>
-            
-                <%= render "transactions/shows/shared/main/recurrence/template", recurring_transaction: @transaction.recurring_transaction %>
-                
-                <%= render "transactions/shows/shared/main/recurrence/statistics", recurring_transaction: @transaction.recurring_transaction %>
-            
-            <% end %>
-
-        </div>
-
-        <!-- Sidebar -->
-        <div class="space-y-6">
-            <!-- Quick Actions -->
-            <%= render "transactions/shows/shared/sidebar/quick_actions" %>
-            
-            <!-- Transaction Metadata -->
-            <%= render "transactions/shows/shared/sidebar/metadata" %>
-
-            <!-- Recurring Transactions -->
-            <% if @transaction.recurring_transaction_id? %>
-                <%= render "transactions/shows/shared/sidebar/recurrence_details", recurring_transaction: @transaction.recurring_transaction %>
-            <% end %>
-
-            <!-- Category Analysis -->
-            <%= render "transactions/shows/#{@transaction.transaction_type.code}/category_analysis" %>
-        </div>
+  <div class="grid gap-5 items-start [grid-template-columns:repeat(auto-fit,minmax(320px,1fr))]">
+    <div class="flex flex-col gap-5 min-w-0">
+      <% if p.impact? %>
+        <%= render 'transactions/shows/shared/impact' %>
+      <% end %>
+      <% if p.cycle %>
+        <%= render 'transactions/shows/shared/cycle' %>
+      <% end %>
+      <%= render 'transactions/shows/shared/details' %>
     </div>
+
+    <div class="flex flex-col gap-5 min-w-0">
+      <% if p.debt_allocations.any? %>
+        <%= render 'transactions/shows/shared/debts' %>
+      <% end %>
+      <%= render 'transactions/shows/shared/category_analysis' %>
+      <% if p.recurring? %>
+        <%= render 'transactions/shows/shared/recurrence' %>
+      <% end %>
+      <% if p.related_transactions.any? %>
+        <%= render 'transactions/shows/shared/related' %>
+      <% end %>
+      <%= render 'transactions/shows/shared/metadata' %>
+    </div>
+  </div>
 </div>

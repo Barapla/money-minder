@@ -1,0 +1,31 @@
+<% p = @show_presenter %>
+<% r = p.recurring %>
+<div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl px-6 py-[22px]">
+  <div class="flex items-center justify-between flex-wrap gap-3 mb-1">
+    <h3 class="text-[15px] font-semibold text-white"><%= t('.title', frequency: p.frequency_label) %></h3>
+    <span class="border text-[11px] font-semibold px-2.5 py-[3px] rounded-full <%= r.active? ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-bunker-500/20 text-bunker-300 border-bunker-500/30' %>">
+      <%= t(r.active? ? '.active' : '.paused') %>
+    </span>
+  </div>
+  <p class="text-bunker-400 text-[12.5px] mb-5">
+    <%= t('.since', date: l(r.start_date, format: :long)) %>
+    <%= r.end_date ? t('.until', date: l(r.end_date, format: :long)) : t('.no_end') %>
+  </p>
+
+  <div class="grid gap-3.5 mb-[18px] [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))]">
+    <div class="bg-bunker-950/40 border border-bunker-700/50 rounded-xl p-[15px]">
+      <div class="text-bunker-400 text-[10.5px] uppercase tracking-[0.06em] mb-[7px]"><%= t('.next') %></div>
+      <div class="text-emerald-300 text-sm font-semibold">
+        <%= r.next_execution_date ? l(r.next_execution_date, format: :only_month) : '—' %>
+      </div>
+    </div>
+    <div class="bg-bunker-950/40 border border-bunker-700/50 rounded-xl p-[15px]">
+      <div class="text-bunker-400 text-[10.5px] uppercase tracking-[0.06em] mb-[7px]"><%= t('.generated') %></div>
+      <div class="font-mono text-[19px] font-bold text-white"><%= r.execution_count %></div>
+    </div>
+    <div class="bg-bunker-950/40 border border-bunker-700/50 rounded-xl p-[15px]">
+      <div class="text-bunker-400 text-[10.5px] uppercase tracking-[0.06em] mb-[7px]"><%= t('.accumulated') %></div>
+      <div class="font-mono text-[19px] font-bold text-white"><%= p.format_currency(r.total_generated_amount) %></div>
+    </div>
+  </div>
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_10_120000) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_24_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -291,6 +291,52 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_10_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["uuid"], name: "index_currencies_on_uuid", unique: true
+  end
+
+  create_table "debt_allocations", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.bigint "debt_id", null: false
+    t.bigint "transaction_id", null: false
+    t.decimal "amount", precision: 12, scale: 2, null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["debt_id", "transaction_id"], name: "index_debt_allocations_on_debt_id_and_transaction_id", unique: true
+    t.index ["debt_id"], name: "index_debt_allocations_on_debt_id"
+    t.index ["transaction_id"], name: "index_debt_allocations_on_transaction_id"
+    t.index ["uuid"], name: "index_debt_allocations_on_uuid", unique: true
+  end
+
+  create_table "debts", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true, null: false
+    t.bigint "user_id", null: false
+    t.bigint "obligatory_payment_id"
+    t.bigint "budget_id"
+    t.bigint "currency_id"
+    t.integer "direction", default: 0, null: false
+    t.integer "status", default: 0, null: false
+    t.string "name", null: false
+    t.string "counterparty"
+    t.decimal "principal_amount", precision: 12, scale: 2, null: false
+    t.decimal "installment_amount", precision: 12, scale: 2
+    t.date "started_on"
+    t.date "expected_end_on"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "category_id"
+    t.bigint "color_id"
+    t.bigint "icon_id"
+    t.index ["budget_id"], name: "index_debts_on_budget_id"
+    t.index ["category_id"], name: "index_debts_on_category_id"
+    t.index ["color_id"], name: "index_debts_on_color_id"
+    t.index ["currency_id"], name: "index_debts_on_currency_id"
+    t.index ["icon_id"], name: "index_debts_on_icon_id"
+    t.index ["obligatory_payment_id"], name: "index_debts_on_obligatory_payment_id"
+    t.index ["user_id", "direction", "status"], name: "index_debts_on_user_id_and_direction_and_status"
+    t.index ["user_id"], name: "index_debts_on_user_id"
+    t.index ["uuid"], name: "index_debts_on_uuid", unique: true
   end
 
   create_table "employment_informations", force: :cascade do |t|
@@ -576,6 +622,15 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_10_120000) do
   add_foreign_key "credit_cards", "credit_card_products", name: "fk_credit_cards_credit_card_product"
   add_foreign_key "credit_score_events", "credit_card_cycles", name: "fk_credit_score_events_credit_card_cycle"
   add_foreign_key "credit_score_events", "credit_cards", name: "fk_credit_score_events_credit_card"
+  add_foreign_key "debt_allocations", "debts"
+  add_foreign_key "debt_allocations", "transactions"
+  add_foreign_key "debts", "budgets"
+  add_foreign_key "debts", "catalogs", column: "color_id"
+  add_foreign_key "debts", "catalogs", column: "icon_id"
+  add_foreign_key "debts", "categories"
+  add_foreign_key "debts", "currencies"
+  add_foreign_key "debts", "obligatory_payments"
+  add_foreign_key "debts", "users"
   add_foreign_key "employment_informations", "users"
   add_foreign_key "obligatory_payments", "catalogs", column: "color_id", name: "fk_obligatory_payments_color"
   add_foreign_key "obligatory_payments", "catalogs", column: "icon_id", name: "fk_obligatory_payments_icon"
@@ -602,6 +657,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_10_120000) do
   add_foreign_key "transactions", "recurring_transactions", name: "fk_recurring_transaction_transactions"
   add_foreign_key "transactions", "transactions", column: "related_transaction_id", name: "fk_transactions_related_transaction"
   add_foreign_key "transactions", "users", name: "fk_transactions_user"
-  add_foreign_key "users", "roles", column: "currency_id", name: "fk_users_currency"
+  add_foreign_key "users", "currencies", name: "fk_users_currency"
   add_foreign_key "users", "roles", name: "fk_users_role"
 end

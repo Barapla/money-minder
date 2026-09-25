@@ -19,7 +19,7 @@ class BudgetsController < ApplicationController
   # GET /budgets
   # GET /budgets.json
   def index
-    @budgets_by_type = current_user.budgets.grouped_by_type
+    @index_presenter = BudgetsIndexPresenter.new(current_user)
   end
 
   # POST /budgets/budgets_table

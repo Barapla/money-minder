@@ -34,6 +34,13 @@ class ObligatoryPayment < ApplicationRecord
     rec&.next_occurrence_from(date)
   end
 
+  # Fechas en que vence el recordatorio dentro de [from, to].
+  def occurrences_in_range(from, to)
+    return [due_date].compact.select { |date| date.between?(from, to) } if one_time?
+
+    recurrence.occurrences_in_range(from, to)
+  end
+
   def next_due_date
     rec = get_recurrence
     rec&.next_occurrence_from || nil

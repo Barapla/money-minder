@@ -7,7 +7,10 @@ RSpec.describe '/api/v1/dashboard', type: :request do
   let(:token) { user.generate_jwt_token[:token] }
   let(:auth_headers) { { 'Authorization' => "Bearer #{token}" } }
 
-  before { allow(AiReport).to receive(:latest_for_user_and_type).and_return(nil) }
+  before do
+    allow(AiReport).to receive(:latest_stored).and_return(nil)
+    allow(AiReportGenerationJob).to receive(:enqueue_once)
+  end
 
   def build_ai_report(summary:, created_at:, id: 1, expires_at: nil)
     report_type = Catalog.new(code: 'general')
@@ -42,7 +45,7 @@ RSpec.describe '/api/v1/dashboard', type: :request do
         created_at = Time.zone.parse('2026-09-01 10:00:00')
         expires_at = Time.zone.parse('2026-09-01 10:15:00')
         report = build_ai_report(summary: { 'text' => 'ok' }, created_at:, id: 7, expires_at:)
-        allow(AiReport).to receive(:latest_for_user_and_type).with(user.id, 'general').and_return(report)
+        allow(AiReport).to receive(:latest_stored).with(user.id, 'general').and_return(report)
 
         get api_v1_dashboard_path, headers: auth_headers
 
@@ -97,8 +100,8 @@ RSpec.describe '/api/v1/dashboard', type: :request do
 
         expect(response.parsed_body['record']['active_budgets']).to eq(
           [{ 'budget_id' => budget.id, 'category_name' => budget.name, 'category_color' => 'Purple',
-             'budgeted_amount' => 700.0, 'spent_amount' => 300.0, 'remaining_amount' => 400.0,
-             'percentage_used' => 42.86 }]
+             'budget_type' => 'cash', 'debt_amount' => 0.0, 'limit_amount' => 0.0,
+             'available_amount' => 700.0, 'spent_this_month' => 300.0, 'percentage_used' => 0.0 }]
         )
       end
     end
@@ -164,7 +167,8 @@ RSpec.describe '/api/v1/dashboard', type: :request do
 
         expect(response.parsed_body['record']['savings_summary']).to eq(
           [{ 'fund_id' => fund.id, 'fund_name' => 'Fondo Emergencia', 'current_amount' => 5000.0,
-             'goal_amount' => 20_000.0, 'percentage_achieved' => 25.0 }]
+             'goal_amount' => 20_000.0, 'percentage_achieved' => 25.0,
+             'target_date' => nil, 'feasibility' => 'no_target_date' }]
         )
       end
     end

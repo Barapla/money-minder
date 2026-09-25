@@ -1,0 +1,55 @@
+<%
+  p = @index_presenter
+  # Las 4 metricas chicas de la derecha del patrimonio. Mismo orden del diseño.
+  tiles = [
+    { label: p.next_payroll ? t('.due_before', date: l(p.next_payroll.date, format: :only_month)) : t('.due_soon'),
+      value: p.format_currency(p.due_soon_total),
+      note: t('.cards_due', count: p.due_soon.size),
+      color: 'text-amber-400' },
+    { label: t('.utilization'),
+      value: "#{p.total_utilization}%",
+      note: t('.utilization_note', limit: p.format_currency(p.credit_limit_total), count: p.cards_count),
+      color: p.utilization_healthy? ? 'text-emerald-400' : 'text-amber-400' },
+    { label: t('.yield'),
+      value: "≈#{p.format_currency(p.annual_yield)}",
+      note: t('.yield_note', count: p.yielding_funds_count),
+      color: 'text-purple-400' },
+    { label: t('.free_to_spend'),
+      value: p.format_currency(p.free_to_spend),
+      note: t('.free_note'),
+      color: p.free_to_spend.negative? ? 'text-red-400' : 'text-white' }
+  ]
+%>
+<div class="bg-gradient-to-r from-bunker-900/85 to-purple-900/45 border border-bunker-800/60 rounded-2xl
+            px-7 py-[26px] mb-6 grid items-center gap-8 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
+  <div>
+    <div class="text-bunker-300 text-xs uppercase tracking-[0.06em] mb-1.5"><%= t('.net_worth') %></div>
+    <div class="font-mono text-[46px] leading-none font-bold mb-3.5 <%= p.net_worth.negative? ? 'text-red-400' : 'text-white' %>">
+      <%= p.format_currency(p.net_worth) %>
+    </div>
+    <div class="flex h-[11px] rounded-full overflow-hidden bg-bunker-950/70 mb-2.5">
+      <div class="bg-gradient-to-r from-emerald-600 to-emerald-400" style="width: <%= p.money_share_of_total %>%"></div>
+      <div class="bg-gradient-to-r from-red-600 to-red-400" style="width: <%= (100 - p.money_share_of_total).round(1) %>%"></div>
+    </div>
+    <div class="flex flex-wrap gap-[18px] text-xs text-bunker-300">
+      <span class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-sm bg-emerald-400"></span>
+        <%= t('.your_money') %> <span class="font-mono"><%= p.format_currency(p.money_total) %></span>
+      </span>
+      <span class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-sm bg-red-400"></span>
+        <%= t('.you_owe') %> <span class="font-mono"><%= p.format_currency(p.debt_total) %></span>
+      </span>
+    </div>
+  </div>
+
+  <div class="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))]">
+    <% tiles.each do |tile| %>
+      <div class="bg-bunker-950/45 border border-bunker-700/50 rounded-xl p-4">
+        <div class="text-bunker-400 text-[11px] uppercase tracking-[0.05em] mb-2"><%= tile[:label] %></div>
+        <div class="font-mono text-[19px] font-bold <%= tile[:color] %>"><%= tile[:value] %></div>
+        <div class="text-bunker-400 text-[11px] mt-[3px]"><%= tile[:note] %></div>
+      </div>
+    <% end %>
+  </div>
+</div>

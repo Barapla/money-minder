@@ -8,12 +8,17 @@ module ChatbotServices
   # en vez de los datos crudos del calculador (ver BUG-010).
   class QueryProcessor
     include ActionView::Helpers::NumberHelper
+    # Orden por especificidad: gana el primero que case. Todos anclados con \b
+    # porque sin ancla /cu[aá]nto.*en/ casaba con "cuanto ... idEALMENte" y
+    # mandaba una pregunta de proyeccion al analizador de categorias.
     QUERY_PATTERNS = {
-      liquidity: /liquidez|disponible|tengo/i,
-      savings_projection: /ahorr(ar|ado|é)|proyecci[oó]n|para.*fecha/i,
-      category_spending: /gast[eéo].*categor[ií]a|cu[aá]nto.*en/i,
-      card_status: /ciclo|tarjeta|corte/i,
-      scenario: /y si|escenario|recort[oa]/i
+      card_status: /\b(ciclo|corte|utilizaci[oó]n|tarjeta de cr[eé]dito)\b/i,
+      scenario: /\b(y si|qu[eé] pasa si|escenario|simula|recort[aeo])\b/i,
+      savings_projection: /\b(proyecci[oó]n(es)?|proyectar|acumulad[oa]|acumular|tendr[íi]?a|
+                            aguinaldo|fin de a[nñ]o|ahorr(ar|ado|é))\b|
+                           \b(hasta|para) el \d{1,2}\b/ix,
+      category_spending: /\bcu[aá]nto\s+\w*\s*(gast|llev)\w*/i,
+      liquidity: /\b(liquidez|disponible|cu[aá]nto tengo|dispongo)\b/i
     }.freeze
 
     FAILURE_CONTENT = 'No pudimos procesar tu consulta en este momento. Intenta reformularla en unos minutos.'
@@ -52,32 +57,16 @@ module ChatbotServices
       Result.success(data: { content: content, assumptions: data[:assumptions], warnings: data[:warnings] })
     end
 
+    # La misma foto en TODA consulta, sin importar el calculador que haya tocado:
+    # saldos, nomina proyectada, aguinaldo y fondo de ahorro, y recordatorios.
+    # Antes cada calculador mandaba su propia base y dos respuestas seguidas se
+    # contradecian en el patrimonio; la nomina no llegaba nunca.
     def advisor_context
-      [payroll_context, scheduled_reminders_context].compact.presence&.join("\n")
+      ChatbotServices::FinancialSnapshot.new(user, horizon_date: horizon_date).to_prompt.presence
     end
 
-    # Contexto de nomina (FEAT-007) para que el asesor pueda referenciarlo
-    # aunque la consulta no sea explicitamente sobre nomina.
-    def payroll_context
-      info = DashboardPresenter.new(user).next_payroll_info
-      return nil unless info
-
-      "#{info[:next_period_label]}: #{info[:net_amount_formatted]} el #{info[:payment_date].strftime('%d/%m/%Y')} " \
-        "(en #{info[:days_until]} días)."
-    end
-
-    # Recordatorios (ObligatoryPayment, tanto income como payment) programados
-    # para el mes actual: lo que el usuario espera que le llegue vs. lo que
-    # idealmente deberia gastar segun sus compromisos ya agendados.
-    def scheduled_reminders_context
-      summary = ChatbotServices::ScheduledRemindersSummary.new(user)
-      income = summary.scheduled_income_total
-      payment = summary.scheduled_payment_total
-      return nil if income.zero? && payment.zero?
-
-      'Recordatorios programados para este mes: ingresos programados ' \
-        "#{number_to_currency(income, unit: '$')}, pagos programados (gasto ideal del mes) " \
-        "#{number_to_currency(payment, unit: '$')}."
+    def horizon_date
+      @horizon_date ||= ChatbotServices::HorizonParser.call(user_message) || Date.current.end_of_year
     end
 
     def detect_query_type

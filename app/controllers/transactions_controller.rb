@@ -9,9 +9,7 @@ class TransactionsController < ApplicationController
 
   # GET /transactions or /transactions.json
   def index
-    transactions = current_user.transactions.order(transaction_date: :desc).order(created_at: :desc)
-    @total_collections = transactions.count
-    @transactions = transactions.limit(10)
+    @index_presenter = TransactionsIndexPresenter.new(current_user, params)
   end
 
   def transactions_table
@@ -45,6 +43,7 @@ class TransactionsController < ApplicationController
   def show
     @transaction_presenter = TransactionPresenter.new(@transaction)
     @budget_presenter = BudgetPresenter.new(@transaction.budget)
+    @show_presenter = TransactionShowPresenter.new(@transaction)
   end
 
   # GET /transactions/new
@@ -117,6 +116,7 @@ class TransactionsController < ApplicationController
 
   def apply_new_transaction_prefill
     PREFILL_ATTRIBUTES.each { |attr| @transaction.public_send(:"#{attr}=", params[attr].presence) }
+    @transaction.debt_id = params[:debt_id].presence
     type_code = params[:transaction_type].presence
     @transaction.transaction_type = Catalog.by_group_and_code('transaction_types', type_code) if type_code
   end
@@ -134,7 +134,9 @@ class TransactionsController < ApplicationController
                                         :budget_id,
                                         :related_budget_id,
                                         :icon_id,
-                                        :color_id)
+                                        :color_id,
+                                        :debt_id,
+                                        :debt_amount)
   end
 
   def get_turbo_stream_for_transaction_type(transaction_type)

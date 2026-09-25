@@ -2,6 +2,13 @@
 
 Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   resources :obligatory_payments
+
+  resources :debts do
+    member do
+      patch :settle
+    end
+    resources :debt_allocations, only: %i[create update destroy], path: 'abonos'
+  end
   resources :saving_goals, only: %i[index new create edit update destroy] do
     collection do
       patch :reorder
@@ -84,10 +91,18 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
       end
 
       post 'auth/login', to: 'auth#login'
+      post 'auth/register', to: 'auth#register'
+      post 'auth/password', to: 'auth#reset_password'
+      patch 'auth/password', to: 'auth#update_password'
       get 'auth/me', to: 'auth#me'
+      patch 'auth/me', to: 'auth#update_me'
 
       resource :dashboard, only: [:show], controller: 'dashboard'
-      resources :transactions, only: %i[index show]
+      resource :calendar, only: [:show], controller: 'calendar'
+      resources :catalogs, only: [:index]
+      resources :transactions, only: %i[index show create]
+      resources :obligatory_payments, only: %i[index create]
+      resources :saving_goals, only: %i[index create]
     end
   end
 

@@ -11,6 +11,9 @@ module ChatbotServices
       das una recomendacion practica y breve cuando sea util, considerando el contexto de
       nomina y recordatorios de pago si esta disponible. Usa unicamente los datos
       financieros que se te proporcionan. No inventes cifras que no esten en los datos.
+      Si los datos traen un total ya calculado (metric_label y primary_metric), usalo tal
+      cual y explica su desglose: NO rehagas la aritmetica ni cambies el numero de meses,
+      porque el calculo ya considera el periodo correcto.
       No agregues tu propia lista de supuestos o advertencias: esas se muestran por separado.
     PROMPT
 

@@ -53,7 +53,7 @@
              data-controller="navbar-dropdown"
              data-action="mouseenter->navbar-dropdown#open mouseleave->navbar-dropdown#startCloseTimer keydown->navbar-dropdown#keydown">
           <button type="button"
-                  class="<%= navbar_dropdown_trigger_class([budgets_path, obligatory_payments_path, obligatory_payments_calendar_index_path, saving_goals_path]) %>"
+                  class="<%= navbar_dropdown_trigger_class([budgets_path, obligatory_payments_path, obligatory_payments_calendar_index_path, saving_goals_path, debts_path]) %>"
                   data-navbar-dropdown-target="button"
                   data-action="click->navbar-dropdown#toggle"
                   aria-haspopup="true"
@@ -70,6 +70,7 @@
             <%= navbar_dropdown_item_to(t('.reminders_link'), obligatory_payments_path) %>
             <%= navbar_dropdown_item_to(t('.reminders_calendar_link'), obligatory_payments_calendar_index_path) %>
             <%= navbar_dropdown_item_to(t('.saving_goals_link'), saving_goals_path) %>
+            <%= navbar_dropdown_item_to(t('.debts_link'), debts_path) %>
           </div>
         </div>
 
@@ -207,6 +208,7 @@
             <%= navbar_dropdown_item_to(t('.reminders_link'), obligatory_payments_path) %>
             <%= navbar_dropdown_item_to(t('.reminders_calendar_link'), obligatory_payments_calendar_index_path) %>
             <%= navbar_dropdown_item_to(t('.saving_goals_link'), saving_goals_path) %>
+            <%= navbar_dropdown_item_to(t('.debts_link'), debts_path) %>
           </div>
         </div>
       </div>

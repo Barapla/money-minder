@@ -28,6 +28,8 @@ class SavingsSummaryCalculator
       fund_name: budget.name,
       current_amount: fund.closing_balance.to_f,
       goal_amount: fund.goal_amount.to_f,
-      percentage_achieved: fund.progress_percentage.to_f.round(2) }
+      percentage_achieved: fund.progress_percentage.to_f.round(2),
+      target_date: fund.target_date,
+      feasibility: fund.goal_feasibility }
   end
 end

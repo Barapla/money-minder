@@ -1,0 +1,58 @@
+<%
+  tone = debt.receivable? ? 'emerald' : 'red'
+  bar = debt.receivable? ? 'bg-emerald-500' : 'bg-red-400'
+  badge = if debt.settled? then 'bg-bunker-500/20 text-bunker-300 border-bunker-500/30'
+          elsif debt.cancelled? then 'bg-bunker-500/20 text-bunker-400 border-bunker-500/30'
+          elsif debt.receivable? then 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+          else 'bg-red-500/15 text-red-300 border-red-500/30'
+          end
+%>
+<%= link_to debt_path(debt),
+      class: "block bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-5 hover:border-purple-500/40 transition-colors #{'opacity-60' unless debt.active?}" do %>
+  <div class="flex items-start justify-between gap-2.5 mb-4">
+    <div class="flex items-center gap-[11px] min-w-0">
+      <span class="w-[38px] h-[38px] shrink-0 rounded-[11px] border border-bunker-700/50 flex items-center justify-center text-[17px] <%= color_bg_class(debt.color&.code, 40) %>">
+        <%= debt.icon&.value || '🤝' %>
+      </span>
+      <span class="min-w-0">
+        <span class="block text-white text-[14px] font-semibold line-clamp-1"><%= debt.name %></span>
+        <span class="block text-bunker-400 text-[11.5px] line-clamp-1"><%= debt.counterparty.presence || t('debts.index.no_counterparty') %></span>
+      </span>
+    </div>
+    <span class="shrink-0 whitespace-nowrap border text-[10.5px] font-semibold px-2.5 py-[3px] rounded-full <%= badge %>">
+      <%= t("debts.status.#{debt.status}") %>
+    </span>
+  </div>
+
+  <div class="font-mono text-2xl font-bold text-white mb-1"><%= presenter.format_currency(debt.remaining_amount) %></div>
+  <p class="text-bunker-400 text-[11.5px] mb-3.5">
+    <%= t('debts.index.of_principal', paid: presenter.format_currency(debt.paid_amount),
+                                      principal: presenter.format_currency(debt.principal_amount)) %>
+  </p>
+
+  <div class="h-1.5 rounded-full bg-bunker-950/70 overflow-hidden mb-2.5">
+    <div class="h-full rounded-full <%= bar %>" style="width: <%= debt.progress_percentage %>%"></div>
+  </div>
+
+  <dl class="flex flex-col gap-1.5 text-[11.5px]">
+    <div class="flex justify-between gap-2">
+      <dt class="text-bunker-400"><%= t('debts.index.progress') %></dt>
+      <dd class="font-mono text-bunker-200 font-semibold"><%= debt.progress_percentage %>%</dd>
+    </div>
+    <% if debt.installments? && debt.active? %>
+      <div class="flex justify-between gap-2">
+        <dt class="text-bunker-400"><%= t('debts.index.remaining_installments') %></dt>
+        <dd class="font-mono text-bunker-200 font-semibold">
+          <%= t('debts.index.installments_count', count: debt.remaining_installments,
+                                                  amount: presenter.format_currency(debt.installment_amount)) %>
+        </dd>
+      </div>
+    <% end %>
+    <% if debt.next_due_date && debt.active? %>
+      <div class="flex justify-between gap-2">
+        <dt class="text-bunker-400"><%= t('debts.index.next_due') %></dt>
+        <dd class="font-mono text-amber-300 font-semibold"><%= l(debt.next_due_date, format: :very_short) %></dd>
+      </div>
+    <% end %>
+  </dl>
+<% end %>
