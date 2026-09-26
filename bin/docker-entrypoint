@@ -1,0 +1,15 @@
+#!/bin/bash -e
+
+# jemalloc reduce notablemente la fragmentacion de memoria de Ruby en contenedores
+# de larga vida. Si la libreria no esta, se sigue sin ella en vez de fallar.
+if [ -z "${LD_PRELOAD}" ] && [ -f /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 ]; then
+  export LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libjemalloc.so.2"
+fi
+
+# Solo el proceso web prepara la base. Si tambien lo hiciera Sidekiq, dos
+# contenedores arrancando a la vez correrian migraciones en paralelo.
+if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
+  ./bin/rails db:prepare
+fi
+
+exec "${@}"

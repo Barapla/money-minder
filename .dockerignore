@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+.github
+
+# Dependencias que se instalan dentro de la imagen
+/node_modules
+/vendor/bundle
+/.bundle
+
+# Artefactos que se regeneran en el build; copiarlos ensucia la cache
+/app/assets/builds/*
+!/app/assets/builds/.keep
+/public/assets
+/public/packs
+/public/packs-test
+
+# Estado local y temporales
+/log/*
+!/log/.keep
+/tmp/*
+!/tmp/.keep
+/storage/*
+!/storage/.keep
+/db/*.sqlite3*
+
+# Secretos y config de maquina: se inyectan por variables de entorno
+.env
+.env.*
+!.env.example
+/config/master.key
+/config/credentials/*.key
+
+# Pruebas y documentacion: no van en una imagen de produccion
+/spec
+/.rspec
+/coverage
+/PR_BODY.md
+/.claude
+CLAUDE.md
+*.md
+!README.md
+
+# Basura de editores y del SO
+.DS_Store
+*.swp
+.idea
+.vscode

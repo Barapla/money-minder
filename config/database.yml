@@ -53,9 +53,10 @@ test:
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
+# Produccion se configura entera por DATABASE_URL, que es lo que espera la imagen
+# de Docker. Antes convivian `url` con `database`, `username` y `password`
+# sueltos: Rails encimaba la URL sobre esos valores, asi que el usuario
+# hardcodeado nunca se usaba y solo confundia.
 production:
   <<: *default
   url: <%= ENV["DATABASE_URL"] %>
-  database: money_minder_production
-  username: money_minder
-  password: <%= ENV["MONEY_MINDER_DATABASE_PASSWORD"] %>

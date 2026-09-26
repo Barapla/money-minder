@@ -946,3 +946,67 @@ Para abrir un servidor con foreman simplemente corremos el siguiente comando
 foreman start -f Procfile.dev
 ```
 
+
+---
+
+## Docker (imagen de producción)
+
+La imagen es **solo para despliegue**. El flujo local sigue siendo `bin/dev`; Docker no lo reemplaza.
+
+### Construir
+
+```bash
+docker build -t money-minder .
+```
+
+Multi-stage: los compiladores, Node y yarn viven en la etapa de build y no llegan a la
+imagen final. Los assets se precompilan dentro (`config.assets.compile = false` en
+producción) y Puma los sirve directo, sin nginx.
+
+### Correr el servidor web
+
+```bash
+docker run -p 3000:3000 \
+  -e SECRET_KEY_BASE=$(openssl rand -hex 64) \
+  -e DATABASE_URL=postgres://usuario:clave@host:5432/money_minder_production \
+  -e REDIS_URL=redis://host:6379/0 \
+  -e ANTHROPIC_API_KEY=tu_llave \
+  money-minder
+```
+
+El entrypoint corre `db:prepare` **solo** en el proceso web. Si lo hiciera también
+Sidekiq, dos contenedores arrancando a la vez correrían migraciones en paralelo.
+
+### Correr Sidekiq
+
+Mismo contenedor, otro comando:
+
+```bash
+docker run \
+  -e SECRET_KEY_BASE=... -e DATABASE_URL=... -e REDIS_URL=... -e ANTHROPIC_API_KEY=... \
+  money-minder bundle exec sidekiq
+```
+
+Toma las 5 colas de `config/initializers/sidekiq.rb`: `critical`,
+`recurring_transactions`, `maintenance`, `notifications` y `default`.
+
+### Variables de entorno
+
+| Variable | Requerida | Para qué |
+|---|---|---|
+| `SECRET_KEY_BASE` | Sí | Sesiones y firma de los JWT de la API móvil. Este proyecto **no tiene** `config/master.key`, así que no se puede usar credenciales encriptadas. |
+| `DATABASE_URL` | Sí | Postgres. `config/database.yml` configura producción entera desde aquí. |
+| `REDIS_URL` | Sí | Sidekiq y ActionCable. |
+| `ANTHROPIC_API_KEY` | Sí | Chatbot y reportes de IA. |
+| `RAILS_MAX_THREADS` | No | Pool de Puma y de ActiveRecord. Default 5. |
+| `RAILS_SERVE_STATIC_FILES` | No | Ya viene en `true` en la imagen. Ponlo en vacío si sirves los assets con un proxy. |
+
+### Migrar tus datos locales al contenedor
+
+La imagen arranca con una base vacía. Si quieres tus datos de desarrollo dentro:
+
+```bash
+pg_dump -Fc money_minder_development > /tmp/mm.dump
+docker cp /tmp/mm.dump <contenedor_postgres>:/tmp/mm.dump
+docker exec <contenedor_postgres> pg_restore -U usuario -d money_minder_production --clean /tmp/mm.dump
+```
