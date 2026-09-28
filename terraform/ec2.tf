@@ -15,8 +15,12 @@ resource "aws_security_group" "app" {
   description = "Servidor de la app: HTTP y HTTPS abiertos, SSH cerrado salvo que se indique"
   vpc_id      = aws_vpc.main.id
 
+  # El 80 queda abierto a la fuerza: el reto HTTP-01 de Let's Encrypt lo validan
+  # servidores suyos desde IPs que no publican, y cerrarlo deja el certificado sin
+  # poder renovarse. Por ahi solo pasan el reto y la redireccion a HTTPS; la app
+  # se sirve unicamente por el 443, que si esta restringido.
   ingress {
-    description = "HTTP. Caddy redirige a HTTPS y lo usa para el reto de Let's Encrypt"
+    description = "HTTP. Solo el reto de Let's Encrypt y la redireccion a HTTPS"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -24,11 +28,11 @@ resource "aws_security_group" "app" {
   }
 
   ingress {
-    description = "HTTPS"
+    description = length(var.allowed_cidrs) > 0 ? "HTTPS, solo desde las IPs autorizadas" : "HTTPS, abierto"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = length(var.allowed_cidrs) > 0 ? var.allowed_cidrs : ["0.0.0.0/0"]
   }
 
   dynamic "ingress" {
@@ -88,6 +92,9 @@ resource "aws_instance" "app" {
     domain     = var.domain
     acme_email = var.acme_email
     log_group  = aws_cloudwatch_log_group.app.name
+    # Caddy filtra tambien por su cuenta: si alguien deja el grupo de seguridad
+    # abierto por error, la app sigue sin servirse a cualquiera.
+    allowed_cidrs = join(" ", var.allowed_cidrs)
   })
 
   # Cambiar el user_data recrea la instancia. Se declara para que el plan lo diga

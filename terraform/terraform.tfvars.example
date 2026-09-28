@@ -6,6 +6,17 @@ acme_email = "tu@correo.com"
 # La misma que tienes en .env local
 anthropic_api_key = "sk-ant-..."
 
+# Quien puede entrar a la app. Vacio o ausente = abierto a todos.
+# Una IP suelta lleva /32. Consulta la tuya con: curl -s ifconfig.me
+#
+# OJO: si tu internet de casa tiene IP dinamica, cambiara y te dejara fuera.
+# En ese caso usa el rango de tu proveedor, o dejalo abierto y protege con la
+# sesion de la app.
+allowed_cidrs = [
+  # "189.203.44.10/32",   # casa
+  # "201.140.12.33/32",   # oficina
+]
+
 # Opcionales
 # region            = "us-east-1"
 # instance_type     = "t4g.small"

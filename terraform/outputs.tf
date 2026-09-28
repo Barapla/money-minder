@@ -8,6 +8,13 @@ output "siguiente_paso_dns" {
   value       = "Crea un registro A de ${var.domain} hacia ${aws_eip.app.public_ip}. Caddy pide el certificado solo cuando el dominio ya resuelve; antes de eso el reto de Let's Encrypt falla."
 }
 
+output "acceso_restringido" {
+  description = "Quien puede entrar a la app"
+  value = length(var.allowed_cidrs) > 0 ? join(
+    ", ", var.allowed_cidrs
+  ) : "ABIERTO A TODO INTERNET. Define allowed_cidrs para restringirlo."
+}
+
 output "ecr_repositorio" {
   description = "A donde se sube la imagen"
   value       = aws_ecr_repository.app.repository_url

@@ -36,13 +36,36 @@ RAILS_LOG_TO_STDOUT=true
 REDIS_URL=redis://redis:6379/0
 ENVEOF
 
-cat > /opt/${project}/Caddyfile <<CADDYEOF
+# Segunda capa de filtrado, dentro de Caddy. El grupo de seguridad ya bloquea el
+# 443, pero si alguien lo abre por error la app sigue sin servirse a cualquiera.
+# Caddy es el borde (no hay balanceador delante), asi que remote_ip ve la IP real
+# del cliente y no la de un proxy.
+if [ -n "${allowed_cidrs}" ]; then
+  cat > /opt/${project}/Caddyfile <<CADDYEOF
+${domain} {
+	encode gzip
+	tls ${acme_email}
+
+	@permitidas remote_ip ${allowed_cidrs}
+	handle @permitidas {
+		reverse_proxy app:3000
+	}
+
+	# A todo lo demas se le responde 403 sin revelar que hay detras.
+	handle {
+		respond "No autorizado" 403
+	}
+}
+CADDYEOF
+else
+  cat > /opt/${project}/Caddyfile <<CADDYEOF
 ${domain} {
 	encode gzip
 	reverse_proxy app:3000
 	tls ${acme_email}
 }
 CADDYEOF
+fi
 
 cat > /opt/${project}/docker-compose.yml <<COMPOSEEOF
 services:

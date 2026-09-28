@@ -1087,6 +1087,34 @@ Las migraciones las corre el entrypoint al arrancar el contenedor web.
 | Consola de Rails | `sudo docker compose -f /opt/money-minder/docker-compose.yml exec app ./bin/rails console` |
 | Respaldos de la base | Automáticos en RDS, 7 días de retención |
 
+### Restringir quién puede entrar
+
+Por defecto la app queda abierta a internet. Para limitarla a IPs concretas, en
+`terraform.tfvars`:
+
+```hcl
+allowed_cidrs = [
+  "189.203.44.10/32",   # casa
+  "201.140.12.33/32",   # oficina
+]
+```
+
+Una IP suelta lleva `/32`. Consulta la tuya con `curl -s ifconfig.me`.
+
+El filtro actúa en dos capas: el grupo de seguridad bloquea el 443 a cualquiera que
+no esté en la lista, y Caddy vuelve a filtrar por su cuenta y responde `403` — así
+que si alguien deja el grupo abierto por error, la app sigue protegida.
+
+**El puerto 80 no se puede cerrar.** El reto HTTP-01 de Let's Encrypt lo validan
+servidores suyos desde IPs que no publican; cerrarlo deja el certificado sin poder
+renovarse. Por el 80 solo pasan el reto y la redirección a HTTPS: la app se sirve
+únicamente por el 443.
+
+**Si tu internet de casa tiene IP dinámica**, cambiará y te dejará fuera. Opciones:
+usar el rango de tu proveedor en vez de la IP exacta, o volver a correr
+`terraform apply` con la nueva. Al servidor siempre puedes entrar con
+`aws ssm start-session`, que va por fuera y no depende de estas reglas.
+
 ### Antes de destruir
 
 `aws_db_instance` tiene `deletion_protection = true`. Para eliminar el entorno hay que
