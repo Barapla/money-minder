@@ -56,9 +56,17 @@ RUN apt-get update -qq && \
 
 # Node hace falta en esta etapa, no solo para yarn: assets:precompile dispara los
 # hooks de jsbundling y cssbundling, que corren esbuild y tailwind.
+# El tarball de Node es distinto por arquitectura. Sin esto la imagen solo sirve
+# en x86 y revienta al construirla para un EC2 Graviton (t4g), que es ARM.
 ARG NODE_VERSION
 ARG YARN_VERSION
-RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
+RUN NODE_ARCH="$(dpkg --print-architecture)" && \
+    case "${NODE_ARCH}" in \
+      amd64) NODE_ARCH=x64 ;; \
+      arm64) NODE_ARCH=arm64 ;; \
+      *) echo "Arquitectura no soportada: ${NODE_ARCH}" && exit 1 ;; \
+    esac && \
+    curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz" \
       | tar -xJ -C /usr/local --strip-components=1 --no-same-owner && \
     npm install -g "yarn@${YARN_VERSION}" && \
     npm cache clean --force

@@ -37,3 +37,9 @@
 
 .env
 /prompts
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/terraform.tfvars
+crash.log

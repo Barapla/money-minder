@@ -1,0 +1,16 @@
+# Copia a terraform.tfvars y rellena. Ese archivo esta en .gitignore.
+
+domain     = "money.tudominio.com"
+acme_email = "tu@correo.com"
+
+# La misma que tienes en .env local
+anthropic_api_key = "sk-ant-..."
+
+# Opcionales
+# region            = "us-east-1"
+# instance_type     = "t4g.small"
+# image_tag         = "latest"
+
+# Solo si quieres SSH ademas de SSM. Vacio = cerrado.
+# ssh_allowed_cidrs = ["TU.IP.PUBLICA/32"]
+# ssh_public_key    = "ssh-ed25519 AAAA..."

@@ -1010,3 +1010,85 @@ pg_dump -Fc money_minder_development > /tmp/mm.dump
 docker cp /tmp/mm.dump <contenedor_postgres>:/tmp/mm.dump
 docker exec <contenedor_postgres> pg_restore -U usuario -d money_minder_production --clean /tmp/mm.dump
 ```
+
+---
+
+## Despliegue en AWS con Terraform
+
+Infraestructura en `terraform/`: una EC2 Graviton con Docker Compose (Rails, Sidekiq,
+Redis y Caddy) y Postgres administrado en RDS. **Unos 29 USD al mes** en us-east-1.
+
+### Por qué esta forma y no otra
+
+- **Sin NAT Gateway.** Cuesta ~32 USD al mes, más que el propio servidor. La EC2 vive
+  en subred pública con su grupo de seguridad cerrado; RDS en privadas, sin acceso
+  público ni salida a internet, que no necesita.
+- **Redis en la máquina, no ElastiCache.** Solo guarda la cola de Sidekiq: si se
+  pierde, se pierden trabajos pendientes, no datos tuyos. Ahorra ~12 USD al mes.
+- **Postgres sí administrado.** Respaldos automáticos y recuperación a un punto en el
+  tiempo. Tus transacciones y deudas no son algo que quieras perder por un disco.
+- **Caddy para HTTPS.** Pide el certificado de Let's Encrypt solo, sin cron ni renovación
+  manual.
+
+### Primer despliegue
+
+1. Configura las variables:
+
+   ```bash
+   cd terraform
+   cp terraform.tfvars.example terraform.tfvars
+   # rellena domain, acme_email y anthropic_api_key
+   ```
+
+2. Crea la infraestructura:
+
+   ```bash
+   terraform init
+   terraform apply
+   ```
+
+3. **Apunta tu DNS antes de seguir.** El apply devuelve la IP; crea un registro A de tu
+   dominio hacia ella. Caddy solo consigue el certificado cuando el dominio ya resuelve:
+   el reto HTTP-01 falla si no.
+
+4. Sube la imagen. El servidor es ARM, así que se construye para `linux/arm64`:
+
+   ```bash
+   REPO=$(terraform output -raw ecr_repositorio)
+   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin "$REPO"
+
+   cd ..
+   docker buildx build --platform linux/arm64 -t "$REPO:latest" --push .
+   ```
+
+5. Reinicia los contenedores para que tomen la imagen:
+
+   ```bash
+   aws ssm start-session --target <id_de_la_instancia>
+   sudo docker compose -f /opt/money-minder/docker-compose.yml up -d --pull always
+   ```
+
+### Desplegar una versión nueva
+
+```bash
+docker buildx build --platform linux/arm64 -t "$REPO:latest" --push .
+aws ssm start-session --target <id>
+sudo docker compose -f /opt/money-minder/docker-compose.yml up -d --pull always
+```
+
+Las migraciones las corre el entrypoint al arrancar el contenedor web.
+
+### Operación
+
+| Qué | Cómo |
+|---|---|
+| Entrar al servidor | `aws ssm start-session --target <id>` — sin abrir el puerto 22 |
+| Ver logs | CloudWatch, grupo `/money-minder/app`, flujos `app`, `sidekiq` y `caddy` |
+| Consola de Rails | `sudo docker compose -f /opt/money-minder/docker-compose.yml exec app ./bin/rails console` |
+| Respaldos de la base | Automáticos en RDS, 7 días de retención |
+
+### Antes de destruir
+
+`aws_db_instance` tiene `deletion_protection = true`. Para eliminar el entorno hay que
+desactivarlo a propósito; es a posta, para que un `terraform destroy` distraído no se
+lleve la base.

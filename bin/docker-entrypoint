@@ -2,8 +2,11 @@
 
 # jemalloc reduce notablemente la fragmentacion de memoria de Ruby en contenedores
 # de larga vida. Si la libreria no esta, se sigue sin ella en vez de fallar.
-if [ -z "${LD_PRELOAD}" ] && [ -f /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 ]; then
-  export LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libjemalloc.so.2"
+# La ruta cambia entre x86 y ARM, y el servidor de destino es Graviton, asi que se
+# busca en vez de hardcodearla.
+if [ -z "${LD_PRELOAD}" ]; then
+  JEMALLOC="$(ls /usr/lib/*/libjemalloc.so.2 2>/dev/null | head -1)"
+  [ -n "${JEMALLOC}" ] && export LD_PRELOAD="${JEMALLOC}"
 fi
 
 # Solo el proceso web prepara la base. Si tambien lo hiciera Sidekiq, dos
