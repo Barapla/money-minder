@@ -84,23 +84,14 @@
         <!-- Right Column -->
         <div class="space-y-6">
             <!-- Budget -->
-            <%= render Forms::SelectComponent.new(
-                name: :budget_id,
-                form:,
-                options_collection: Budget.all.pluck(:name, :id),
-                options: { 
-                    help_text: "Selecciona el presupuesto al que pertenece esta transacción",
-                    required: true,
-                    disabled: transaction.persisted?
-                }
-            ) %>
+            <%= turbo_frame_tag "budget_origin_frame" do %>
+                <%= render "transactions/forms/budget_origin", transaction: %>
+            <% end %>
 
             <!-- Related Budget -->
             <%= turbo_frame_tag "budget_related_frame" do  %>
-                <% unless transaction.new_record? %>
-                    <% if transaction.transfer? %>
-                        <%= render "transactions/forms/transfer/budget_related", transaction: %>
-                    <% end %>
+                <% if transaction.transfer? %>
+                    <%= render "transactions/forms/transfer/budget_related", transaction: %>
                 <% end %>
             <% end %>
 
@@ -149,7 +140,7 @@
                 <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-4">
                     <div class="flex items-center gap-3 mb-3">
                         <div data-budgets--preview-target="preview" class="w-12 h-12 bg-<%= transaction.color&.value || 'blue-500' %> rounded-lg flex items-center justify-center">
-                            <span class="text-lg"><%= transaction.icon&.value || Catalog.by_group('transaction_icons').first.value %></span>
+                            <span class="text-lg"><%= transaction.icon&.value || Catalog.by_group('transaction_icons').first&.value %></span>
                         </div>
                         <div>
                             <div data-budgets--preview-target="previewBudgetType" class="text-sm font-medium text-white"><%= transaction.category&.name || "Tarjeta de débito" %></div>
@@ -168,7 +159,15 @@
     </div>
 
 
-    <%= form.hidden_field :user_id, value: current_user.id %>
+    <%# El ligado con deudas se hace desde la pantalla de la deuda, que es donde
+        estas viendo el saldo. Aqui solo viajan escondidos cuando llegas desde el
+        boton "Registrar un abono", para que ese camino no se corte a la mitad. %>
+    <% if transaction.debt_id.present? %>
+      <%= form.hidden_field :debt_id %>
+      <%= form.hidden_field :debt_amount %>
+    <% end %>
+
+    <%= form.hidden_field :user_id, value: current_user&.id %>
     <!-- Form Actions -->
     <div class="flex items-center justify-between pt-8 mt-8 border-t border-bunker-800/50">
         <% href_button = transaction.persisted? ? transaction : transactions_path %>

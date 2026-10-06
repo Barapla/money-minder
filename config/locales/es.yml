@@ -1,5 +1,20 @@
 es:
   app_name: "MoneyMinder"
+
+  auth:
+    pitch:
+      headline: "Tus cuentas, tarjetas y Sofipos en una sola cuenta clara."
+      subhead: "Sabe cuánto te queda libre después de lo que ya está comprometido, y qué se paga antes de tu próxima nómina."
+      free:
+        title: "Libre para gastar"
+        note: "El saldo menos lo que ya tiene dueño"
+      cards:
+        title: "Cortes y pagos al día"
+        note: "Cada tarjeta con su fecha real, no la del mes"
+      yields:
+        title: "Rendimiento de tus Sofipos"
+        note: "Cuál te paga más y cuánto llevas de interés"
+      privacy: "Tus datos se guardan en tu cuenta, no se comparten con tu banco."
   continue: "Continuar"
 
   date:
@@ -9,10 +24,16 @@ es:
       long: "%-d de %B de %Y"
       very_short: "%b %-d"
       only_month: "%-d de %B"
+      month_year: "%B %Y"
+      day_and_month: "%A %-d de %B"
     abbr_month_names:
       [~, Ene, Feb, Mar, Abr, May, Jun, Jul, Ago, Sep, Oct, Nov, Dic]
     month_names:
       [~, Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre]
+    day_names:
+      [Domingo, Lunes, Martes, Miércoles, Jueves, Viernes, Sábado]
+    abbr_day_names:
+      [Dom, Lun, Mar, Mié, Jue, Vie, Sáb]
   
   time:
     formats:
@@ -57,6 +78,7 @@ es:
         name: "Nombre"
         email: "Correo Electrónico"
         password: "Contraseña"
+        password_confirmation: "Confirma tu contraseña"
         role: "Rol"
       budget:
         name: "Nombre del presupuesto"
@@ -64,12 +86,16 @@ es:
         budget_type_id: "Tipo de presupuesto"
         icon_id: "Icono"
         color_id: "Color"
+        financial_product_id: "Producto del catálogo financiero"
+        institution: "Institución financiera"
       credit_card:
         initial_debt: "Presupuesto inicial de deuda"
         limit_amount: "Presupuesto límite"
         payday: "Siguiente día de pago"
         payment_due_days: "Días para el pago"
         cutting_day: "Día de corte"
+        financial_product_id: "Producto del catálogo financiero"
+        institution: "Institución financiera"
       obligatory_payment:
         name: "Nombre del pago"
         amount: "Monto"
@@ -77,6 +103,8 @@ es:
         category_id: "Categoría"
         icon_id: "Icono"
         color_id: "Color"
+        reminder_type: "Tipo de recordatorio"
+        due_date: "Fecha del recordatorio"
       recurrence:
         frequency_type_id: "Tipo de frecuencia"
         start_date: "Fecha de inicio"
@@ -95,7 +123,17 @@ es:
         interest_rate: "Tasa de interés"
         compound_frequency_id: "Frecuencia de capitalización"
         minimum_balance: "Saldo mínimo"
-        max_balance: "Saldo máximo"    
+        max_balance: "Saldo máximo"
+        financial_product_id: "Producto del catálogo financiero"
+        institution: "Institución financiera"
+      term_saving:
+        name: "Nombre del ahorro"
+        term_days: "Plazo en días"
+        rate_locked: "Tasa fija"
+        started_at: "Fecha de inicio"
+        principal_amount: "Capital"
+        financial_product_id: "Producto del catálogo financiero"
+        institution: "Institución financiera"
       transaction:
         amount: "Monto"
         transaction_date: "Fecha"
@@ -105,15 +143,62 @@ es:
         icon_id: "Icono"
         color_id: "Color"
         related_budget_id: "Presupuesto destino"
-        budget_id: "Presupuesto afectado"  
+        budget_id: "Presupuesto afectado"
+      saving_goal:
+        name: "Nombre"
+        target_amount: "Monto objetivo"
+        deadline: "Fecha límite"
+        status: "Estado"
+        priority_order: "Orden de prioridad"
+      payroll_profile:
+        base_salary: "Sueldo base"
+        monthly_gross_salary: "Salario bruto mensual"
+        savings_fund_rate: "Tasa de fondo de ahorro"
+        savings_fund_percentage: "Porcentaje de fondo de ahorro"
+        custom_isr_rate: "Tasa ISR personalizada"
+        custom_imss_rate: "Tasa IMSS personalizada"
+        hire_date: "Fecha de contratación"
+      financial_institution:
+        name: "Nombre"
+        active: "Activa"
+        code: "Código"
+        country: "País"
+      financial_product:
+        name: "Nombre"
+        active: "Activo"
+        product_type: "Tipo de producto"
+        financial_institution_id: "Institución financiera"
+      financial_product_benefit:
+        benefit_type: "Tipo de beneficio"
+        base_value: "Valor base"
+        reduced_value: "Valor reducido"
+        amount_cap: "Monto tope"
+        unit: "Unidad"
+        description: "Descripción"
+        active: "Activo"
     models:
       user: "Usuario"
       budget: "Presupuesto"
       credit_card: "Tarjeta de Crédito"
+      transaction: "Transacción"
+      saving_goal: "Meta de Ahorro"
+      obligatory_payment: "Pago Obligatorio"
+      employment_information: "Información Laboral"
+      payroll_profile: "Perfil de Nómina"
+      financial_institution: "Institución Financiera"
+      financial_product: "Producto Financiero"
+      financial_product_benefit: "Beneficio de Producto Financiero"
     errors:
       messages:
+        record_invalid: "La validación falló: %{errors}"
         blank: "no puede estar vacío"
         required: "es requerido"
+        taken: "ya ha sido tomado"
+        greater_than: "debe ser mayor que %{count}"
+        less_than_or_equal_to: "debe ser menor o igual que %{count}"
+        out_of_range: "debe estar entre 0 y 100 para unidad de tipo porcentaje"
+        invalid_financial_product: "no corresponde a ningun producto del catalogo financiero"
+        immutable: "no puede modificarse despues de creado"
   
   recurring_transactions:
     create:

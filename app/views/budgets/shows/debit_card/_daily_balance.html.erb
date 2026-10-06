@@ -1,0 +1,47 @@
+<% p = @debit_card_presenter %>
+<% days = p.daily_balances %>
+<% peak = p.daily_peak %>
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+  <div class="flex justify-between items-center flex-wrap gap-2.5 mb-5">
+    <div>
+      <h3 class="text-base font-semibold text-white"><%= t('.title') %></h3>
+      <p class="text-bunker-400 text-xs mt-0.5"><%= t('.subtitle', month: l(Date.current, format: '%B').capitalize) %></p>
+    </div>
+  </div>
+
+  <% if peak.positive? %>
+    <div class="flex items-end gap-[3px] sm:gap-[5px] h-[150px] mb-2.5">
+      <% days.each do |day| %>
+        <%
+          height = [((day[:balance] / peak) * 100).round, 1].max
+          color = if day[:today] then 'bg-amber-400'
+                  elsif day[:payroll] then 'bg-emerald-500'
+                  elsif day[:balance] <= 0 then 'bg-red-500'
+                  else 'bg-blue-500'
+                  end
+        %>
+        <div class="flex-1 rounded-t-[3px] <%= color %>"
+             style="height: <%= height %>%"
+             title="<%= l(day[:date], format: :very_short) %> · <%= number_to_currency(day[:balance], unit: '$') %>"></div>
+      <% end %>
+    </div>
+    <div class="flex justify-between text-[11px] text-bunker-400 mb-3.5">
+      <span><%= l(days.first[:date], format: :very_short) %></span>
+      <span class="text-white font-semibold"><%= t('.today', day: Date.current.day) %></span>
+    </div>
+    <div class="flex gap-4 flex-wrap text-[11.5px] text-bunker-400">
+      <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-sm bg-emerald-500"></span><%= t('.legend_payroll') %></span>
+      <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-sm bg-blue-500"></span><%= t('.legend_normal') %></span>
+      <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-sm bg-red-500"></span><%= t('.legend_empty') %></span>
+      <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-sm bg-amber-400"></span><%= t('.legend_today') %></span>
+    </div>
+    <% empties = days.count { |day| day[:balance] <= 0 } %>
+    <% if empties.positive? %>
+      <div class="mt-4 pt-4 border-t border-bunker-700/50 text-amber-300 text-[12.5px]">
+        <%= t('.touched_bottom', count: empties) %>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="text-bunker-400 text-sm text-center py-10"><%= t('.empty') %></p>
+  <% end %>
+</div>

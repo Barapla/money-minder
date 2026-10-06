@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :catalog do
-    value { "MyString" }
-    code { "MyString" }
-    group_catalog { nil }
+    sequence(:value) { |n| "Value #{n}" }
+    sequence(:code) { |n| "code_#{n}" }
+    association :group_catalog
   end
 end

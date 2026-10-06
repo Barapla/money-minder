@@ -45,6 +45,19 @@ es:
       failure: "No se pudo autorizar %{kind} debido a \"%{reason}\"."
       success: "Identificado correctamente %{kind}."
     passwords:
+      new:
+        title: "¿Olvidaste tu contraseña?"
+        subtitle: "Escribe el correo de tu cuenta y te mandamos un enlace para crear una nueva."
+        send_instructions: "Enviarme el enlace"
+        back_to_login: "← Volver a iniciar sesión"
+      edit:
+        title: "Crea tu nueva contraseña"
+        subtitle: "Elige una que no uses en otro lado. Al guardarla entrarás directo a tu cuenta."
+        password_hint:
+          one: "Mínimo %{count} carácter."
+          other: "Mínimo %{count} caracteres."
+        change_password: "Cambiar mi contraseña"
+        back_to_login: "← Volver a iniciar sesión"
       no_token: "No puedes acceder a esta página sino es por medio de un enlace para restablecer la contraseña enviado a tu correo. Si accediste desde el enlace para restablecer la contraseña, asegúrate de que la URL esté completa."
       send_instructions: "Recibirás un correo electrónico con instrucciones sobre cómo restablecer tu contraseña en unos minutos."
       send_paranoid_instructions: "Si tu correo electrónico existe en nuestra base de datos, recibirás un enlace para restablecer la contraseña en unos minutos."
@@ -53,9 +66,10 @@ es:
     registrations:
       destroyed: "¡Adiós! Tu cuenta ha sido cancelada exitosamente. Esperamos verte pronto."
       edit:
-        specialty: "Especialidad"
-        specialties: "Especialidades"
-        upload_profile: "Subir foto de perfil"
+        subtitle: "Entras con %{email}"
+        name_help: "Nombre y apellido, separados por un espacio."
+        change_password_title: "Cambiar la contraseña"
+        change_password_note: "Déjalo en blanco si no quieres cambiarla. Mínimo %{count} caracteres."
         are_you_sure: "¿Estás seguro?"
         cancel_my_account: "Eliminar mi cuenta"
         cancel_my_account_description: "Esto borrará permanentemente todos los datos asociados a tu cuenta. Esta acción no se puede deshacer."
@@ -83,8 +97,14 @@ es:
         submitting: "Enviando..."
       new:
         title: "Regístrate para continuar en"
+        have_account: "¿Ya tienes cuenta?"
+        link: "Inicia sesión"
+        password_hint:
+          one: "Mínimo %{count} carácter."
+          other: "Mínimo %{count} caracteres."
+        terms_note: "Al crear tu cuenta aceptas los Términos y condiciones y la Política de privacidad."
         name: "Nombre de la asociación"
-        sign_up: "Crear Cuenta"
+        sign_up: "Crear cuenta"
         professional?: "¿Eres un profesional de la salud?"
         professional_sign_up: "Crear Cuenta Profesional"
         terms: "Términos y condiciones"
@@ -103,9 +123,13 @@ es:
       already_signed_out: "Has cerrado la sesión correctamente."
       new:
         title: "Inicia sesión para continuar en"
+        no_account: "¿Aún no tienes cuenta?"
         link: "Regístrate"
         sign_up_html: "%{link}"
-        sign_in: "Iniciar sesión"
+        sign_in: "Continuar"
+        forgot_password: "¿Olvidaste tu contraseña?"
+        remember_me: "Mantener mi sesión iniciada"
+        terms: "Al continuar aceptas los Términos y condiciones y la Política de privacidad."
       signed_in: "Has iniciado sesión correctamente."
       signed_out: "Has cerrado la sesión correctamente."
     unlocks:
@@ -113,6 +137,10 @@ es:
       send_paranoid_instructions: "Si tu cuenta existe, recibirás un correo electrónico en unos minutos con instrucciones sobre cómo desbloquear tu cuenta."
       unlocked: "Tu cuenta ha sido desbloqueada. Por favor inicia sesión para continuar."
     shared:
+      password_field:
+        placeholder: "Tu contraseña"
+        show: "Mostrar"
+        hide: "Ocultar"
       links:
         log_in: "Iniciar sesión"
         sign_up: "Registrarse"

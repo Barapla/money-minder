@@ -1,0 +1,44 @@
+<% payments = @presenter.upcoming_obligatory_payments %>
+<% recurring = @presenter.recurring_expenses_summary %>
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 flex flex-col">
+  <div class="flex items-center justify-between gap-3 mb-4">
+    <h2 class="text-base font-semibold text-white"><%= t('.title') %> · <%= t('.days_range') %></h2>
+    <% if payments.any? %>
+      <span class="text-bunker-400 text-xs shrink-0">
+        <%= t('.reminders_count', count: payments.size) %> · <%= number_to_currency(payments.sum { |p| p[:amount] }, unit: '$') %>
+      </span>
+    <% end %>
+  </div>
+
+  <% if payments.any? %>
+    <table class="w-full text-[12.5px] border-collapse flex-1">
+      <tbody>
+        <% payments.first(8).each do |payment| %>
+          <% days_away = (payment[:date] - Date.current).to_i %>
+          <tr class="border-b border-bunker-800 last:border-0">
+            <td class="py-2.5 font-mono w-16 <%= urgency_text_class(days_away) %>"><%= payment[:date].strftime('%d/%m') %></td>
+            <td class="py-2.5 text-white line-clamp-1"><%= payment[:description].presence || t('.no_description') %></td>
+            <td class="py-2.5 text-right font-mono text-white"><%= payment[:amount_formatted] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="text-center py-6 flex-1">
+      <p class="text-bunker-400 text-sm mb-2"><%= t('.no_payments') %></p>
+      <%= link_to t('.new_payment'), new_obligatory_payment_path, class: "text-red-400 text-xs hover:text-red-300 underline" %>
+    </div>
+  <% end %>
+
+  <div class="mt-4 pt-4 border-t border-bunker-700/50 flex items-center justify-between gap-3">
+    <span class="text-bunker-400 text-xs">
+      <% if @presenter.recurring_expenses? %>
+        <%= t('.recurring_summary', count: recurring[:count], total: number_to_currency(recurring[:monthly_total], unit: '$')) %>
+      <% else %>
+        <%= t('.no_recurring') %>
+      <% end %>
+    </span>
+    <%= link_to "#{@presenter.recurring_expenses? ? t('.see_recurring') : t('.new_recurring')} →",
+          recurring_transactions_path, class: "text-purple-300 text-[12.5px] font-medium hover:text-purple-200 shrink-0" %>
+  </div>
+</div>

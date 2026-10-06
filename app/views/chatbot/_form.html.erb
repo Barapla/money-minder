@@ -1,0 +1,10 @@
+<%= form_with url: create_message_conversation_path(conversation), method: :post, id: 'chatbot_message_form',
+      data: { controller: 'chatbot-form', action: 'turbo:submit-end->chatbot-form#reset' } do |form| %>
+  <div class="flex items-center gap-2 border-t border-bunker-800 px-4 py-3">
+    <%= form.text_field :content, placeholder: 'Escribe tu pregunta financiera…', autocomplete: 'off', required: true,
+          class: 'flex-1 rounded-lg bg-bunker-900 border border-bunker-700 text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500',
+          data: { chatbot_form_target: 'input', action: 'turbo:submit-start->chatbot-form#submitting' } %>
+    <%= form.submit 'Enviar', data: { chatbot_form_target: 'submit' },
+          class: 'bg-purple-600 hover:bg-purple-500 disabled:opacity-60 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors' %>
+  </div>
+<% end %>

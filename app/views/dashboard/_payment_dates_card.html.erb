@@ -1,0 +1,32 @@
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+  <div class="flex items-center justify-between gap-3 mb-4">
+    <h2 class="text-base font-semibold text-white"><%= t('.title') %></h2>
+    <span class="text-bunker-400 text-xs shrink-0">
+      <%= t('.debt_label') %> <span class="text-red-300 font-semibold"><%= @presenter.total_debt_formatted %></span>
+    </span>
+  </div>
+
+  <div class="space-y-2.5">
+    <% (@presenter&.upcoming_payment_dates || []).each do |card| %>
+      <% days = card[:days_until_payment].to_i %>
+      <%
+        row_class = if days <= 3
+                      'bg-red-500/10 border-red-500/25'
+                    elsif days <= 7
+                      'bg-amber-500/10 border-amber-500/25'
+                    else
+                      'bg-bunker-950/40 border-bunker-700/50'
+                    end
+      %>
+      <div class="flex items-center gap-3 border rounded-xl px-3.5 py-3 <%= row_class %>">
+        <div class="flex-1 min-w-0">
+          <div class="text-white text-sm font-semibold line-clamp-1"><%= card[:card_name] %></div>
+          <div class="text-xs <%= urgency_text_class(days) %>">
+            <%= t('.payment_date_label') %> <%= card[:payment_due_date].strftime('%d/%m') %> · <%= relative_days(days) %>
+          </div>
+        </div>
+        <span class="font-mono text-[15px] font-bold text-white shrink-0"><%= card[:current_debt_formatted] %></span>
+      </div>
+    <% end %>
+  </div>
+</div>

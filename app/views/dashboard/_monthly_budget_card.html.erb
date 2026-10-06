@@ -1,0 +1,54 @@
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+  <div class="flex items-start justify-between gap-3 mb-5">
+    <div>
+      <h2 class="text-base font-semibold text-white"><%= t('.title') %></h2>
+      <p class="text-bunker-400 text-xs mt-0.5"><%= t('.subtitle_prefix') %> · <%= l(Date.current, format: '%B %Y') %></p>
+    </div>
+    <%= link_to "#{t('.see_budgets')} →", budgets_path, class: "text-purple-300 text-sm font-medium hover:text-purple-200 shrink-0" %>
+  </div>
+
+  <% budget_items = @presenter.monthly_budget_summary %>
+  <% if budget_items.any? %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+      <% budget_items.each do |item| %>
+        <%
+          bar_class = case item[:status]
+                      when :danger  then 'bg-red-500'
+                      when :warning then 'bg-amber-500'
+                      else               'bg-emerald-500'
+                      end
+          text_class = case item[:status]
+                       when :danger  then 'text-red-400'
+                       when :warning then 'text-amber-400'
+                       else               'text-emerald-400'
+                       end
+        %>
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <span class="text-bunker-300 text-sm line-clamp-1"><%= item[:category_name] %></span>
+            <span class="<%= text_class %> text-sm font-mono font-semibold ml-2 shrink-0"><%= item[:amount_formatted] %></span>
+          </div>
+          <div class="w-full bg-bunker-700/60 rounded-full h-2"
+               role="progressbar"
+               aria-label="<%= item[:category_name] %>: <%= item[:progress_percent] %>%"
+               aria-valuenow="<%= item[:progress_percent] %>"
+               aria-valuemin="0"
+               aria-valuemax="100">
+            <div class="h-2 rounded-full <%= bar_class %> transition-all duration-300"
+                 style="width: <%= item[:progress_percent] %>%"></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-8">
+      <div class="w-12 h-12 bg-bunker-800/60 rounded-xl flex items-center justify-center mx-auto mb-3">
+        <svg class="w-6 h-6 text-bunker-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+      </div>
+      <p class="text-bunker-400 text-sm mb-3"><%= t('.no_expenses') %></p>
+      <%= link_to t('.new_transaction'), new_budget_path, class: "text-violet-400 text-sm hover:text-violet-300 underline" %>
+    </div>
+  <% end %>
+</div>

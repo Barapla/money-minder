@@ -4,11 +4,17 @@
 
 import { application } from "./application"
 
+import BonusManagerController from "./bonus_manager_controller"
+application.register("bonus-manager", BonusManagerController)
+
+import BudgetFiltersController from "./budget_filters_controller"
+application.register("budget-filters", BudgetFiltersController)
+
+import BudgetTabsController from "./budget_tabs_controller"
+application.register("budget-tabs", BudgetTabsController)
+
 import Budgets__PreviewController from "./budgets/preview_controller"
 application.register("budgets--preview", Budgets__PreviewController)
-
-import Previews__ObligatoryPaymentsController from "./previews/obligatory_payments_controller"
-application.register("previews--obligatory-payments", Previews__ObligatoryPaymentsController)
 
 import Calendar__MainController from "./calendar/main_controller"
 application.register("calendar--main", Calendar__MainController)
@@ -31,6 +37,15 @@ application.register("charts--flow", Charts__FlowController)
 import Charts__MainController from "./charts/main_controller"
 application.register("charts--main", Charts__MainController)
 
+import ChatbotBubbleController from "./chatbot_bubble_controller"
+application.register("chatbot-bubble", ChatbotBubbleController)
+
+import ChatbotFormController from "./chatbot_form_controller"
+application.register("chatbot-form", ChatbotFormController)
+
+import ChatbotScrollController from "./chatbot_scroll_controller"
+application.register("chatbot-scroll", ChatbotScrollController)
+
 import CheckboxIconGroupController from "./checkbox_icon_group_controller"
 application.register("checkbox-icon-group", CheckboxIconGroupController)
 
@@ -39,6 +54,9 @@ application.register("datatable-filters", DatatableFiltersController)
 
 import DatePickerController from "./date_picker_controller"
 application.register("date-picker", DatePickerController)
+
+import FormAutoSubmitController from "./form_auto_submit_controller"
+application.register("form-auto-submit", FormAutoSubmitController)
 
 import FormValidatorController from "./form_validator_controller"
 application.register("form-validator", FormValidatorController)
@@ -52,8 +70,26 @@ application.register("modal", ModalController)
 import MultiselectController from "./multiselect_controller"
 application.register("multiselect", MultiselectController)
 
+import NavbarDropdownController from "./navbar_dropdown_controller"
+application.register("navbar-dropdown", NavbarDropdownController)
+
+import NavbarMobileController from "./navbar_mobile_controller"
+application.register("navbar-mobile", NavbarMobileController)
+
 import PaginationController from "./pagination_controller"
 application.register("pagination", PaginationController)
+
+import PasswordVisibilityController from "./password_visibility_controller"
+application.register("password-visibility", PasswordVisibilityController)
+
+import Previews__BaseController from "./previews/base_controller"
+application.register("previews--base", Previews__BaseController)
+
+import Previews__ObligatoryPaymentsController from "./previews/obligatory_payments_controller"
+application.register("previews--obligatory-payments", Previews__ObligatoryPaymentsController)
+
+import ProductSelectorController from "./product_selector_controller"
+application.register("product-selector", ProductSelectorController)
 
 import RecurrenceFormController from "./recurrence_form_controller"
 application.register("recurrence-form", RecurrenceFormController)
@@ -61,5 +97,17 @@ application.register("recurrence-form", RecurrenceFormController)
 import RecurringTransactionFormController from "./recurring_transaction_form_controller"
 application.register("recurring-transaction-form", RecurringTransactionFormController)
 
+import RevealController from "./reveal_controller"
+application.register("reveal", RevealController)
+
+import SavingsGoalsCalculatorController from "./savings_goals_calculator_controller"
+application.register("savings-goals-calculator", SavingsGoalsCalculatorController)
+
+import SavingsGoalsReorderController from "./savings_goals_reorder_controller"
+application.register("savings-goals-reorder", SavingsGoalsReorderController)
+
 import SelectToController from "./select_to_controller"
 application.register("select-to", SelectToController)
+
+import TooltipController from "./tooltip_controller"
+application.register("tooltip", TooltipController)

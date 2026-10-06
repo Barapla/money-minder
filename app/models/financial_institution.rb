@@ -1,2 +1,0 @@
-class FinancialInstitution < ApplicationRecord
-end

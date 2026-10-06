@@ -1,7 +1,19 @@
 # frozen_string_literal: true
 
-Rails.application.routes.draw do
+Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   resources :obligatory_payments
+
+  resources :debts do
+    member do
+      patch :settle
+    end
+    resources :debt_allocations, only: %i[create update destroy], path: 'abonos'
+  end
+  resources :saving_goals, only: %i[index new create edit update destroy] do
+    collection do
+      patch :reorder
+    end
+  end
   devise_for :users, controllers: {
     sessions: 'users/sessions',
     registrations: 'users/registrations',
@@ -15,12 +27,17 @@ Rails.application.routes.draw do
     collection do
       post :change_budget_type
       post :budgets_table
+      get :wizard_step2
+      get :wizard_step3
+      get :wizard_step4
     end
 
     member do
       post :show_transactions
     end
   end
+
+  resources :financial_products, only: [:index]
 
   resources :transactions do
     collection do
@@ -59,16 +76,61 @@ Rails.application.routes.draw do
     end
   end
 
+  # destroy excluido intencionalmente: cada usuario tiene una sola información laboral permanente
+  resource :employment_information, only: %i[show new create edit update]
+  resource :payroll_profile, only: %i[edit update]
+
+  namespace :api do
+    namespace :v1 do
+      resources :payroll_calculations, only: [] do
+        collection do
+          get :aguinaldo
+          get :savings_fund
+          get :net_salary
+        end
+      end
+
+      post 'auth/login', to: 'auth#login'
+      post 'auth/register', to: 'auth#register'
+      post 'auth/password', to: 'auth#reset_password'
+      patch 'auth/password', to: 'auth#update_password'
+      get 'auth/me', to: 'auth#me'
+      patch 'auth/me', to: 'auth#update_me'
+
+      resource :dashboard, only: [:show], controller: 'dashboard'
+      resource :calendar, only: [:show], controller: 'calendar'
+      resources :catalogs, only: [:index]
+      resources :transactions, only: %i[index show create]
+      resources :obligatory_payments, only: %i[index create]
+      resources :saving_goals, only: %i[index create]
+    end
+  end
+
   resources :financial_insights, only: [] do
     collection do
       post :generate
-      get :raw_data  # Para debugging
+      get :raw_data # Para debugging
     end
   end
+
+  resources :conversations, path: 'chatbot', controller: 'chatbot', only: %i[index show create] do
+    member do
+      post :create_message
+    end
+    collection do
+      get :widget
+    end
+  end
+
+  get 'dashboard', to: 'dashboard#index', as: :dashboard
+  get 'dashboard/saving_goals_recalculate',
+      to: 'dashboard#saving_goals_recalculate',
+      as: :dashboard_saving_goals_recalculate,
+      defaults: { format: :json }
 
   # sidekiq routes
   require 'sidekiq/web'
   mount Sidekiq::Web => '/sidekiq'
 
-  root 'home#index'
+  root 'dashboard#index'
 end

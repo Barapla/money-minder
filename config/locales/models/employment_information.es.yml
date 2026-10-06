@@ -1,0 +1,19 @@
+es:
+  activerecord:
+    models:
+      employment_information: "Información Laboral"
+    attributes:
+      employment_information:
+        job_title: "Puesto de trabajo"
+        start_date: "Fecha de inicio"
+        gross_salary_amount: "Salario bruto"
+        calculation_periodicity: "Periodicidad de cálculo"
+        payment_frequency: "Frecuencia de pago"
+    errors:
+      models:
+        employment_information:
+          attributes:
+            start_date:
+              not_in_future: "debe ser presente o pasada"
+            gross_salary_amount:
+              greater_than: "debe ser mayor que %{count}"

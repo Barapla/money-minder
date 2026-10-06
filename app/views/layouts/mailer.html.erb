@@ -2,12 +2,28 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <style>
-      /* Email styles need to be inline */
-    </style>
   </head>
 
-  <body>
-    <%= yield %>
+  <%# Fondo claro a proposito: el modo oscuro de la app no viaja bien entre
+      clientes de correo, que reescriben colores de forma impredecible. %>
+  <body style="margin:0;padding:0;background:#f6f7f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f7f9;padding:32px 16px">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border:1px solid #d5dae2;border-radius:12px">
+            <tr>
+              <td style="padding:24px 28px;border-bottom:1px solid #eceff2;font-size:17px;font-weight:700;color:#171a1f">
+                💰 MoneyMinder
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px;color:#343b46;font-size:15px;line-height:1.6">
+                <%= yield %>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
   </body>
 </html>

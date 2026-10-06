@@ -1,0 +1,35 @@
+<div class="max-w-7xl mx-auto space-y-5">
+  <!-- Encabezado -->
+  <div>
+    <h1 class="text-2xl sm:text-3xl font-bold text-white"><%= t('.title') %></h1>
+    <p class="text-bunker-400 text-sm mt-1">
+      <%= t('.subtitle', month: l(Date.current, format: '%B %Y'), day: Date.current.day, days: Date.current.end_of_month.day) %>
+    </p>
+  </div>
+
+  <!-- Patrimonio neto: disponible − deuda, con nómina y gasto del mes -->
+  <%= render 'net_worth_hero' %>
+
+  <!-- Presupuesto del mes + reparto del gasto -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <div class="lg:col-span-2"><%= render 'monthly_budget_card' %></div>
+    <%= render 'expense_distribution_card' %>
+  </div>
+
+  <!-- Dónde está el dinero -->
+  <%= render 'money_locations_card' %>
+
+  <!-- Fechas de pago + fechas de corte (con alertas de utilización) -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <% if @presenter.upcoming_payment_dates.any? %>
+      <%= render 'payment_dates_card' %>
+    <% end %>
+    <%= render 'credit_cards_compact' %>
+  </div>
+
+  <!-- Metas de ahorro + próximos pagos obligatorios -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <%= render 'saving_goals_compact' %>
+    <%= render 'upcoming_payments_card' %>
+  </div>
+</div>

@@ -3,7 +3,7 @@
 module Forms
   # SelectComponent
   class SelectComponent < Forms::ApplicationComponent
-    attr_reader :name, :options_collection, :prompt, :selected, :size, :help_text, :required, :icon
+    attr_reader :name, :options_collection, :prompt, :selected, :size, :help_text, :required, :icon, :text
 
     def initialize(name:, form: nil, options_collection: [], options: {})
       @name = name
@@ -14,6 +14,7 @@ module Forms
       @help_text = options.delete(:help_text)
       @required = options.delete(:required) { false }
       @icon = options.delete(:icon)
+      @text = options.delete(:text)
       super(form:, options:)
     end
 

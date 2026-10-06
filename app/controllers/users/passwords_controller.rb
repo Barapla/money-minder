@@ -3,6 +3,10 @@
 module Users
   # PasswordsController for handling user password reset and update actions
   class PasswordsController < Devise::PasswordsController
+    # Sin esto las dos pantallas salen con el layout de la app: navbar y burbuja
+    # del chatbot en una pagina a la que se llega sin sesion.
+    layout 'auth_application', only: %i[new edit]
+
     # GET /resource/password/new
     # def new
     #   super

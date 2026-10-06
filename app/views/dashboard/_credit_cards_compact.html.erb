@@ -1,0 +1,72 @@
+<% cutting_dates = @presenter.upcoming_card_due_dates %>
+<% alerts = @presenter.credit_utilization_alerts %>
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6 flex flex-col">
+  <div class="flex items-center justify-between gap-3 mb-4">
+    <h2 class="text-base font-semibold text-white"><%= t('.title') %></h2>
+    <% if @presenter.credit_cards? %>
+      <% if alerts.any? %>
+        <span class="bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0">
+          <%= t('.alerts_badge', count: alerts.size) %>
+        </span>
+      <% else %>
+        <span class="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0">
+          <%= t('.healthy_badge') %>
+        </span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if cutting_dates.any? %>
+    <table class="w-full text-[12.5px] border-collapse">
+      <thead>
+        <tr class="border-b border-bunker-700">
+          <th class="text-left pb-2 text-bunker-400 font-medium"><%= t('.card_header') %></th>
+          <th class="text-left pb-2 text-bunker-400 font-medium"><%= t('.cutting_header') %></th>
+          <th class="text-right pb-2 text-bunker-400 font-medium"><%= t('.remaining_header') %></th>
+          <th class="text-right pb-2 text-bunker-400 font-medium"><%= t('.balance_header') %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% cutting_dates.first(5).each do |card| %>
+          <tr class="border-b border-bunker-800 last:border-0">
+            <td class="py-2.5 text-white line-clamp-1"><%= card[:card_name] %></td>
+            <td class="py-2.5 text-bunker-300 font-mono"><%= card[:cutting_date].strftime('%d/%m') %></td>
+            <td class="py-2.5 text-right font-mono <%= urgency_text_class(card[:days_until_cutting]) %>"><%= days_label(card[:days_until_cutting]) %></td>
+            <td class="py-2.5 text-right font-mono text-white"><%= card[:current_debt_formatted] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="text-center py-6">
+      <p class="text-bunker-400 text-sm mb-2"><%= t('.no_cards_text') %></p>
+      <%= link_to t('.add_card_link'), new_budget_path, class: "text-blue-400 text-xs hover:text-blue-300 underline" %>
+    </div>
+  <% end %>
+
+  <% if alerts.any? %>
+    <div class="mt-4 pt-4 border-t border-bunker-700/50 space-y-2">
+      <% alerts.first(3).each do |alert| %>
+        <% is_critical = alert[:utilization_status] == :critical %>
+        <div class="rounded-xl px-3 py-2.5 <%= is_critical ? 'border border-red-500/30 bg-red-500/5' : 'border border-amber-500/30 bg-amber-500/5' %>">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="text-white text-sm font-medium line-clamp-1"><%= alert[:card_name] %></span>
+            <span class="text-xs font-semibold shrink-0 <%= is_critical ? 'text-red-300' : 'text-amber-300' %>"><%= alert[:utilization_percentage] %>%</span>
+          </div>
+          <div class="text-bunker-400 text-xs">
+            <%= t('.suggested_payment', amount: alert[:suggested_payment_formatted]) %>
+            <% if alert[:cutting_date].respond_to?(:strftime) %>
+              · <%= t('.cutting_date_label') %> <%= alert[:cutting_date].strftime('%d/%m') %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if cutting_dates.size > 5 %>
+    <div class="mt-4 pt-4 border-t border-bunker-700/50">
+      <%= link_to "#{t('.see_all', count: cutting_dates.size)} →", budgets_path, class: "text-purple-300 text-[12.5px] font-medium hover:text-purple-200" %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,29 @@
+<% p = @show_presenter %>
+<%
+  rows = [
+    ['UUID', tag.span(p.uuid_short, class: 'font-mono text-bunker-200 text-[11.5px]')],
+    [t('.created'), tag.span(l(p.created_at, format: :short), class: 'text-white font-medium')],
+    [t('.updated'), tag.span(l(p.updated_at, format: :short), class: 'text-white font-medium')],
+    [t('.origin'), tag.span(t(".origin_#{p.origin_key}"), class: 'text-white font-medium')]
+  ]
+%>
+<div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl px-6 py-[22px]">
+  <h3 class="text-[15px] font-semibold text-white mb-4"><%= t('.title') %></h3>
+
+  <dl class="flex flex-col gap-3 text-[12.5px]">
+    <% rows.each do |label, value| %>
+      <div class="flex justify-between gap-3 pb-[11px] border-b border-bunker-700">
+        <dt class="text-bunker-300"><%= label %></dt>
+        <dd><%= value %></dd>
+      </div>
+    <% end %>
+    <div class="flex items-center justify-between gap-3">
+      <dt class="text-bunker-300"><%= t('.status') %></dt>
+      <dd>
+        <span class="bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold px-2.5 py-[3px] rounded-full">
+          <%= t(p.transaction.active? ? '.active' : '.inactive') %>
+        </span>
+      </dd>
+    </div>
+  </dl>
+</div>

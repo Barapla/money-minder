@@ -2,6 +2,37 @@
 
 # BudgetsHelper
 module BudgetsHelper
+  # Los unicos 3 tipos con seccion propia pedida por el ticket (FEAT-032 AC1-AC3);
+  # cualquier otro budget_type (cash, term_saving) cae al fallback de budget_type.value
+  # para no perder esos budgets de la vista sin necesitar una traduccion dedicada.
+  SECTION_TITLE_I18N_KEYS = {
+    'credit_card' => 'credit_cards',
+    'debit_card' => 'debit_cards',
+    'savings_fund' => 'savings_funds'
+  }.freeze
+
+  # Tintes del index por estado de la cuenta, calcados del diseno: el icono, la
+  # pildora, la barra de peso y el borde de la tarjeta comparten color.
+  ACCOUNT_TINTS = {
+    daily: { icon: 'bg-blue-500/20 border-blue-500/30', bar: 'bg-blue-400',
+             badge: 'bg-blue-500/15 text-blue-300 border-blue-500/30', card: 'border-blue-500/35' },
+    investment: { icon: 'bg-emerald-500/15 border-emerald-500/30', bar: 'bg-emerald-500',
+                  badge: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30', card: 'border-bunker-800/50' },
+    lower_yield: { icon: 'bg-purple-500/15 border-purple-500/30', bar: 'bg-purple-500',
+                   badge: 'bg-amber-400/10 text-amber-300 border-amber-400/30', card: 'border-bunker-800/50' },
+    unused: { icon: 'bg-bunker-500/20 border-bunker-500/30', bar: 'bg-bunker-600',
+              badge: 'bg-bunker-500/20 text-bunker-300 border-bunker-500/30', card: 'border-bunker-800/50' }
+  }.freeze
+
+  def account_tint(status)
+    ACCOUNT_TINTS.fetch(status, ACCOUNT_TINTS[:unused])
+  end
+
+  def budget_section_title(code, budgets)
+    key = SECTION_TITLE_I18N_KEYS[code]
+    key ? t("budgets.index.sections.#{key}") : budgets.first&.budget_type&.value
+  end
+
   def headers_table_index
     [
       { name: 'Tipo de Presupuesto', size: 'min-w-[180px]' },

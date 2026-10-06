@@ -16,7 +16,8 @@
                 </div>
             </div>
         </div>
-        
+        <%= render "budgets/forms/shared/financial_product_summary", financial_product_id: budget.savings_fund&.financial_product_id %>
+
         <div class="space-y-3 text-xs">
             <!-- Progreso hacia la meta -->
             <div class="flex justify-between items-center">
@@ -45,7 +46,7 @@
             <!-- Información adicional -->
             <div class="flex justify-between items-center pt-2 border-t border-bunker-700">
                 <span class="text-bunker-300">Interés anual</span>
-                <span data-budgets--preview-target="previewInterestRate" class="text-emerald-400 font-semibold"><%= (budget.savings_fund&.interest_rate&.* 100)&.round(2) || 0 %>%</span>
+                <span data-budgets--preview-target="previewInterestRate" class="text-emerald-400 font-semibold"><%= budget.savings_fund&.interest_rate&.round(2) || 0 %>%</span>
             </div>
             
             <div class="flex justify-between items-center">

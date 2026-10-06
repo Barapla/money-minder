@@ -1,0 +1,192 @@
+<%= form_with(model: employment_information, url: employment_information_path,
+    method: employment_information.persisted? ? :patch : :post,
+    local: true, html: { class: "px-8 py-6" }) do |form| %>
+
+  <% if employment_information.errors.any? %>
+    <div class="mb-6 bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+      <h4 class="text-red-400 font-semibold mb-2">Por favor corrige los siguientes errores:</h4>
+      <ul class="list-disc list-inside space-y-1">
+        <% employment_information.errors.full_messages.each do |message| %>
+          <li class="text-red-300 text-sm"><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Left Column -->
+    <div class="space-y-6">
+      <%= render Forms::InputComponent.new(
+        name: :job_title,
+        form:,
+        type: :text,
+        options: {
+          placeholder: "Ej: Desarrollador de Software",
+          help_text: "Tu puesto o cargo actual",
+          required: true
+        }
+      ) %>
+
+      <%= render Forms::InputComponent.new(
+        name: :start_date,
+        form:,
+        type: :date,
+        options: {
+          help_text: "Fecha en que comenzaste a trabajar en tu empleo actual",
+          required: true,
+          value: employment_information.start_date || Date.current
+        }
+      ) %>
+
+      <%= render Forms::InputComponent.new(
+        name: :gross_salary_amount,
+        form:,
+        type: :number,
+        options: {
+          step: 0.01,
+          min: 0.01,
+          placeholder: "0.00",
+          prefix: "$",
+          help_text: "Monto bruto de tu salario según la periodicidad de cálculo",
+          required: true
+        }
+      ) %>
+
+      <%= render Forms::SelectComponent.new(
+        name: :calculation_periodicity,
+        form:,
+        options_collection: [
+          ["Diario", "daily_calculation"],
+          ["Semanal", "weekly_calculation"],
+          ["Quincenal", "biweekly_calculation"],
+          ["Mensual", "monthly_calculation"],
+          ["Anual", "annual_calculation"]
+        ],
+        options: {
+          label: "Periodicidad de cálculo",
+          help_text: "Base temporal sobre la que se cotiza tu salario (ej: $5,000 mensuales)",
+          required: true,
+          selected: employment_information.calculation_periodicity
+        }
+      ) %>
+
+      <%= render Forms::SelectComponent.new(
+        name: :payment_frequency,
+        form:,
+        options_collection: [
+          ["Semanal", "weekly_payment"],
+          ["Quincenal", "biweekly_payment"],
+          ["Mensual", "monthly_payment"]
+        ],
+        options: {
+          label: "Frecuencia de pago",
+          help_text: "Con qué frecuencia recibes efectivamente tu salario",
+          required: true,
+          selected: employment_information.payment_frequency
+        }
+      ) %>
+    </div>
+
+    <!-- Right Column: Info Panel -->
+    <div class="space-y-6">
+      <!-- Combinaciones válidas -->
+      <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-6">
+        <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Combinaciones válidas
+        </h3>
+        <div class="space-y-2 text-sm">
+          <div class="grid grid-cols-4 gap-1 text-xs text-bunker-400 mb-2">
+            <div></div>
+            <div class="text-center">Semanal</div>
+            <div class="text-center">Quincenal</div>
+            <div class="text-center">Mensual</div>
+          </div>
+          <% [
+            ["Diario", %w[✓ ✓ ✓]],
+            ["Semanal", %w[✓ ✓ ✓]],
+            ["Quincenal", %w[✗ ✓ ✓]],
+            ["Mensual", %w[✗ ✓ ✓]],
+            ["Anual", %w[✗ ✗ ✓]]
+          ].each do |calc_label, compat| %>
+            <div class="grid grid-cols-4 gap-1 text-xs items-center">
+              <div class="text-bunker-300 font-medium"><%= calc_label %></div>
+              <% compat.each do |v| %>
+                <div class="text-center <%= v == '✓' ? 'text-emerald-400' : 'text-red-400' %>"><%= v %></div>
+              <% end %>
+            </div>
+          <% end %>
+          <p class="text-bunker-400 text-xs mt-3">Cálculo (filas) × Pago (columnas)</p>
+        </div>
+      </div>
+
+      <!-- Previsualización del esquema de pagos -->
+      <div class="bg-bunker-800/60 border border-amber-500/20 rounded-xl p-6">
+        <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Ejemplo de cálculo
+        </h3>
+        <% if employment_information.persisted? && employment_information.gross_salary_amount.present? %>
+          <%
+            calc_key = employment_information.read_attribute(:calculation_periodicity).to_s
+            pay_key  = employment_information.read_attribute(:payment_frequency).to_s
+            calc_days = { 'daily' => 1, 'weekly' => 7, 'biweekly' => 15, 'monthly' => 30, 'annual' => 365 }
+            pay_days  = { 'weekly' => 7, 'biweekly' => 15, 'monthly' => 30 }
+            daily_rate = employment_information.gross_salary_amount.to_d / (calc_days[calc_key] || 30)
+            monthly_gross = (daily_rate * 30).round(2)
+            pay_amount = (monthly_gross * (pay_days[pay_key] || 30) / 30).round(2)
+          %>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between items-center py-1 border-b border-bunker-700/30">
+              <span class="text-bunker-400">Salario bruto mensual equivalente</span>
+              <span class="text-white font-medium"><%= number_to_currency(monthly_gross, unit: '$') %></span>
+            </div>
+            <div class="flex justify-between items-center py-1">
+              <span class="text-bunker-400">Monto por pago (<%= { 'weekly' => 'semanal', 'biweekly' => 'quincenal', 'monthly' => 'mensual' }[pay_key] %>)</span>
+              <span class="text-amber-400 font-bold"><%= number_to_currency(pay_amount, unit: '$') %></span>
+            </div>
+          </div>
+        <% else %>
+          <p class="text-bunker-400 text-sm">Guarda tu información para ver la previsualización.</p>
+        <% end %>
+      </div>
+
+      <div class="bg-bunker-800/60 border border-bunker-700/50 rounded-xl p-6">
+        <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Antigüedad laboral
+        </h3>
+        <p class="text-sm text-bunker-300">
+          La antigüedad se calcula automáticamente a partir de tu fecha de ingreso: años completos, meses adicionales y días trabajados en el año actual.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Actions -->
+  <div class="flex items-center justify-between pt-8 mt-8 border-t border-bunker-800/50">
+    <% href_button = employment_information.persisted? ? employment_information_path : root_path %>
+    <%= render Buttons::LinkComponent.new(
+      content: '
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+        Cancelar
+      ',
+      href: href_button,
+      options: { class: "btn-cancel" }
+    ) %>
+    <button type="submit" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      Guardar Información Laboral
+    </button>
+  </div>
+<% end %>

@@ -85,33 +85,49 @@ module Utils
         return unless credit_card
 
         target_cycle = credit_card.determine_cycle_for_transaction(self)
-
-        if negative_transaction?
-          target_cycle.closing_balance += amount
-          target_cycle.purchases -= amount
-        else
-          target_cycle.closing_balance -= amount # Revertir pago (quitar la reducción)
-          target_cycle.purchases -= amount
-        end
-
+        revert_cycle_balance(target_cycle)
         target_cycle.save!
       end
 
       def update_credit_card_cycle_on_change
         credit_card = budget.credit_card
         target_cycle = credit_card.determine_cycle_for_transaction(self)
+        revert_old_cycle_amount(target_cycle)
+        reapply_new_cycle_amount(target_cycle)
+        target_cycle.save!
+      end
 
-        # Revertir monto anterior
+      def revert_cycle_balance(target_cycle)
+        if negative_transaction?
+          # cycle_balance += amount when purchase was applied; subtract to revert
+          target_cycle.cycle_balance -= amount
+          target_cycle.purchases -= amount
+        else
+          # cycle_balance -= amount when payment was applied; add back to revert
+          target_cycle.cycle_balance += amount
+          target_cycle.payments -= amount
+        end
+      end
+
+      def revert_old_cycle_amount(target_cycle)
         old_amount = amount_before_last_save
         if negative_transaction?
-          target_cycle.closing_balance += old_amount
+          target_cycle.cycle_balance -= old_amount
           target_cycle.purchases -= old_amount
         else
-          target_cycle.closing_balance += old_amount
+          target_cycle.cycle_balance += old_amount
           target_cycle.payments -= old_amount
         end
-        # Aplicar nuevo monto
-        target_cycle.process_transaction(self)
+      end
+
+      def reapply_new_cycle_amount(target_cycle)
+        if negative_transaction?
+          target_cycle.cycle_balance += amount
+          target_cycle.purchases += amount
+        else
+          target_cycle.cycle_balance -= amount
+          target_cycle.payments += amount
+        end
       end
     end
   end

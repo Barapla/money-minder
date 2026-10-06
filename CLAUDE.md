@@ -1,251 +1,368 @@
-# CLAUDE.md
+# CLAUDE.md — money-minder
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+> Project context and configuration for AI-assisted development.
+> Read `.claude/ENGINEERING_STANDARDS.md` before writing any code.
 
-## Project Overview
+---
 
-MoneyMinder is a Spanish-language personal expense management application built with Ruby on Rails. It allows users to track income/expenses, categorize transactions, manage multiple currencies, create recurring transactions, and visualize financial data through reports and charts.
+## What is this project
 
-**Tech Stack:**
-- Ruby 3.2.2
-- Rails 7.0.8+
-- PostgreSQL 14
-- Tailwind CSS 3.4+
-- Stimulus (Hotwire)
-- Turbo Rails
-- esbuild for JavaScript bundling
-- Chart.js for visualizations
+MoneyMinder es un gestor de gastos personales, en el cual se podran visualizar de manera grafica cada una de las compras, ventas y transacciones realizadas a lo largo de un periodo determinado.
 
-## Development Commands
+---
 
-### Starting the Development Server
+## Stack
 
-Use Foreman to start the server with automatic CSS/JS rebuilding:
+| Tecnología | Version |
+|---|---|
+| Ruby | 3.2.2 |
+| Rails | 7.0.8 |
+| PostgreSQL | 16 |
+| Redis | — |
+| Sidekiq | 6.5 |
+| RSpec | — |
+| RuboCop | — |
+| Node.js | — |
+
+Gemas clave: `devise`, `httparty`, `sidekiq-cron`, `brakeman`, `bundler-audit`
+
+---
+
+## Features implementados
+
+| Feature | Modelos principales | Estado |
+|---|---|---|
+| Autenticación | `User` (Devise) | Completo |
+| Transacciones | `Transaction`, `TransactionHistory` | Completo |
+| Transacciones recurrentes | `RecurringTransaction`, `Recurrence` | Completo |
+| Presupuestos | `Budget` | Completo |
+| Categorías | `Category` | Completo |
+| Catálogos | `GroupCatalog`, `Catalog` | Completo |
+| Tarjetas de crédito | `CreditCard`, `CreditCardCycle`, `CreditCardProduct`, `CreditCardTier`, `CreditCardCycleTransaction` | Completo |
+| Fondos de ahorro | `SavingsFund` | Completo |
+| Ahorros a plazo fijo | `TermSaving` | Completo |
+| Catálogo financiero (código) | `FinancialCatalogServices::Catalog`, `FinancialCatalogServices::BaseProduct` | Completo |
+| Redes y niveles de tarjetas (código) | `FinancialNetworks::BaseNetwork`, `FinancialNetworks::BaseLevel` | Completo |
+| Pagos obligatorios | `ObligatoryPayment` | Completo |
+| Reportes IA | `AiReport` | Completo |
+| Historial crediticio | `CreditScoreEvent`, `Status` | Completo |
+| Vistas de calendario | — | Completo |
+| Insights financieros | `FinancialInsightsService`, `ClaudeService` | Completo |
+| Jobs en background | `RecurringTransactionsJob`, `ProcessSingleRecurringTransactionJob`, `RecurringTransactionsCleanupJob` | Completo |
+| Información laboral | `EmploymentInformation` | Completo |
+| Cálculos de nómina | `PayrollProfile`, `Payroll::AguinaldoCalculator`, `Payroll::SavingsFundCalculator`, `PayrollServices::Calculator` | Completo |
+| Metas de ahorro | `SavingGoal`, `SavingGoalServices::ProgressCalculator` | Completo |
+
+---
+
+## Technical Decisions
+
+- **Sidekiq** para background jobs (queues: `default`, `automation`)
+- **RSpec** para testing con FactoryBot y Faker
+- **Devise** para autenticación
+- **ClaudeService / HTTParty** para integración con Anthropic API (modelo `claude-sonnet-4`)
+- **Presenters** para lógica de presentación compleja (moneda, fechas, presupuestos)
+- **Service objects** sin módulo namespace raíz, con sub-namespace por dominio (ej. `CreditCardServices::`)
+- **Sidekiq-cron** para jobs programados (ej. procesamiento de transacciones recurrentes)
+
+---
+
+## PayrollProfile — estructura de campos (FEAT-005)
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `base_salary` | decimal(10,2) | Sueldo base gravado (campo principal) |
+| `monthly_gross_salary` | decimal(12,2) | Legado — sincronizado desde EmploymentInformation |
+| `non_taxable_bonuses` | jsonb | Hash de bonos no gravados: `{ "concepto" => monto }` |
+| `savings_fund_rate` | decimal(5,2) | Tasa de fondo de ahorro (default: 4.0%) |
+| `savings_fund_percentage` | decimal(5,2) | Legado — conservado por compatibilidad |
+| `custom_isr_rate` | decimal(5,2) | Tasa ISR personalizada (nil = usa default 18.6%) |
+| `custom_imss_rate` | decimal(5,2) | Tasa IMSS personalizada (nil = usa default 3.0%) |
+
+### Metodo deprecado
+
+`PayrollProfile#monthly_salary` — delegado a `base_salary` con warning. Remover en version futura.
+
+### Formula de salario neto (PayrollServices::Calculator)
+
+`base_salary + total_bonuses - savings_fund_employee - isr_estimado - imss_estimado`
+
+### Constantes (PayrollConstants)
+
+- `DEFAULT_ISR_RATE = 18.6` — porcentaje efectivo sobre salario gravado
+- `DEFAULT_IMSS_RATE = 3.0` — porcentaje efectivo sobre SBC
+- `DEFAULT_SAVINGS_FUND_RATE = 4.0` — porcentaje de fondo de ahorro
+
+---
+
+## Recordatorios de Nomina en Calendario (FEAT-007)
+
+Los recordatorios de quincena se generan on-the-fly sin tabla persistente usando dos clases:
+
+### PayrollReminder (PORO)
+
+`app/models/payroll_reminder.rb` — representa un pago proyectado con atributos: `date`, `net_amount`, `calculation_breakdown`, `periodicity`.
+
+### PayrollServices::ReminderGenerator
+
+`app/services/payroll_services/reminder_generator.rb` — genera recordatorios para un rango de fechas:
+
+```ruby
+generator = PayrollServices::ReminderGenerator.new(user)
+reminders = generator.generate(from_date: Date.today.beginning_of_month, to_date: Date.today.end_of_month)
+```
+
+- Requiere que el usuario tenga `EmploymentInformation` y `PayrollProfile` configurados.
+- Soporta todas las periodicidades del enum: `daily`, `weekly`, `biweekly`, `monthly`, `yearly`.
+- El ciclo de pagos se calcula desde `EmploymentInformation.start_date`.
+- El monto neto se calcula usando `PayrollServices::Calculator` en cada llamada (siempre refleja cambios en PayrollProfile).
+
+### Integracion en CalendarController
+
+`CalendarController` usa `before_action :set_payroll_reminders_for_month` para los actions `index` y `set_month`, y llama a `payroll_reminders_for_date` en `day_details`. Los resultados se pasan al componente `Calendar::MainComponent` via `payroll_reminders:` y se visualizan con un indicador amber en el dia del calendario.
+
+---
+
+## Conventions
+
+Service objects, RSpec, Presenters, FactoryBot
+
+---
+
+## Language
+
+All ticket content and code comments: **Spanish (es)**
+
+---
+
+
+
+## PM Agent Integration
+
+This project is managed by the Brainmachine PM Agent.
+
+| Variable | Value |
+|---|---|
+| `PM_AGENT_URL` | `http://localhost:3000` |
+| `PM_AGENT_API_KEY` | Set in `.env` |
+| `PROJECT_NAME` | `money-minder` |
+
+### Resolve ticket ID
+
 ```bash
-foreman start -f Procfile.dev
+curl -s "http://localhost:3000/api/v1/tickets?identifier=FEAT-001&project=money-minder" \
+  -H "X-Api-Key: $PM_AGENT_API_KEY"
 ```
 
-This runs three processes:
-- Rails server on port 3000
-- JavaScript bundler (watch mode)
-- CSS bundler (watch mode)
-
-### Database Commands
+### Mark ticket complete
 
 ```bash
-# Create, migrate, and seed database
-rails db:create db:migrate db:seed
-
-# Reset database (drop, create, migrate, seed)
-rails db:reset
-
-# Run migrations
-rails db:migrate
-
-# Rollback last migration
-rails db:rollback
+curl -X POST http://localhost:3000/api/v1/tickets/{id}/complete \
+  -H "Content-Type: application/json" \
+  -H "X-Api-Key: $PM_AGENT_API_KEY" \
+  -d '{
+    "branch": "<current-branch>",
+    "pr_url": "<pr-url>",
+    "summary": "<summary>",
+    "technical_decisions": "<decisions>",
+    "how_to_test": "<steps>"
+  }'
 ```
 
-### Testing
+---
 
-The project uses RSpec for testing:
-```bash
-# Run all specs
-bundle exec rspec
+## Security Patterns (FEAT-009)
 
-# Run specific spec file
-bundle exec rspec spec/models/transaction_spec.rb
+### UserScoped concern
 
-# Run specs matching a pattern
-bundle exec rspec spec/models/
+`app/controllers/concerns/user_scoped.rb` — incluido en ApplicationController. Provee `authorize_resource(resource)` para verificar ownership cuando ya se tiene el recurso.
+
+### Query scoping
+
+Todas las queries en controladores deben ir a traves de la asociacion del usuario:
+
+```ruby
+# Correcto
+current_user.transactions.find(params[:id])
+current_user.budgets.where(...)
+current_user.obligatory_payments.includes(...)
+
+# Incorrecto
+Transaction.find(params[:id])
+Budget.all
 ```
 
-The project also has legacy Minitest files in `test/` directory.
+### rescue_from en ApplicationController
 
-### Asset Building
+`rescue_from ActiveRecord::RecordNotFound` esta configurado en ApplicationController. Cuando `current_user.transactions.find(id)` no encuentra el registro (porque no pertenece al usuario), lanza RecordNotFound que devuelve HTTP 404 automaticamente.
 
-```bash
-# Build JavaScript (one-time)
-yarn build
+### ReportFilter con user
 
-# Build CSS (one-time)
-yarn build:css
+`ReportFilter` acepta `user:` en el constructor. Siempre pasar `current_user`:
 
-# Watch mode (automatically handled by Foreman)
-yarn build --watch
-yarn build:css --watch
+```ruby
+ReportFilter.new(report_filter_params.merge(user: current_user))
 ```
 
-### Code Quality
+Sin `user:`, el filtro consulta todos los budgets/transacciones de la DB (comportamiento legacy para tests sin autenticacion).
 
-```bash
-# Run RuboCop
-bundle exec rubocop
+### Factories de test
 
-# Auto-fix RuboCop violations
-bundle exec rubocop -a
+Para crear transacciones en specs, usar las factories:
+- `:transaction` — requiere `:user`, `:budget`, `:category`, `:currency`, `:catalog` para color/icon/transaction_type
+- `:budget` — requiere `:user` y catalogs para `:budget_type`, `:color`, `:icon`
+
+---
+
+## SavingGoal — Metas de ahorro (FEAT-010)
+
+### Modelo
+
+`app/models/saving_goal.rb` — `belongs_to :user`, enum `status` [:active, :paused, :achieved, :cancelled], validaciones de presencia y numericality.
+
+### Service Object
+
+`app/services/saving_goal_services/progress_calculator.rb` — calcula progreso on-demand:
+
+- `available_money` = efectivo (personal budget) + debito (`debit_card` budgets) + fondos de ahorro (`SavingsFund.budget.current_amount`) - deuda de credito (`credit_card.current_debt`)
+- `progress_percentage` = (available_money / target_amount) * 100
+- Memoiza `total_available_money` para calcular N metas con 4 queries totales (no N*4)
+
+### Decisiones de diseno
+
+- Progreso calculado on-demand, no persistido en BD para evitar inconsistencias
+- `status` como enum con default `:active`; la transicion a `:achieved` es manual por el usuario
+- `deadline` es opcional; si no se establece, la meta no tiene fecha limite
+- Validacion de `deadline` solo en `on: :create` para permitir editar metas con fechas pasadas
+
+---
+
+## Financial Products Catalog (FEAT-020)
+
+El catalogo de instituciones financieras y sus productos/beneficios **ya no vive en base de datos**. Antes existian `FinancialInstitution`, `FinancialProduct` y `FinancialProductBenefit` como modelos ActiveRecord con panel de administracion en `/admin/financial_institutions` y `/admin/financial_products`; esas tablas, modelos, controllers y vistas fueron eliminados.
+
+Las reglas de cada institucion (tramos, beneficios, requisitos) son mas formulas que datos planos, asi que el catalogo ahora sigue el mismo patron que `PayrollConstants`: **clases Ruby versionadas en codigo**, no registros editables en runtime.
+
+### Estructura
+
+`app/services/financial_catalog_services/` — una subcarpeta por institucion (`nu/`, `klar/`, `bbva/`, etc):
+
+- **`BaseProduct`** — clase base con atributos `name`, `institution`, `product_type` (`:cash`, `:debit`, `:credit`, `:savings_fund`), `active` y `benefits` (array de hashes `{ type:, unit:, value:, description: }`).
+- Cada producto concreto (ej. `FinancialCatalogServices::Nu::NuCreditCard`) hereda de `BaseProduct` y define sus atributos en el constructor.
+- **`Catalog.all_products`** — registry central; retorna instancias de todos los productos activos definidos en codigo.
+
+```ruby
+FinancialCatalogServices::Catalog.all_products
+# => [#<Nu::NuCreditCard ...>, #<Klar::KlarDebitCard ...>, #<Bbva::BbvaSavingsFund ...>]
 ```
 
-### Background Jobs
+### Decisiones de diseno
 
-The application uses Sidekiq for background processing:
-```bash
-# Access Sidekiq web interface at /sidekiq (when server is running)
+- Sin BD: agregar una institucion o producto nuevo es agregar una clase nueva, no un registro
+- Sin FK a datos de usuario: si una feature futura necesita referenciar un producto (ej. `CreditCard`), debe usar un `product_identifier` (string) que matchee con la clase, no una FK
+- `credit_card_products.financial_institution_id` (tabla sin controller/vista/ruta, scaffolding sin usar) perdio su FK a `financial_institutions` al eliminarse la tabla; la columna permanece pero sin referencia
+
+### Estado actual
+
+- **Mercado Pago** (FEAT-025) agregado en `app/services/financial_catalog_services/mercado_pago/`: `MercadoPagoCuenta` (fondo de ahorro con 3 tramos de tasa por saldo), `MercadoPagoTarjetaDebito` (Mastercard, sin beneficios propios) y `MercadoPagoTarjetaCredito` (Visa Classic, sin anualidad ni cashback)
+
+---
+
+## Financial Networks — Redes y niveles de tarjetas (FEAT-023)
+
+Las redes de tarjetas de credito (Visa, Mastercard, Amex) y sus niveles (Classic, Gold, Platinum, etc.) son componentes independientes de la institucion emisora: comparten beneficios entre bancos sin duplicar codigo. Mismo patron que el catalogo financiero (FEAT-020): clases Ruby en `app/services/financial_networks/`, sin BD.
+
+- **`FinancialNetworks::BaseNetwork`** — clase base con metodos de clase `id`, `name`, `all_levels`.
+- **`FinancialNetworks::BaseLevel`** — clase base con metodos de clase `id`, `network_id`, `name`, `benefits`. `id`/`network_id` se derivan del nombre real de la clase (`to_s`), no de `name` (que las subclases sobreescriben con un texto de despliegue), para mantener IDs estables (`visa_gold`, `mastercard_world_elite`).
+- Redes concretas: `Visa` (Classic, Gold, Platinum, Signature, Infinite), `Mastercard` (Standard, Gold, Platinum, World, WorldElite), `Amex` (Green, Gold, Platinum, Centurion) — jerarquia independiente con beneficios propios.
+- **`FinancialNetworks.all_networks`** / **`FinancialNetworks.find_level(id)`** — utilidades a nivel de modulo.
+
+```ruby
+FinancialNetworks::Visa::Gold.benefits
+# => ["Proteccion de compras hasta 90 dias", "Seguro de viaje internacional", "Asistencia en carretera 24/7"]
+
+FinancialNetworks.find_level('mastercard_world_elite')
+# => FinancialNetworks::Mastercard::WorldElite
 ```
 
-## Architecture and Key Patterns
+`FinancialCatalogServices::BaseProduct#network_level` (instance method, default `nil`) conecta un producto con su red/nivel. Productos sin tarjeta (cash, savings_fund) no lo sobreescriben:
 
-### Database Schema Conventions
-
-**All models include:**
-- `uuid`: String field with `gen_random_uuid()` default, indexed (unique)
-- `active`: Boolean field, defaults to `true`
-- Standard Rails timestamps (`created_at`, `updated_at`)
-
-These are automatically added via a custom migration template in `lib/templates/migration/templates/create_table_migration.rb.tt`.
-
-### Component System
-
-The application uses a custom component architecture (similar to ViewComponent):
-
-**ApplicationComponent** (`app/components/application_component.rb`):
-- Base class for all components
-- Supports `renders_one` and `renders_many` helpers
-- Components render partials from `app/views/components/`
-- Components are Ruby classes in `app/components/` (e.g., `InputFieldComponent`)
-- Partials follow naming: `_component_name.html.erb` (e.g., `_input_field.html.erb`)
-
-**Component Structure:**
-```
-app/
-  components/
-    buttons/          # Button components
-    calendar/         # Calendar-specific components
-    charts/           # Chart.js wrapper components
-    forms/            # Form field components
-    shared/           # Shared UI components
-    table/            # Table components
+```ruby
+class NuCreditCard < FinancialCatalogServices::BaseProduct
+  def network_level
+    FinancialNetworks::Visa::Gold
+  end
+end
 ```
 
-**Example component usage:**
-```erb
-<%= render InputFieldComponent.new(form: form, name: :email, options: { autofocus: true }) %>
-```
+---
 
-### Custom Tailwind CSS
+## Formularios de instrumentos financieros — Registry (FEAT-026)
 
-Custom CSS classes are defined in `app/assets/stylesheets/components/`:
-- Import new component styles in `application.tailwind.css` using `@import "components/your_file"`
-- Use `@apply` directive to compose Tailwind utilities
-- Custom color schemes: `azure-radiance` (primary blue) and `bunker` (dark grays)
+Los formularios de creación/edición de tarjetas de crédito, cuentas de débito, fondos de ahorro y ahorros a plazo fijo ya no consultan modelos de base de datos para institución/producto: consultan `FinancialCatalogServices::Registry` (FEAT-021).
 
-### Authentication & Authorization
+### No hay controllers separados por instrumento
 
-- Uses Devise for authentication with custom controllers in `app/controllers/users/`
-- User model includes email confirmation (`:confirmable`)
-- Users belong to a Role and have an optional default Currency
-- Custom routes defined in `config/routes.rb` for sessions, registrations, and password management
+A diferencia de lo que sugeriría el nombre de cada instrumento, **no existen** `CreditCardsController`, `DebitCardsController`, `SavingsFundsController` ni `TermSavingsController`. Todo vive bajo `BudgetsController`/`Budget`: el usuario elige un `budget_type` (`cash`, `credit_card`, `debit_card`, `savings_fund`, `term_saving`) y `BudgetsController#change_budget_type` intercambia, vía Turbo Frame, el partial `app/views/budgets/forms/{code}/_form.html.erb` correspondiente. `DebitCard` no tiene modelo propio: es un `Budget` con `budget_type.code == 'debit_card'`, así que su selección de producto escribe directo en `Budget#financial_product_id`.
 
-### Key Models
+### Helpers (`ApplicationHelper`)
 
-**Core Models:**
-- `User`: Devise-based authentication with role and currency associations
-- `Transaction`: Income/expense records with category, currency, and user
-- `RecurringTransaction`: Template for recurring transactions
-- `Category`: Hierarchical (supports parent/child with `parent_category_id`)
-- `Budget`: Budget tracking functionality
-- `CreditCard` / `CreditCardCycle`: Credit card management with billing cycles
-- `Currency`: Multi-currency support with exchange rates
-- `ObligatoryPayment`: Recurring payment obligations
-- `SavingsFund`: Savings goal tracking
-- `AiReport`: AI-generated financial insights
+- `financial_institutions_for_select(product_type)` — instituciones únicas de `Registry.by_type(product_type)` más la opción `["Otro", "other"]`.
+- `financial_products_for_select(product_type, institution)` — productos de esa institución y tipo; `[]` si `institution` es `"other"` o blank.
+- `selected_financial_institution(financial_product_id:, persisted:)` — institución a precargar en edición: la del producto si existe, `"other"` si el instrumento ya existe sin producto, `nil` si es nuevo.
 
-**Utility Models:**
-- `Catalog` / `GroupCatalog`: For categorization systems
-- `Status`: Status tracking for various entities
-- `Recurrence`: Frequency patterns for recurring transactions
+### Stimulus `product-selector` (reemplaza a `product-name-generator`, ahora eliminado)
 
-### Services
+`app/javascript/controllers/product_selector_controller.js` — al cambiar la institución, oculta/muestra el select de producto vs. el campo de nombre manual (`hasManualNameContainerTarget`, opcional) y hace `fetch` a `GET /financial_products?type=&institution=` (`FinancialProductsController#index`) para repoblar el select de producto, restaurando la selección previa vía `data-product-selector-selected-product-value`.
 
-Located in `app/services/`:
-- `FinancialInsightsService`: Generates AI-powered financial insights
-- `ClaudeService`: Wrapper for Claude AI API integration (uses HTTParty)
-- `AiReportService`: Manages AI report generation
-- `credit_card_services/`: Credit card-specific business logic
+### `FinancialProductAssociable` y el nombre autogenerado
 
-### Controllers
+El nombre generado (`"#{prefix} #{product.name} de #{owner.first_name}"`) se asigna a `self` si el modelo tiene columna `name` propia (`TermSaving`, prefijo `'Ahorro'`) o a `budget.name` en caso contrario (`CreditCard`, `SavingsFund`, `Budget`/débito, prefijo `'Cuenta'`). Por eso el campo de nombre manual para la opción "Otro" en `CreditCard`/`SavingsFund`/débito es el campo `name` del propio `Budget` (siempre visible, en la columna izquierda del formulario) — no hay un campo de nombre duplicado dentro del partial de cada tipo. `TermSaving` sí necesita su propio campo de nombre manual (columna `name` propia).
 
-**Main Controllers:**
-- `TransactionsController`: CRUD for transactions with filtering (`change_categories`, `transactions_table`)
-- `RecurringTransactionsController`: Recurring transaction management with modal support
-- `BudgetsController`: Budget management with dynamic type switching
-- `CalendarController`: Calendar view with month navigation and day details
-- `ReportsController`: Financial reports with various chart endpoints (distribution, flow, comparison)
-- `FinancialInsightsController`: AI-generated insights with raw data endpoint for debugging
-- `ObligatoryPaymentsController`: Payment obligations management
+### TermSaving: primera UI real (antes no existía ninguna)
 
-### Frontend (Stimulus Controllers)
+FEAT-026 agregó `term_saving` al catálogo `budget_types` (`db/seeds/group_catalogs.json`), `accepts_nested_attributes_for :term_savings` en `Budget` (con `should_reject_term_saving?`), permitió `term_savings_attributes` en `BudgetsController#budget_params`, y creó `app/views/budgets/forms/term_saving/_form.html.erb` + `_preview.html.erb` + `app/views/budgets/shows/term_saving/_stats.html.erb` desde cero. `Budget#build_budget_type_if_needed` construye un `TermSaving` en blanco para un `Budget` nuevo de ese tipo; como `TermSaving` (a diferencia de `CreditCard`/`SavingsFund`) tiene validaciones de presencia, ese registro en blanco solo es válido si sus atributos reales llegan en la misma llamada a `Budget.create!`/`.new` (vía `term_savings_attributes`), nunca en una segunda llamada separada.
 
-Located in `app/javascript/controllers/`:
-- `form_validator_controller.js`: Client-side form validation
-- `date_picker_controller.js`: Date picker implementation
-- `multiselect_controller.js`: Multi-select dropdowns
-- `modal_controller.js`: Modal dialog handling
-- `calendar_filter_controller.js` / `calendar_loader_controller.js`: Calendar functionality
-- `charts/`: Chart.js integration controllers
-- `budgets/`: Budget-specific controllers
-- `datatable_filters_controller.js`: Table filtering
-- `pagination_controller.js`: Pagination handling
-- `recurring_transaction_form_controller.js`: Recurring transaction form logic
+### Límite de cobertura de tests en este entorno
 
-### Database Seeding
+No hay `chromedriver`/navegador disponible en este sandbox (`selenium-webdriver` ni siquiera carga), así que `spec/system` corre con `driven_by(:rack_test)` (sin JS). Cubre precarga en edición (CA6/CA7) y presencia del select de institución. La actualización dinámica del select de producto vía JS (CA2/CA3) se verifica indirectamente con request specs contra `GET /financial_products` y `POST /budgets/change_budget_type`. La creación con producto del catálogo/opción "Otro" (CA4/CA5/CA8) se verifica con request specs contra `BudgetsController`.
 
-Seeds are stored as JSON files in `db/seeds/`:
-- `currencies.json`: Default currencies (USD, EUR, MXN)
-- `categories.json`: Hierarchical expense/income categories with subcategories
+---
 
-The `db/seeds.rb` file reads these JSON files and creates records.
+## API Movil — Dashboard, categorias y transacciones (FEAT-035/036/037/038)
 
-### Environment Configuration
+Endpoints JSON para Money Minder Movil, autenticados con JWT (`Authorization: Bearer <token>`, ver `Api::JwtAuthenticatable`). Contrato completo (request/response, query params, errores) documentado en `API_ENDPOINTS.md` — ese archivo es la fuente de verdad, esto es solo un resumen de capacidades.
 
-Database connection uses environment variables:
-- `PGDATABASE`: Database name
-- `PGUSER`: PostgreSQL username
-- `PGPASSWORD`: PostgreSQL password
-- `PGHOST`: Database host
-- `PGPORT`: Database port
+- `POST /api/v1/auth/login`, `GET /api/v1/auth/me` (FEAT-035).
+- `GET /api/v1/dashboard` (FEAT-036, extendido en FEAT-038) — dashboard financiero consolidado. `DashboardSerializer` agrega `financial_summary`, `trend_data`, `upcoming_payments`, `active_budgets`, `credit_cards_summary`, `savings_summary`, `recent_transactions` y `latest_insight`, delegando cada calculo a un service object dedicado: `TrendDataCalculator`, `BudgetProgressCalculator`, `CreditCardSummaryCalculator`, `SavingsSummaryCalculator`, `RecentTransactionsCalculator` (mas `CategoryBreakdownCalculator` de FEAT-037).
+  - `?period=month|30days|year` (default `month`, FEAT-037) — `DashboardController#date_range_for` calcula el rango y lo pasa a `DashboardSerializer.new(user, date_range:)`; `period` invalido retorna 400. Solo afecta `financial_summary`; `trend_data` siempre son los ultimos 6 meses fijos.
+  - `financial_summary.category_breakdown` (FEAT-037) — distribucion de gastos por categoria (`category_name`, `amount`, `percentage`), calculada por `CategoryBreakdownCalculator` sobre el mismo `date_range`.
+  - FEAT-038 renombro/reemplazo las claves de FEAT-036/037 (`credit_cards`→`credit_cards_summary`, `latest_ai_insight`→`latest_insight`, `budgets_summary` agregado→`active_budgets` por-presupuesto) — cambio de contrato intencional, no retrocompatible.
+- Cuenta (app movil): `POST /auth/register`, `POST /auth/password` (recuperacion), `PATCH /auth/me` (nombre, moneda), `PATCH /auth/password`.
+- `GET /api/v1/catalogs` — opciones de formularios (`CatalogOptionsSerializer`). `GET /api/v1/calendar?month=YYYY-MM` — transacciones y ocurrencias de recordatorios del mes (`CalendarMonthSerializer`, usa `ObligatoryPayment#occurrences_in_range`, igual que `upcoming_payments`).
+- `GET/POST /api/v1/obligatory_payments`, `GET/POST /api/v1/saving_goals` (progreso por `SavingGoalServices::PriorityAllocator`).
+- `POST /api/v1/transactions` y filtros de `GET /api/v1/transactions` (`q`, `transaction_type`, `category`, `start_date`, `end_date`; `meta.net_total`).
+- Errores de validacion de la API: `render_validation_errors(record)` en `Api::JwtAuthenticatable` → 422 `{ error: { code: 'validation_error', message, details } }`. El concern tambien desactiva CSRF (la API no usa cookies).
+- `users.currency_id` apuntaba por error a `roles` desde la migracion original de Devise; `FixUsersCurrencyForeignKey` la corrige.
+- `GET /api/v1/transactions`, `GET /api/v1/transactions/:id` (FEAT-037) — listado paginado (sin gema de paginación; `offset`/`limit` manual + `PaginationHelper#total_pages`, ya usado por las vistas web) y detalle, ambos vía `current_api_user.transactions` con `includes(:category, :currency, :transaction_type)` para evitar N+1. `TransactionSerializer` expone `date` (mapea `transaction_date`), `currency` (`Currency#code`) y `transaction_type` (`Catalog#code`).
 
-The `.env` file (gitignored) contains these values for local development.
+### Decisiones de diseño
 
-## Important Considerations
+- No existe `DashboardService`: la agregación vive en `DashboardSerializer`, que ya existía desde FEAT-036 — se extendió en vez de introducir una capa nueva. Los calculos complejos si se extrajeron a service objects (FEAT-038) siguiendo el patron ya establecido por `CategoryBreakdownCalculator`.
+- `category_breakdown` no maneja `category_id` nulo con datos reales: `transactions.category_id` es `NOT NULL` con FK a `categories`, así que ese camino es defensivo (cubierto con specs que mockean la consulta agregada, no con datos reales).
+- `active_budgets`/`credit_cards_summary`/`savings_summary` (FEAT-038) no tienen una tabla "categoria" propia: `Budget` no tiene `belongs_to :category`, asi que `category_name`/`category_color` en `active_budgets` usan el propio `budget.name`/`budget.color` (igual que el resto del dashboard web trata estos campos).
+- `budgeted_amount` en `active_budgets` es `budget.current_amount` (saldo vivo post-gasto, no un techo fijo) — mismo criterio ya documentado para `budgets_summary` en FEAT-036/037.
+- `credit_cards_summary.credit_limit`/`available_credit` usan `CreditCard#limit_amount` y el metodo `#available_credit` (`limit_amount - total_debt`); las columnas `credit_limit`/`available_credit`/`current_balance` de la tabla `credit_cards` son scaffolding sin usar (nunca se escriben), no confundir con estas.
+- `TrendDataCalculator` agrupa con `TO_CHAR(transaction_date, 'YYYY-MM')` (2 queries totales, income+expense) en vez de iterar `ReportFilter` 6 veces — mismo patron SQL que `ReportFilter#generate_monthly_array`.
 
-### Migration Template
+---
 
-When generating new models, the custom migration template automatically adds `uuid` and `active` fields. You don't need to manually specify these in generator commands.
+## Engineering Standards
 
-### Devise Configuration
+Standards live in the `.claude/` folder:
 
-The User model requires:
-- `role_id` (belongs_to :role, required)
-- `currency_id` (belongs_to :currency, optional)
-- Email confirmation is enabled
-
-### PostCSS Pipeline
-
-When adding new CSS:
-1. Create files in `app/assets/stylesheets/components/`
-2. Import in `application.tailwind.css`
-3. Use PostCSS plugins: `postcss-import`, `tailwindcss`, `autoprefixer`
-
-### Component Rendering
-
-Components expect:
-- A Ruby class in `app/components/` (inheriting from `ApplicationComponent`)
-- A partial in `app/views/components/`
-- Access component instance via `component` variable in the partial
-
-### Turbo/Stimulus Integration
-
-- The app uses Turbo for navigation and form submissions
-- Stimulus controllers handle client-side interactivity
-- Many controllers interact with server endpoints that return Turbo Stream responses
+| File | Content |
+|---|---|
+| `ENGINEERING_STANDARDS.md` | Git, commits, PR, API communication, error format |
+| `RAILS_STANDARDS.md` | Result pattern, service objects, serializers, DB, RuboCop, RSpec |
+| `REACT_STANDARDS.md` | React-specific rules |

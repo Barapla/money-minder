@@ -1,19 +1,17 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
-RSpec.describe "obligatory_payments/show", type: :view do
+RSpec.describe 'obligatory_payments/show', type: :view do
   before(:each) do
-    assign(:obligatory_payment, ObligatoryPayment.create!(
-      user: nil,
-      name: "Name",
-      amount: "9.99",
-      category: nil,
-      description: "MyText",
-      color: nil,
-      icon: nil
-    ))
+    op = ObligatoryPayment.new(name: 'Name', amount: '9.99', description: 'MyText')
+    allow(op).to receive(:id).and_return(1)
+    allow(op).to receive(:to_param).and_return('1')
+    allow(op).to receive(:persisted?).and_return(true)
+    assign(:obligatory_payment, op)
   end
 
-  it "renders attributes in <p>" do
+  it 'renders attributes in <p>' do
     render
     expect(rendered).to match(//)
     expect(rendered).to match(/Name/)

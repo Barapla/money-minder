@@ -1,14 +1,17 @@
+# frozen_string_literal: true
+
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 require 'spec_helper'
-ENV['RAILS_ENV'] ||= 'test'
+ENV['RAILS_ENV'] = 'test'
 require_relative '../config/environment'
-# Prevent database truncation if the environment is production
-abort("The Rails environment is running in production mode!") if Rails.env.production?
+# Nunca correr specs fuera de test — el PM Agent exporta RAILS_ENV=development al entorno
+abort('RAILS_ENV debe ser test para correr specs') unless Rails.env.test?
 # Uncomment the line below in case you have `--require rails_helper` in the `.rspec` file
 # that will avoid rails generators crashing because migrations haven't been run yet
 # return unless Rails.env.test?
 require 'rspec/rails'
 require 'faker'
+require 'database_cleaner/active_record'
 # Add additional requires below this line. Rails is not loaded until this point!
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
@@ -37,7 +40,7 @@ rescue ActiveRecord::PendingMigrationError => e
 end
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
-  config.fixture_path = Rails.root.join('spec/fixtures')
+  config.fixture_paths = [Rails.root.join('spec/fixtures')]
 
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
@@ -70,19 +73,32 @@ RSpec.configure do |config|
   # config.filter_gems_from_backtrace("gem name")
 
   config.include FactoryBot::Syntax::Methods
+  config.include FinancialTestHelpers
+  config.include Devise::Test::IntegrationHelpers, type: :request
+  config.include Devise::Test::IntegrationHelpers, type: :system
 
   config.before(:suite) do
-    # Configura I18n y Faker a inglés ANTES de todos los tests
-    I18n.locale = :en
-    I18n.default_locale = :en
+    # Faker usa :en internamente via I18n; desactivar enforce para evitar InvalidLocale
+    I18n.enforce_available_locales = false
+    I18n.locale = :es
+    I18n.default_locale = :es
     Faker::Config.locale = :en
-    
+
     # Limpia la BD una vez
     DatabaseCleaner.clean_with(:truncation)
   end
 
   config.before(:each) do
-    # Asegura que cada test use inglés
-    I18n.locale = :en
+    I18n.locale = :es
+  end
+
+  # Sin driver de navegador (chromedriver) disponible en este entorno; los specs de
+  # sistema corren sobre rack_test, que no ejecuta JavaScript (ver FEAT-026).
+  config.before(:each, type: :system) do
+    driven_by(:rack_test)
+  end
+
+  config.before(:each, type: :view) do
+    allow(view).to receive(:current_user).and_return(nil)
   end
 end

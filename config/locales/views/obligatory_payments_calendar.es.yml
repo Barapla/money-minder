@@ -1,0 +1,12 @@
+es:
+  obligatory_payments_calendar:
+    summary:
+      expense_label: "Gasto"
+      expense_subtitle: "Pagos del mes"
+      income_label: "Ganancia"
+      income_subtitle: "Cobros y nómina del mes"
+      balance_label: "Balance"
+      balance_subtitle: "Balance neto del mes"
+    day_details:
+      one_time_label: "Recordatorio único"
+      done_label: "Completado"

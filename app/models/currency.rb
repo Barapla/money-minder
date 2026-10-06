@@ -10,5 +10,7 @@ class Currency < ApplicationRecord
   validates :code, presence: true
   validates :symbol, presence: true
 
-  scope :default, -> { find_by(code: 'MXN') }
+  def self.default
+    find_by(code: 'MXN')
+  end
 end

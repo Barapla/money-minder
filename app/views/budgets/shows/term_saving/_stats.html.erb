@@ -1,0 +1,20 @@
+<!-- Stats Overview -->
+<% term_saving = @budget.term_savings.order(created_at: :desc).first %>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <%= render Shared::CardComponent.new(
+            title: "CAPITAL BLOQUEADO", subtitle: "capital inicial",
+            main_text: term_saving&.principal_amount || 0,
+            options: { color: "emerald", icon: "money" }) %>
+    <%= render Shared::CardComponent.new(
+            title: "PLAZO", subtitle: "días bloqueado",
+            main_text: term_saving&.term_days || 0,
+            options: { color: "purple", icon: "calendar" }) %>
+    <%= render Shared::CardComponent.new(
+            title: "TASA FIJA", subtitle: "rendimiento del plazo",
+            main_text: term_saving&.rate_locked || 0,
+            options: { color: "blue", icon: "stats" }) %>
+    <%= render Shared::CardComponent.new(
+            title: "ESTADO", subtitle: "del ahorro",
+            main_text: term_saving&.status || "active",
+            options: { color: "orange", icon: "bag" }) %>
+</div>

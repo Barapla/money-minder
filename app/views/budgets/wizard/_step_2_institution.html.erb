@@ -1,0 +1,20 @@
+<div class="p-8">
+    <h2 class="text-xl font-semibold text-white mb-2"><%= t('budgets.wizard.step_2.heading') %></h2>
+    <p class="text-bunker-400 text-sm mb-6"><%= t('budgets.wizard.step_2.subtitle', type: budget_type.value) %></p>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <% institutions.each do |institution| %>
+            <%= link_to wizard_step3_budgets_path(institution: institution), class: 'wizard-step-card' do %>
+                <%= institution_logo_placeholder(institution) %>
+                <span class="text-white font-semibold text-sm"><%= institution %></span>
+            <% end %>
+        <% end %>
+
+        <%= link_to wizard_step4_budgets_path(product_id: ''), class: 'wizard-step-card wizard-step-card--muted' do %>
+            <span class="text-2xl">➕</span>
+            <span class="text-white font-semibold text-sm"><%= t('budgets.wizard.step_2.other_option') %></span>
+        <% end %>
+    </div>
+
+    <%= link_to t('budgets.wizard.back'), new_budget_path, class: 'btn-cancel mt-8 inline-flex' %>
+</div>

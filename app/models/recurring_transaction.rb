@@ -4,9 +4,9 @@
 class RecurringTransaction < ApplicationRecord
   belongs_to :user
   # Enums
-  enum frequency: %i[daily weekly bi_weekly monthly bi_monthly quarterly semi_annually annually]
+  enum :frequency, %i[daily weekly bi_weekly monthly bi_monthly quarterly semi_annually annually]
 
-  enum status: %i[active paused completed cancelled], _default: :active
+  enum :status, %i[active paused completed cancelled], default: :active
 
   belongs_to :budget, optional: true # Para asociar a un presupuesto específico
   has_many :generated_transactions, class_name: 'Transaction',

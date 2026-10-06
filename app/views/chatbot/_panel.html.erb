@@ -1,0 +1,10 @@
+<div class="flex-1 flex flex-col h-[calc(100vh-4rem)]">
+  <% if conversation.nil? %>
+    <div class="flex-1 flex items-center justify-center text-bunker-400 text-sm">
+      Crea una nueva conversación para empezar a chatear con tu asesor financiero.
+    </div>
+  <% else %>
+    <%= render 'chatbot/messages', messages: messages %>
+    <%= render 'chatbot/form', conversation: conversation %>
+  <% end %>
+</div>

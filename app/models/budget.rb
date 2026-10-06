@@ -4,6 +4,7 @@
 class Budget < ApplicationRecord
   include Utils::BudgetAttributes
   include ProgressColorIndicator
+  include FinancialProductAssociable
 
   # Validations
   validates :name, presence: true, length: { maximum: 100 }
@@ -15,6 +16,7 @@ class Budget < ApplicationRecord
   has_many :transactions, dependent: :destroy
   has_one :credit_card, dependent: :destroy
   has_one :savings_fund, dependent: :destroy
+  has_many :term_savings, dependent: :destroy
 
   belongs_to :user
   belongs_to :budget_type, class_name: 'Catalog', foreign_key: 'budget_type_id'
@@ -28,9 +30,20 @@ class Budget < ApplicationRecord
   accepts_nested_attributes_for :savings_fund,
                                 allow_destroy: true,
                                 update_only: true, reject_if: :should_reject_savings_fund?
+  accepts_nested_attributes_for :term_savings,
+                                allow_destroy: true, reject_if: :should_reject_term_saving?
 
   # Construir credit_card automáticamente
   after_initialize :build_budget_type_if_needed
+
+  # El wizard (FEAT-027) ya no manda un `name` propio para credit_card/savings_fund/
+  # term_saving: se autogenera a partir del producto elegido en el paso 3. Ese
+  # autogenerado ocurre en el before_validation del hijo (FinancialProductAssociable),
+  # pero `accepts_nested_attributes_for` valida a los hijos en la fase `validate` del
+  # padre, que corre DESPUES de la presencia de `name` de este Budget (se registro antes
+  # en la clase). Se fuerza la validacion del hijo por adelantado para que el nombre ya
+  # este generado cuando se evalua la presencia.
+  before_validation :prevalidate_nested_instrument_name, if: -> { name.blank? }
 
   def budget_color
     self.class.progress_color(debt_amount, limit_amount)
@@ -106,6 +119,23 @@ class Budget < ApplicationRecord
     date_change
   end
 
+  # Tipos que se muestran al final del index sin importar el orden alfabetico.
+  # El efectivo sigue disponible, pero casi nadie registra entradas y salidas de
+  # efectivo a mano, asi que no debe encabezar la lista ni abrir por defecto.
+  TRAILING_BUDGET_TYPES = %w[cash].freeze
+
+  # Agrupa los budgets del scope actual por codigo de budget_type para el index
+  # segmentado (FEAT-032), alfabeticamente (credit_card, debit_card, savings_fund)
+  # y con los tipos de TRAILING_BUDGET_TYPES hasta abajo.
+  # Agrupar por code (no por el registro de budget_type) evita crear una seccion por
+  # cada fila de catalogo si llegara a existir mas de una con el mismo code.
+  def self.grouped_by_type
+    includes(:budget_type, :credit_card, :savings_fund, :term_savings)
+      .order(created_at: :desc)
+      .group_by { |budget| budget.budget_type&.code }
+      .sort_by { |code, _budgets| [TRAILING_BUDGET_TYPES.include?(code) ? 1 : 0, code.to_s] }
+  end
+
   def categories_with_more_transactions(limit = 5, transaction_type = 'expense',
                                         from_date = Date.today.at_beginning_of_month)
     transactions
@@ -126,8 +156,9 @@ class Budget < ApplicationRecord
     # Para registros existentes, solo si es credit_card y no existe
     return unless new_record?
     return build_credit_card if credit_card.nil? && budget_type&.code == 'credit_card'
+    return build_savings_fund if savings_fund.nil? && budget_type&.code == 'savings_fund'
 
-    build_savings_fund if savings_fund.nil? && budget_type&.code == 'savings_fund'
+    term_savings.build if term_savings.none? && budget_type&.code == 'term_saving'
   end
 
   def should_reject_credit_card?
@@ -140,4 +171,12 @@ class Budget < ApplicationRecord
     budget_type&.code != 'savings_fund'
   end
 
+  def should_reject_term_saving?
+    # Rechazar los atributos de term_saving si no es tipo term_saving
+    budget_type&.code != 'term_saving'
+  end
+
+  def prevalidate_nested_instrument_name
+    (credit_card || savings_fund || term_savings.first)&.valid?
+  end
 end

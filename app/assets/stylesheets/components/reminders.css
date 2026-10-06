@@ -1,0 +1,8 @@
+/* FEAT-029: distincion visual entre recordatorios de pago (sale dinero) y de cobro (entra dinero) */
+.reminder-payment {
+  border-left: 4px solid #EF4444;
+}
+
+.reminder-income {
+  border-left: 4px solid #10B981;
+}

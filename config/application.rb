@@ -16,7 +16,7 @@ module MoneyMinder
     config.load_defaults 7.0
 
     # config/application.rb
-    config.autoload_paths << Rails.root.join('lib')
+    config.autoload_lib(ignore: %w[assets data_scripts tasks templates])
 
     # Where the I18n library should search for translation files
     # Search nested folders in config/locales for better organization
@@ -39,7 +39,7 @@ module MoneyMinder
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    config.time_zone = "America/Mexico_City"
+    config.time_zone = 'America/Mexico_City'
 
     config.active_record.default_timezone = :utc
 

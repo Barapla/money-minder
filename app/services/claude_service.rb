@@ -11,11 +11,7 @@ class ClaudeService
     raise 'ANTHROPIC_API_KEY no está configurada' if @api_key.blank?
   end
 
-<<<<<<< Updated upstream
-  def send_message(prompt:, context: nil, data: nil, model: 'claude-sonnet-4-20250514')
-=======
   def send_message(prompt:, context: nil, data: nil, model: 'claude-sonnet-4-5', max_tokens: 8000)
->>>>>>> Stashed changes
     # Construir el mensaje con contexto y datos
     full_message = build_message(prompt, context, data)
 

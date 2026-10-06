@@ -1,0 +1,42 @@
+<% p = @credit_card_presenter %>
+<% last_cut = p.last_cut_utilization %>
+<%
+  used = [p.utilization_percentage, 100].min
+  ring_color = case p.utilization_status
+               when :critical then '#ef4444'
+               when :warning  then '#f59e0b'
+               else                '#10b981'
+               end
+  verdict_class, verdict_key = case (last_cut && last_cut[:status]) || p.utilization_status
+                               when :critical then ['text-red-300', 'critical']
+                               when :warning  then ['text-amber-300', 'warning']
+                               else                ['text-emerald-300', 'healthy']
+                               end
+%>
+<div class="flex flex-col items-center gap-3 shrink-0">
+  <div class="relative w-[180px] h-[180px] rounded-full"
+       role="img"
+       aria-label="<%= t('.aria_label', percent: p.utilization_percentage) %>"
+       style="background: conic-gradient(<%= ring_color %> 0 <%= used %>%, rgba(23,26,31,.7) <%= used %>% 100%)">
+    <%# Marca del techo sano (30% del límite) sobre el borde del anillo %>
+    <div class="absolute inset-0 rounded-full overflow-hidden" style="transform: rotate(<%= (CreditCardPresenter::HEALTHY_UTILIZATION * 3.6).round %>deg)">
+      <div class="absolute top-0 w-0.5 h-[22px] bg-emerald-300" style="left: calc(50% - 1px)"></div>
+    </div>
+    <div class="absolute inset-5 rounded-full bg-bunker-950 flex flex-col items-center justify-center text-center px-3.5">
+      <span class="font-mono text-[34px] font-bold text-white leading-none"><%= p.utilization_percentage %>%</span>
+      <span class="text-[10px] text-bunker-400 uppercase tracking-wider mt-1.5"><%= t('.caption') %></span>
+      <span class="text-[9px] text-bunker-500 mt-0.5"><%= t('.projected', date: l(p.cutting_date, format: :very_short)) %></span>
+    </div>
+  </div>
+  <div class="text-center max-w-[220px]">
+    <% if last_cut %>
+      <div class="<%= verdict_class %> text-[13px] font-semibold">
+        <%= t('.last_cut', percent: last_cut[:percent], date: l(last_cut[:date], format: :very_short)) %>
+      </div>
+      <div class="<%= verdict_class %> text-[11.5px] opacity-80"><%= t(".status_#{verdict_key}") %></div>
+    <% else %>
+      <div class="<%= verdict_class %> text-[13px] font-semibold"><%= t(".status_#{verdict_key}") %></div>
+    <% end %>
+    <div class="text-bunker-400 text-[11.5px] mt-1.5"><%= t('.ceiling', amount: p.healthy_ceiling_formatted) %></div>
+  </div>
+</div>

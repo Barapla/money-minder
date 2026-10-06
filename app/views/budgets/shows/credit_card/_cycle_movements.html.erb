@@ -1,0 +1,47 @@
+<% p = @credit_card_presenter %>
+<% movements = p.cycle_transactions %>
+<% top_category = p.top_cycle_category %>
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+  <div class="flex justify-between items-center flex-wrap gap-2.5 mb-4">
+    <h3 class="text-base font-semibold text-white"><%= t('.title') %></h3>
+    <%= link_to "#{t('.see_all')} →", transactions_path,
+          class: "text-purple-300 text-[13px] font-medium hover:text-purple-200" %>
+  </div>
+
+  <% if movements.any? %>
+    <div class="space-y-2.5">
+      <% movements.first(8).each do |transaction| %>
+        <% presenter = TransactionPresenter.new(transaction) %>
+        <% is_payment = transaction.transaction_type.code == 'income' %>
+        <div class="flex items-center gap-3.5 bg-bunker-950/40 border border-bunker-700/50 rounded-xl px-4 py-3.5">
+          <div class="w-9 h-9 shrink-0 rounded-[10px] flex items-center justify-center text-base <%= color_bg_class(presenter.color, 40) %>">
+            <%= presenter.icon %>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-white text-[13.5px] font-semibold line-clamp-1"><%= presenter.description.presence || presenter.category %></div>
+            <div class="text-bunker-400 text-[11.5px]"><%= l(transaction.transaction_date.to_date, format: :very_short) %> · <%= presenter.category %></div>
+          </div>
+          <div class="text-right shrink-0">
+            <div class="font-mono text-[15px] font-bold <%= is_payment ? 'text-emerald-400' : 'text-red-400' %>">
+              <%= is_payment ? '+' : '−' %><%= presenter.amount %>
+            </div>
+            <div class="text-bunker-400 text-[11px]"><%= is_payment ? t('.payment') : t('.purchase') %></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <% if top_category %>
+      <div class="mt-4 pt-4 border-t border-bunker-700/50 flex justify-between items-center flex-wrap gap-2">
+        <span class="text-bunker-400 text-[12.5px]"><%= t('.top_category', category: top_category[:name]) %></span>
+        <span class="font-mono text-white text-[13px] font-semibold"><%= top_category[:percent] %>% · <%= top_category[:amount_formatted] %></span>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="text-center py-6">
+      <p class="text-bunker-400 text-sm mb-2"><%= t('.empty') %></p>
+      <%= link_to t('.add_purchase'), new_transaction_path(budget_id: p.budget.id, transaction_type: 'expense'),
+            class: "text-purple-300 text-xs hover:text-purple-200 underline" %>
+    </div>
+  <% end %>
+</div>

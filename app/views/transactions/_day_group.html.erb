@@ -1,0 +1,42 @@
+<%
+  p = @index_presenter
+  total = p.day_total(transactions)
+  note, note_class =
+    if p.today?(date) then [t('.today'), 'text-bunker-400']
+    elsif p.yesterday?(date) then [t('.yesterday'), 'text-bunker-400']
+    elsif p.payday?(date) then [t('.payday'), 'text-emerald-300']
+    end
+%>
+<div class="flex items-center justify-between flex-wrap gap-3 px-6 py-[13px] bg-bunker-950/40 border-y border-bunker-700">
+  <div class="flex items-baseline gap-2.5">
+    <span class="text-white text-[13px] font-semibold"><%= l(date, format: :day_and_month) %></span>
+    <% if note %>
+      <span class="text-[11.5px] <%= note_class %>"><%= note %></span>
+    <% end %>
+  </div>
+  <span class="font-mono text-[12.5px] <%= total.positive? ? 'text-emerald-300' : 'text-bunker-400' %>">
+    <%= t('.day_total', amount: p.format_signed(total)) %>
+  </span>
+</div>
+
+<% transactions.each do |transaction| %>
+  <% tint = transaction_type_tint(transaction.transaction_type&.code) %>
+  <%= link_to transaction_path(transaction),
+        class: "flex items-center gap-3.5 px-6 py-3.5 border-b border-bunker-800/60 transition-colors hover:bg-bunker-800/40 #{tint[:row]}" do %>
+    <span class="w-[38px] h-[38px] shrink-0 rounded-[10px] flex items-center justify-center text-base <%= color_bg_class(transaction.color&.code, 40) %>">
+      <%= transaction.icon&.value %>
+    </span>
+    <span class="flex-1 min-w-0">
+      <span class="block text-white text-[13.5px] font-semibold line-clamp-1">
+        <%= transaction.description.presence || transaction.category&.name %>
+      </span>
+      <span class="block text-bunker-400 text-[11.5px] line-clamp-1"><%= transaction_meta(transaction) %></span>
+    </span>
+    <span class="shrink-0 whitespace-nowrap border text-[10.5px] font-semibold px-2.5 py-[3px] rounded-full <%= tint[:badge] %>">
+      <%= transaction.transaction_type&.value %>
+    </span>
+    <span class="font-mono text-[15px] font-bold text-right min-w-[110px] <%= tint[:amount] %>">
+      <%= p.format_signed(p.signed_amount(transaction)) %>
+    </span>
+  <% end %>
+<% end %>

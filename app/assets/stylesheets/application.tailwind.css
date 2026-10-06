@@ -7,3 +7,5 @@
 @import "components/alerts";
 @import "components/table";
 @import "components/modals";
+@import "components/wizard";
+@import "components/reminders";

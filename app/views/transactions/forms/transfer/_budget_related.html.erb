@@ -2,9 +2,9 @@
     <%= render Forms::SelectComponent.new(
                     name: :related_budget_id,
                     form:,
-                    options_collection: Budget.all.pluck(:name, :id),
+                    options_collection: (@budgets || []).reject { |b| b.id == transaction.budget_id }.pluck(:name, :id),
                     options: { 
-                        help_text: "Selecciona un presupuesto relacionado (opcional)",
+                        help_text: "¿A qué presupuesto entra el dinero?",
                         required: true,
                         disabled: transaction.persisted?,
                         selected: transaction.related_budget_id,

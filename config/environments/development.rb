@@ -2,6 +2,7 @@
 
 require 'active_support/core_ext/integer/time'
 
+# rubocop:disable Metrics/BlockLength
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -43,14 +44,7 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
 
-  # Print deprecation notices to the Rails logger.
-  config.active_support.deprecation = :log
-
-  # Raise exceptions for disallowed deprecations.
-  config.active_support.disallowed_deprecation = :raise
-
-  # Tell Active Support which deprecation messages to disallow.
-  config.active_support.disallowed_deprecation_warnings = []
+  config.active_support.report_deprecations = true
 
   # Raise an error on page load if there are pending migrations.
   config.active_record.migration_error = :page_load
@@ -59,10 +53,12 @@ Rails.application.configure do
   config.active_record.verbose_query_logs = true
 
   # This should be true in development
-  config.assets.debug = true
+  if config.respond_to?(:assets)
+    config.assets.debug = true
 
-  # Suppress logger output for asset requests.
-  config.assets.quiet = true
+    # Suppress logger output for asset requests.
+    config.assets.quiet = true
+  end
 
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
@@ -76,3 +72,4 @@ Rails.application.configure do
   #
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
 end
+# rubocop:enable Metrics/BlockLength

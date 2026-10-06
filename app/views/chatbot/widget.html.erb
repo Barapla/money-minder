@@ -1,0 +1,6 @@
+<%= turbo_frame_tag 'chatbot_bubble_frame' do %>
+  <div class="flex flex-col h-full">
+    <%= render 'chatbot/messages', messages: @messages %>
+    <%= render 'chatbot/form', conversation: @conversation %>
+  </div>
+<% end %>

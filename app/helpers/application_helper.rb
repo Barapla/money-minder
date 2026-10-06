@@ -6,6 +6,52 @@ module ApplicationHelper
   include SvgHelper
   include DayDetailsHelper
 
+  # Instituciones disponibles para un tipo de instrumento (FEAT-026), mas la opcion "Otro"
+  # para ingreso manual cuando el producto no esta en el catalogo.
+  def financial_institutions_for_select(product_type)
+    institutions = FinancialCatalogServices::Registry.by_type(product_type).map(&:institution).uniq.sort
+
+    institutions.map { |institution| [institution, institution] } + [%w[Otro other]]
+  end
+
+  # Productos del catalogo para una institucion y tipo de instrumento dados (FEAT-026).
+  def financial_products_for_select(product_type, institution)
+    return [] if institution.blank? || institution == 'other'
+
+    FinancialCatalogServices::Registry.by_type(product_type)
+                                      .by_institution(institution)
+                                      .map { |product| [product.name, product.id] }
+  end
+
+  # Institucion a precargar en el select del formulario (FEAT-026): la del producto
+  # asociado si existe, "other" si el instrumento ya existe sin producto, o nil si es nuevo.
+  def selected_financial_institution(financial_product_id:, persisted:)
+    return 'other' if financial_product_id.blank? && persisted
+    return nil if financial_product_id.blank?
+
+    FinancialCatalogServices::Registry.find_by_id(financial_product_id)&.institution
+  end
+
+  # Icono del tipo de presupuesto para el paso 1 del wizard (FEAT-027).
+  def budget_type_icon(code, css_class = nil)
+    options = {}
+    options[:class] = css_class if css_class
+
+    inline_svg_tag("budget_types/#{code}.svg", options)
+  end
+
+  # Logo de la institucion para el paso 2 del wizard (FEAT-027). El catalogo financiero
+  # no trae logos, asi que se genera un placeholder con las iniciales de la institucion.
+  def institution_logo_placeholder(institution)
+    initials = institution.to_s.split.first(2).filter_map { |word| word[0] }.join.upcase
+
+    content_tag(:svg, viewBox: '0 0 48 48', class: 'w-12 h-12') do
+      concat(content_tag(:circle, nil, cx: 24, cy: 24, r: 24, class: 'fill-purple-500/20'))
+      text_options = { x: 24, y: 30, 'text-anchor': 'middle', class: 'fill-purple-200 text-base font-semibold' }
+      concat(content_tag(:text, initials, text_options))
+    end
+  end
+
   def ai_report_status_badge(report)
     if report.processing_success?
       content_tag :span, '✓ Actualizado', class: 'badge badge-success'

@@ -1,0 +1,7 @@
+es:
+  calendar:
+    index:
+      title: "Calendario Financiero"
+      subtitle: "Visualiza tu historial financiero por fecha"
+    day_details:
+      transactions_title: "Transacciones del"

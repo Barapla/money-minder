@@ -1,0 +1,112 @@
+# frozen_string_literal: true
+
+require 'rails_helper'
+
+RSpec.describe FinancialCatalogServices::Registry do
+  describe '.all_products' do
+    it 'returns every product in the catalog' do
+      expect(described_class.all_products).to contain_exactly(
+        an_instance_of(FinancialCatalogServices::Nu::NuCreditCard),
+        an_instance_of(FinancialCatalogServices::Nu::NuFrozenSavings90),
+        an_instance_of(FinancialCatalogServices::Nu::NuDebito),
+        an_instance_of(FinancialCatalogServices::Nu::NuCajita),
+        an_instance_of(FinancialCatalogServices::Nu::NuCajitaTurbo),
+        an_instance_of(FinancialCatalogServices::Nu::NuAhorroCongelado),
+        an_instance_of(FinancialCatalogServices::Klar::KlarDebitCard),
+        an_instance_of(FinancialCatalogServices::Bbva::BbvaSavingsFund),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoCuenta),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaDebito),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaCredito)
+      )
+    end
+  end
+
+  describe '.by_type' do
+    it 'returns only products matching the given type' do
+      expect(described_class.by_type('credit').to_a).to contain_exactly(
+        an_instance_of(FinancialCatalogServices::Nu::NuCreditCard),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaCredito)
+      )
+    end
+
+    it 'accepts the type constants' do
+      expect(described_class.by_type(described_class::DEBIT).to_a).to contain_exactly(
+        an_instance_of(FinancialCatalogServices::Nu::NuDebito),
+        an_instance_of(FinancialCatalogServices::Klar::KlarDebitCard),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaDebito)
+      )
+    end
+
+    it 'returns the savings fund products, including Mercado Pago (CA6)' do
+      expect(described_class.by_type(described_class::SAVINGS).to_a).to contain_exactly(
+        an_instance_of(FinancialCatalogServices::Nu::NuCajita),
+        an_instance_of(FinancialCatalogServices::Nu::NuCajitaTurbo),
+        an_instance_of(FinancialCatalogServices::Bbva::BbvaSavingsFund),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoCuenta)
+      )
+    end
+
+    it 'returns an empty collection when no product matches' do
+      expect(described_class.by_type('nonexistent').to_a).to eq([])
+    end
+  end
+
+  describe '.by_institution' do
+    it 'returns only products from the given institution (CA1, CA9)' do
+      expect(described_class.by_institution('Nu').to_a).to contain_exactly(
+        an_instance_of(FinancialCatalogServices::Nu::NuCreditCard),
+        an_instance_of(FinancialCatalogServices::Nu::NuFrozenSavings90),
+        an_instance_of(FinancialCatalogServices::Nu::NuDebito),
+        an_instance_of(FinancialCatalogServices::Nu::NuCajita),
+        an_instance_of(FinancialCatalogServices::Nu::NuCajitaTurbo),
+        an_instance_of(FinancialCatalogServices::Nu::NuAhorroCongelado)
+      )
+    end
+
+    it 'returns the three Mercado Pago products' do
+      expect(described_class.by_institution('Mercado Pago').to_a).to contain_exactly(
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoCuenta),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaDebito),
+        an_instance_of(FinancialCatalogServices::MercadoPago::MercadoPagoTarjetaCredito)
+      )
+    end
+
+    it 'returns an empty collection when no product matches' do
+      expect(described_class.by_institution('Non Existent Bank').to_a).to eq([])
+    end
+  end
+
+  describe 'chaining filters' do
+    it 'combines by_type and by_institution' do
+      expect(described_class.by_type('debit').by_institution('Klar').to_a).to contain_exactly(
+        an_instance_of(FinancialCatalogServices::Klar::KlarDebitCard)
+      )
+    end
+
+    it 'returns an empty collection when the combined filters match nothing' do
+      expect(described_class.by_type('debit').by_institution('BBVA').to_a).to eq([])
+    end
+
+    it 'is order independent' do
+      expect(described_class.by_institution('Klar').by_type('debit').to_a).to contain_exactly(
+        an_instance_of(FinancialCatalogServices::Klar::KlarDebitCard)
+      )
+    end
+  end
+
+  describe FinancialCatalogServices::Registry::FilteredCollection do
+    it 'is enumerable' do
+      collection = described_class.new([FinancialCatalogServices::Nu::NuCreditCard.new])
+
+      expect(collection.map(&:institution)).to eq(['Nu'])
+    end
+
+    it 'to_a does not expose the internal array for mutation' do
+      collection = described_class.new([FinancialCatalogServices::Nu::NuCreditCard.new])
+
+      collection.to_a.clear
+
+      expect(collection.to_a.size).to eq(1)
+    end
+  end
+end

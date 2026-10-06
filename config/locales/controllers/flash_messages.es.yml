@@ -1,0 +1,48 @@
+es:
+  transactions:
+    create:
+      success: "Transacción creada exitosamente."
+    update:
+      success: "Transacción actualizada exitosamente."
+    destroy:
+      success: "Transacción eliminada exitosamente."
+
+  budgets:
+    create:
+      success: "Presupuesto creado exitosamente."
+      error: "Error al crear el presupuesto. Por favor, revisa los datos ingresados."
+    update:
+      success: "Presupuesto actualizado exitosamente."
+      error: "Error al actualizar el presupuesto. Por favor, revisa los datos ingresados."
+    destroy:
+      success: "Presupuesto eliminado exitosamente."
+
+  employment_informations:
+    create:
+      success: "Información laboral guardada exitosamente."
+    update:
+      success: "Información laboral actualizada exitosamente."
+    set_employment_information:
+      not_found: "No tienes información laboral registrada."
+
+  saving_goals:
+    create:
+      success: "Meta de ahorro creada exitosamente."
+    update:
+      success: "Meta de ahorro actualizada exitosamente."
+    destroy:
+      success: "Meta de ahorro eliminada exitosamente."
+
+  obligatory_payments:
+    create:
+      success: "Pago obligatorio creado exitosamente."
+    update:
+      success: "Pago obligatorio actualizado exitosamente."
+    destroy:
+      success: "Pago obligatorio eliminado exitosamente."
+
+  payroll_profiles:
+    update:
+      success: "Configuración de nómina actualizada exitosamente."
+    set_payroll_profile:
+      not_found: "Registra tu información laboral primero."

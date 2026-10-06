@@ -4,28 +4,20 @@
 class TransactionsController < ApplicationController
   include PaginationHelper
   include TransactionsHelper
+  before_action :authenticate_user!
   before_action :set_transaction, only: %i[show edit update destroy]
 
   # GET /transactions or /transactions.json
   def index
-    transactions = Transaction.order(transaction_date: :desc).order(created_at: :desc)
-    @total_collections = transactions.count
-    @transactions = transactions.limit(10)
+    @index_presenter = TransactionsIndexPresenter.new(current_user, params)
   end
 
   def transactions_table
     id = params[:id]
-    # query = params[:query]
     current_page = params[:page]
     per_page = params[:perPage].to_i
-    # select_filters = params[:select_filters] || []
-    # checkbox_filters = params[:checkbox_filters] || {}
 
-    transactions = Transaction.order(transaction_date: :desc).order(created_at: :desc)
-
-    # tickets = apply_select_filters(tickets, select_filters)
-    # users = apply_checkbox_filters(users, checkbox_filters)
-    # users = apply_query(users, query) if query.present?
+    transactions = current_user.transactions.order(transaction_date: :desc).order(created_at: :desc)
 
     total_transactions = transactions.count
 
@@ -51,15 +43,18 @@ class TransactionsController < ApplicationController
   def show
     @transaction_presenter = TransactionPresenter.new(@transaction)
     @budget_presenter = BudgetPresenter.new(@transaction.budget)
+    @show_presenter = TransactionShowPresenter.new(@transaction)
   end
 
   # GET /transactions/new
   def new
     @transaction = Transaction.new
-    @transaction.budget_id = params[:budget_id] if params[:budget_id].present?
+    apply_new_transaction_prefill
+    @budgets = current_user.budgets.includes(:budget_type).order(:name)
   end
 
   def change_categories
+    @budgets = current_user.budgets.includes(:budget_type).order(:name)
     transaction_type = Catalog.find(params[:transaction][:transaction_type_id])
     stream = get_turbo_stream_for_transaction_type(transaction_type)
     respond_to do |format|
@@ -71,15 +66,17 @@ class TransactionsController < ApplicationController
 
   # GET /transactions/1/edit
   def edit
+    @budgets = current_user.budgets.includes(:budget_type).order(:name)
   end
 
   # POST /transactions or /transactions.json
   def create
     @transaction = Transaction.new(transaction_params)
+    @transaction.user = current_user
 
     respond_to do |format|
       if @transaction.save
-        format.html { redirect_to transaction_url(@transaction), notice: 'Transaction was successfully created.' }
+        format.html { redirect_to transaction_url(@transaction), notice: t('transactions.create.success') }
         format.json { render :show, status: :created, location: @transaction }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -92,7 +89,7 @@ class TransactionsController < ApplicationController
   def update
     respond_to do |format|
       if @transaction.update(transaction_params)
-        format.html { redirect_to transaction_url(@transaction), notice: 'Transaction was successfully updated.' }
+        format.html { redirect_to transaction_url(@transaction), notice: t('transactions.update.success') }
         format.json { render :show, status: :ok, location: @transaction }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -106,19 +103,28 @@ class TransactionsController < ApplicationController
     @transaction.destroy
 
     respond_to do |format|
-      format.html { redirect_to transactions_url, notice: 'Transaction was successfully destroyed.' }
+      format.html { redirect_to transactions_url, notice: t('transactions.destroy.success') }
       format.json { head :no_content }
     end
   end
 
   private
 
-  # Use callbacks to share common setup or constraints between actions.
-  def set_transaction
-    @transaction = Transaction.find(params[:id])
+  # Permite abrir el formulario con presupuesto, monto y tipo ya elegidos (ej.
+  # "Registrar pago" desde el detalle de una tarjeta abre directo un ingreso).
+  PREFILL_ATTRIBUTES = %i[budget_id related_budget_id amount].freeze
+
+  def apply_new_transaction_prefill
+    PREFILL_ATTRIBUTES.each { |attr| @transaction.public_send(:"#{attr}=", params[attr].presence) }
+    @transaction.debt_id = params[:debt_id].presence
+    type_code = params[:transaction_type].presence
+    @transaction.transaction_type = Catalog.by_group_and_code('transaction_types', type_code) if type_code
   end
 
-  # Only allow a list of trusted parameters through.
+  def set_transaction
+    @transaction = current_user.transactions.find(params[:id])
+  end
+
   def transaction_params
     params.require(:transaction).permit(:transaction_type_id,
                                         :amount,
@@ -129,7 +135,8 @@ class TransactionsController < ApplicationController
                                         :related_budget_id,
                                         :icon_id,
                                         :color_id,
-                                        :user_id)
+                                        :debt_id,
+                                        :debt_amount)
   end
 
   def get_turbo_stream_for_transaction_type(transaction_type)
@@ -137,6 +144,11 @@ class TransactionsController < ApplicationController
       turbo_stream.update(
         'categories_frame',
         partial: "transactions/forms/#{transaction_type.code}/categories",
+        locals: { transaction: Transaction.new(transaction_type:) }
+      ),
+      turbo_stream.update(
+        'budget_origin_frame',
+        partial: 'transactions/forms/budget_origin',
         locals: { transaction: Transaction.new(transaction_type:) }
       )
     ]

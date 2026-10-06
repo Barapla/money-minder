@@ -1,0 +1,65 @@
+<% payroll = @presenter.next_payroll_info %>
+<% covered = @presenter.payroll_covered_payment %>
+<div class="bg-gradient-to-r from-bunker-900/85 to-purple-900/60 backdrop-blur-lg border border-bunker-800/60 rounded-2xl p-6 sm:p-7 grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-8">
+  <div>
+    <div class="text-bunker-300 text-xs uppercase tracking-wider mb-2"><%= t('.title') %></div>
+    <div class="text-4xl sm:text-5xl font-bold font-mono leading-none <%= @presenter.net_worth.negative? ? 'text-red-400' : 'text-white' %>">
+      <%= @presenter.net_worth_formatted %>
+    </div>
+    <p class="text-bunker-400 text-sm mt-2">
+      <%= t('.formula', available: @presenter.available_balance_formatted, debt: @presenter.total_debt_formatted) %>
+    </p>
+
+    <div class="flex h-2.5 rounded-full overflow-hidden bg-bunker-950/70 mt-5"
+         role="progressbar"
+         aria-label="<%= t('.title') %>"
+         aria-valuenow="<%= @presenter.net_worth_share %>" aria-valuemin="0" aria-valuemax="100">
+      <div class="bg-gradient-to-r from-emerald-600 to-emerald-400" style="width: <%= @presenter.net_worth_share %>%"></div>
+      <div class="bg-gradient-to-r from-red-600 to-red-400" style="width: <%= @presenter.debt_share %>%"></div>
+    </div>
+    <div class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-bunker-300 mt-2.5">
+      <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-sm bg-emerald-400"></span><%= t('.net_worth_legend', percent: @presenter.net_worth_share) %></span>
+      <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-sm bg-red-400"></span><%= t('.debt_legend', percent: @presenter.debt_share) %></span>
+    </div>
+
+    <% if payroll %>
+      <p class="text-emerald-300 text-sm mt-4">
+        <%= t('.payroll_note', label: (payroll[:periodicity_label].presence || t('.payroll_label')).downcase, amount: payroll[:net_amount_formatted], moment: relative_days(payroll[:days_until])) %>
+        <% if covered %>
+          <%= t('.payroll_covers', amount: covered[:current_debt_formatted], card: covered[:card_name]) %>
+        <% end %>
+      </p>
+    <% end %>
+  </div>
+
+  <div class="grid grid-cols-2 gap-3 content-center">
+    <div class="bg-bunker-950/45 border border-bunker-700/50 rounded-xl p-4">
+      <div class="text-bunker-400 text-[11px] uppercase tracking-wide mb-1.5"><%= t('.available_label') %></div>
+      <div class="font-mono text-lg sm:text-xl font-bold text-emerald-400"><%= @presenter.available_balance_formatted %></div>
+    </div>
+    <div class="bg-bunker-950/45 border border-bunker-700/50 rounded-xl p-4">
+      <div class="text-bunker-400 text-[11px] uppercase tracking-wide mb-1.5"><%= t('.debt_label') %></div>
+      <div class="font-mono text-lg sm:text-xl font-bold text-red-400"><%= @presenter.total_debt_formatted %></div>
+    </div>
+    <div class="bg-bunker-950/45 border border-bunker-700/50 rounded-xl p-4">
+      <div class="text-bunker-400 text-[11px] uppercase tracking-wide mb-1.5"><%= t('.monthly_expense_label') %></div>
+      <div class="font-mono text-lg sm:text-xl font-bold text-white"><%= @presenter.monthly_expense_total_formatted %></div>
+    </div>
+    <div class="bg-bunker-950/45 border border-bunker-700/50 rounded-xl p-4">
+      <% if payroll %>
+        <div class="text-bunker-400 text-[11px] uppercase tracking-wide mb-1.5"><%= payroll[:next_period_label].presence || t('.payroll_label') %></div>
+        <div class="font-mono text-lg sm:text-xl font-bold text-indigo-400">
+          <%= payroll[:net_amount_formatted] %>
+          <span class="text-[11px] font-medium font-sans <%= payroll[:coming_soon] ? 'text-amber-300' : 'text-bunker-400' %>">
+            <%= payroll[:coming_soon] ? t('.coming_soon_badge') : days_label(payroll[:days_until]) %>
+          </span>
+        </div>
+      <% else %>
+        <div class="text-bunker-400 text-[11px] uppercase tracking-wide mb-1.5"><%= t('.payroll_label') %></div>
+        <p class="text-bunker-400 text-xs mb-1"><%= t('.no_payroll_message') %></p>
+        <%= link_to t('.configure_employment'), new_employment_information_path,
+              class: "text-indigo-400 text-xs hover:text-indigo-300 underline" %>
+      <% end %>
+    </div>
+  </div>
+</div>

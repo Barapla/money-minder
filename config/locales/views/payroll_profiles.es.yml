@@ -1,0 +1,22 @@
+es:
+  payroll_profiles:
+    edit:
+      title: "Configuración de Nómina"
+      subtitle: "Bonos no gravados y tasas de deducción personalizadas"
+      errors_title: "Por favor corrige los siguientes errores:"
+      non_taxable_bonuses_title: "Bonos No Gravados"
+      non_taxable_bonuses_desc: "Ingresos adicionales que no forman parte del salario gravado (vales, transporte, teletrabajo, etc.)."
+      concept_header: "Concepto"
+      monthly_amount_header: "Monto mensual"
+      add_bonus_button: "Agregar bono"
+      bonus_placeholder: "Ej: Transporte"
+      deduction_rates_title: "Tasas de Deducción"
+      deduction_rates_desc: "Personaliza las tasas según tu situación fiscal. Deja en blanco para usar los valores por defecto del sistema."
+      savings_fund_label: "Fondo de Ahorro"
+      savings_fund_default: "(default: 4%)"
+      isr_label: "ISR personalizado"
+      isr_default: "(default: 18.6%)"
+      imss_label: "IMSS personalizado"
+      imss_default: "(default: 3%)"
+      cancel_button: "Cancelar"
+      submit_button: "Guardar Configuración"

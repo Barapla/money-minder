@@ -1,0 +1,40 @@
+<% p = @show_presenter %>
+<% status = p.cycle_status_code %>
+<%
+  badge = { 'open' => 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+            'pending_payment' => 'bg-amber-400/15 text-amber-300 border-amber-400/30',
+            'overdue' => 'bg-red-500/15 text-red-300 border-red-500/30' }
+          .fetch(status, 'bg-bunker-500/20 text-bunker-300 border-bunker-500/30')
+%>
+<div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl px-6 py-[22px]">
+  <div class="flex items-center justify-between flex-wrap gap-3 mb-1">
+    <h2 class="text-base font-semibold text-white"><%= t('.title') %></h2>
+    <span class="border text-[11px] font-semibold px-2.5 py-[3px] rounded-full <%= badge %>">
+      <%= t("transactions.shows.shared.cycle.status.#{status}") %>
+    </span>
+  </div>
+  <p class="text-bunker-400 text-[12.5px] mb-5">
+    <%= t('.subtitle', card: p.budget&.name, day: p.credit_card&.cutting_day,
+                       from: l(p.cycle_start, format: :very_short), to: l(p.cycle_end, format: :very_short)) %>
+  </p>
+
+  <%# Barra del ciclo: el relleno llega hasta hoy, la marca roja es este cargo y
+      la blanca es el dia de hoy. %>
+  <div class="relative h-1.5 bg-bunker-950/70 rounded-full mb-2.5">
+    <div class="h-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-400" style="width: <%= p.today_position %>%"></div>
+    <div class="absolute -top-1.5 w-[3px] h-[18px] bg-red-400 rounded-sm" style="left: <%= p.charge_position %>%"></div>
+    <div class="absolute -top-[5px] w-0.5 h-4 bg-white" style="left: <%= p.today_position %>%"></div>
+  </div>
+
+  <div class="flex justify-between flex-wrap gap-2.5 text-[11.5px] text-bunker-400">
+    <span class="text-red-300"><%= t('.this_charge', date: l(p.transaction_date, format: :very_short)) %></span>
+    <span class="text-white font-semibold"><%= t('.today', date: l(Date.current, format: :very_short)) %></span>
+    <span><%= t('.cut', date: l(p.cycle_end, format: :very_short)) %></span>
+  </div>
+
+  <% if p.payment_due_date %>
+    <p class="mt-[18px] bg-amber-400/[0.08] border border-amber-400/25 rounded-[11px] px-4 py-3.5 text-amber-300 text-[12.5px]">
+      <%= t('.payment_note_html', date: tag.strong(l(p.payment_due_date, format: :only_month), class: 'text-white')) %>
+    </p>
+  <% end %>
+</div>

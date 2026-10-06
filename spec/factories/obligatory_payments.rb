@@ -1,11 +1,14 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :obligatory_payment do
-    user { nil }
-    name { "MyString" }
-    amount { "9.99" }
-    category { nil }
-    description { "MyText" }
-    color { nil }
-    icon { nil }
+    sequence(:name) { |n| "Pago obligatorio #{n}" }
+    amount { 9.99 }
+    description { 'MyText' }
+    reminder_type { 'payment' }
+    association :user
+    association :category
+    association :color, factory: :catalog
+    association :icon, factory: :catalog
   end
 end

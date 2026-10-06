@@ -27,7 +27,7 @@
         <% end %>
     </div>
 
-    <%= form.hidden_field name, value: options[:value] || collection.first[default_object_value] %>
+    <%= form.hidden_field name, value: options[:value] || collection.first&.[](default_object_value) %>
 
     <% if help_text %>
         <p class="text-xs text-bunker-400 mt-2"><%= help_text %></p>

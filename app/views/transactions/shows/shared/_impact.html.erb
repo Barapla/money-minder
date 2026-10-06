@@ -1,0 +1,62 @@
+<% p = @show_presenter %>
+<div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl px-6 py-[22px]">
+  <h2 class="text-base font-semibold text-white mb-1"><%= t('.title') %></h2>
+  <p class="text-bunker-400 text-[12.5px] mb-5"><%= t('.subtitle', budget: p.budget&.name) %></p>
+
+  <div class="grid gap-3.5 mb-5 [grid-template-columns:repeat(auto-fit,minmax(130px,1fr))]">
+    <div class="bg-bunker-950/40 border border-bunker-700/50 rounded-xl p-[15px]">
+      <div class="text-bunker-400 text-[10.5px] uppercase tracking-[0.06em] mb-[7px]"><%= t(p.credit_card? ? '.debt_before' : '.before') %></div>
+      <div class="font-mono text-[19px] font-bold text-bunker-200"><%= p.format_currency(p.balance_before) %></div>
+    </div>
+
+    <div class="rounded-xl p-[15px] border <%= p.reduces_debt? ? 'bg-emerald-500/10 border-emerald-500/25' : 'bg-red-500/10 border-red-500/25' %>">
+      <div class="<%= p.reduces_debt? ? 'text-emerald-300' : 'text-red-300' %> text-[10.5px] uppercase tracking-[0.06em] mb-[7px]"><%= t(p.credit_card? ? (p.reduces_debt? ? '.this_payment' : '.this_charge') : '.this_one') %></div>
+      <%# En tarjeta la cifra de arriba es la deuda, asi que un cargo la sube; en
+          una cuenta de dinero baja el saldo. El signo sale de la resta. %>
+      <div class="font-mono text-[19px] font-bold <%= p.reduces_debt? ? 'text-emerald-400' : 'text-red-400' %>">
+        <%= p.format_signed(p.balance_delta) %>
+      </div>
+    </div>
+
+    <div class="bg-bunker-950/40 border border-bunker-700/50 rounded-xl p-[15px]">
+      <div class="text-bunker-400 text-[10.5px] uppercase tracking-[0.06em] mb-[7px]"><%= t(p.credit_card? ? '.debt_after' : '.after') %></div>
+      <div class="font-mono text-[19px] font-bold text-amber-400"><%= p.format_currency(p.balance_after) %></div>
+    </div>
+  </div>
+
+  <% if p.credit_card? && p.limit_amount.positive? %>
+    <div class="bg-bunker-950/40 border border-bunker-700/50 rounded-xl px-[18px] py-4">
+      <%# El titular es lo que pesa ESTE cargo contra la linea, que es la pregunta
+          de esta pagina. La utilizacion total va abajo, como contexto: sin ella el
+          "techo sano 30%" no se compara contra nada. %>
+      <div class="flex items-baseline justify-between gap-3 mb-2.5">
+        <span class="text-bunker-300 text-[12.5px]"><%= t(p.reduces_debt? ? '.payment_share_of_limit' : '.share_of_limit', limit: p.format_currency(p.limit_amount)) %></span>
+        <span class="font-mono text-base font-bold text-white"><%= p.share_of_limit %>%</span>
+      </div>
+
+      <% seg = p.utilization_segments %>
+      <div class="relative h-2.5 bg-bunker-950/80 rounded-full overflow-hidden"
+           role="img" aria-label="<%= t('.bar_label', charge: p.share_of_limit, after: p.utilization_after) %>">
+        <div class="flex h-full">
+          <%# Donde ya estaba la deuda antes de este movimiento. %>
+          <div class="bg-bunker-600" style="width: <%= seg[:base] %>%"></div>
+          <%# Lo que aporto este movimiento: el tramo que esta pagina explica. %>
+          <div class="<%= seg[:direction] == :down ? 'bg-emerald-400' : 'bg-amber-400' %>"
+               style="width: <%= seg[:change] %>%"></div>
+        </div>
+        <%# Marca del techo sano, para que el 30% de abajo tenga contra que leerse. %>
+        <span class="absolute top-0 w-px h-full bg-white/60" style="left: <%= p.healthy_ceiling %>%"></span>
+      </div>
+
+      <div class="flex justify-between flex-wrap gap-3 text-[11.5px] mt-2.5">
+        <span class="flex items-center gap-1.5 text-bunker-400">
+          <span class="w-2 h-2 rounded-sm bg-bunker-600"></span>
+          <%= t('.utilization_moved', before: p.utilization_before, after: p.utilization_after) %>
+        </span>
+        <span class="<%= p.utilization_healthy? ? 'text-bunker-400' : 'text-amber-300' %>">
+          <%= t('.healthy_ceiling', percent: BudgetsIndexPresenter::HEALTHY_UTILIZATION.to_i) %>
+        </span>
+      </div>
+    </div>
+  <% end %>
+</div>

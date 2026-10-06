@@ -13,13 +13,13 @@
                 <%= render Buttons::LinkComponent.new(content: '
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>  
-                    ', href: day_details_calendar_index_path, 
-                    options: { 
-                        class: "text-bunker-400 hover:text-white", 
-                        data: { 
+                    </svg>
+                    ', href: day_details_calendar_index_path,
+                    options: {
+                        class: "text-bunker-400 hover:text-white",
+                        data: {
                             turbo_frame: "day_details"
-                        } 
+                        }
                     })
                 %>
             </div>
@@ -45,12 +45,12 @@
                     <% @transactions.each do |transaction| %>
                         <div class="bg-bunker-800/40 border border-bunker-700/50 rounded-xl p-4 flex items-center justify-between hover:bg-bunker-800/60 transition-colors">
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl 
-                                <%= 
-                                    transaction.color.code == 'emerald' ? 'bg-emerald-500/20' : 
-                                    transaction.color.code == 'red' ? 'bg-red-500/20' : 
-                                    transaction.color.code == 'yellow' ? 'bg-yellow-500/20' : 
-                                    transaction.color.code == 'blue' ? 'bg-blue-500/20' : 'bg-pink-500/20'%>
+                                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl
+                                <%=
+                                    transaction.color.code == 'emerald' ? 'bg-emerald-500/20' :
+                                    transaction.color.code == 'red' ? 'bg-red-500/20' :
+                                    transaction.color.code == 'yellow' ? 'bg-yellow-500/20' :
+                                    transaction.color.code == 'blue' ? 'bg-blue-500/20' : 'bg-pink-500/20' %>
                                 ">
                                     <%= transaction.icon.value %>
                                 </div>

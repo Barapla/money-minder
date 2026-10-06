@@ -1,0 +1,4 @@
+<div class="flex" data-testid="chatbot-page">
+  <%= render 'chatbot/conversation_list', conversations: @conversations, conversation: @conversation %>
+  <%= render 'chatbot/panel', conversation: @conversation, messages: @messages %>
+</div>

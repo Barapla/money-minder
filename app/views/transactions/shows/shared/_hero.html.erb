@@ -1,0 +1,53 @@
+<% p = @show_presenter %>
+<% tint = transaction_type_tint(p.type_code) %>
+
+<nav class="flex items-center flex-wrap gap-2.5 text-[12.5px] text-bunker-400 mb-4" aria-label="<%= t('.breadcrumb') %>">
+  <%= link_to t('transactions.index.title'), transactions_path, class: "text-purple-300 hover:text-purple-200" %>
+  <span>/</span>
+  <%= link_to p.month_label, transactions_path(month: p.transaction_date.strftime('%Y-%m')),
+        class: "text-purple-300 hover:text-purple-200" %>
+  <span>/</span>
+  <span class="text-white line-clamp-1"><%= p.title %></span>
+</nav>
+
+<div class="bg-gradient-to-r from-bunker-900/85 to-purple-900/55 border border-bunker-800/60 rounded-2xl px-7 py-[26px] mb-5">
+  <div class="flex items-start justify-between flex-wrap gap-7">
+    <div class="flex items-center gap-4 min-w-0 flex-1 basis-[300px]">
+      <span class="w-14 h-14 shrink-0 rounded-[15px] border flex items-center justify-center text-[25px] <%= color_bg_class(p.transaction.color&.code, 40) %> border-bunker-700/50">
+        <%= p.icon %>
+      </span>
+      <div class="min-w-0">
+        <h1 class="text-[27px] font-bold text-white mb-1.5 text-pretty"><%= p.title %></h1>
+        <div class="flex items-center flex-wrap gap-2.5">
+          <span class="border text-[11px] font-semibold px-2.5 py-[3px] rounded-full <%= tint[:badge] %>"><%= p.type_label %></span>
+          <span class="text-bunker-300 text-[13px]"><%= p.category&.name %></span>
+          <span class="text-bunker-500">·</span>
+          <span class="text-bunker-300 text-[13px]"><%= p.date_long %></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-right shrink-0">
+      <div class="font-mono text-[42px] leading-none font-bold mb-2 <%= tint[:amount] %>"><%= p.amount_formatted %></div>
+      <div class="text-bunker-400 text-[12.5px]">
+        <%= t('.charged_to') %>
+        <%= link_to p.budget&.name, budget_path(p.budget), class: "text-white font-semibold hover:text-purple-300" %>
+        <span class="text-bunker-500">·</span>
+        <%= p.budget&.budget_type&.value&.downcase %>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap gap-2.5 mt-[22px] pt-5 border-t border-bunker-700/50">
+    <%= link_to edit_transaction_path(p.transaction),
+          class: "flex items-center gap-[7px] border border-bunker-700/70 text-bunker-200 px-[15px] py-[9px] rounded-[9px] text-[13px] font-medium hover:border-purple-500/50 hover:text-purple-300 transition-colors" do %>
+      ✎ <%= t('.edit') %>
+    <% end %>
+
+    <%= link_to p.transaction, method: :delete,
+          data: { turbo_method: :delete, turbo_confirm: t('.delete_confirm') },
+          class: "flex items-center gap-[7px] border border-red-500/45 text-red-300 px-[15px] py-[9px] rounded-[9px] text-[13px] font-medium ml-auto hover:bg-red-500/10 transition-colors" do %>
+      🗑 <%= t('.delete') %>
+    <% end %>
+  </div>
+</div>

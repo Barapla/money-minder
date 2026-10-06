@@ -12,11 +12,11 @@
     </div>
 
     <%= turbo_frame_tag "calendar_payments", data: { controller: "calendar-loader" } do %>
-        <%= render ObligatoryPaymentsCalendar::MainComponent.new(title: "Pagos Obligatorios", date: @date, payment_occurrences: @payment_occurrences, options: {}) %>
+        <%= render ObligatoryPaymentsCalendar::MainComponent.new(title: "Pagos Obligatorios", date: @date, payment_occurrences: @payment_occurrences, payroll_reminders: @payroll_reminders_by_date || {}, options: {}) %>
     <% end %>
 
     <!-- Resumen del Mes -->
     <%= turbo_frame_tag "summary_payments" do %>
-        <%= render partial: "obligatory_payments_calendar/summary", locals: { payment_occurrences: @payment_occurrences, date: @date } %>
+        <%= render partial: "obligatory_payments_calendar/summary", locals: { payment_occurrences: @payment_occurrences, payroll_reminders: @payroll_reminders_by_date || {}, date: @date } %>
     <% end %>
 </div>

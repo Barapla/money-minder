@@ -1,0 +1,193 @@
+<div class="max-w-6xl mx-auto">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-bunker-900/80 to-emerald-900/80 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-8 mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-4xl font-bold text-white mb-2">
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-300">🎯 <%= t('.title') %></span>
+        </h1>
+        <p class="text-bunker-300"><%= t('.subtitle') %></p>
+      </div>
+      <%= link_to new_saving_goal_path,
+            class: "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg flex items-center gap-2" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        <%= t('.new_button') %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if notice.present? %>
+    <div class="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-sm">
+      <%= notice %>
+    </div>
+  <% end %>
+
+  <% if @active_goals_by_priority.size > 1 %>
+    <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-6 mb-8">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-lg font-semibold text-white"><%= t('.priority_title') %></h2>
+          <p class="text-bunker-400 text-xs"><%= t('.priority_subtitle') %></p>
+        </div>
+      </div>
+
+      <div class="space-y-2"
+           data-controller="savings-goals-reorder"
+           data-savings-goals-reorder-url-value="<%= reorder_saving_goals_path %>">
+        <% @active_goals_by_priority.each_with_index do |goal, index| %>
+          <div class="flex items-center gap-3 bg-bunker-800/40 rounded-xl px-4 py-3 cursor-grab active:cursor-grabbing"
+               draggable="true"
+               data-savings-goals-reorder-target="item"
+               data-goal-id="<%= goal.id %>"
+               data-action="dragstart->savings-goals-reorder#dragstart dragover->savings-goals-reorder#dragover dragend->savings-goals-reorder#dragend">
+            <span class="text-bunker-500 text-xs font-bold w-5 text-center shrink-0" data-priority-number><%= index + 1 %></span>
+            <svg class="w-4 h-4 text-bunker-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
+            </svg>
+            <span class="text-white text-sm font-medium flex-1 truncate"><%= goal.name %></span>
+            <span class="text-bunker-400 text-xs shrink-0"><%= number_to_currency(goal.target_amount) %></span>
+            <% if goal.deadline %>
+              <span class="text-bunker-500 text-xs shrink-0"><%= goal.deadline.strftime('%d/%m/%Y') %></span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @active_goals_by_priority.any? || @inactive_goals.any? %>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+         data-controller="savings-goals-calculator"
+         data-savings-goals-calculator-url-value="<%= dashboard_saving_goals_recalculate_path(format: :json) %>">
+      <% (@active_goals_by_priority.to_a + @inactive_goals.to_a).each do |goal| %>
+        <% allocated = @allocations[goal.id] || 0 %>
+        <% progress_percentage = goal.target_amount > 0 ? (allocated.to_f / goal.target_amount * 100).round(2) : 0 %>
+        <% bar_width = [progress_percentage, 100].min %>
+        <% achieved = progress_percentage >= 100 %>
+        <% days_remaining = goal.deadline ? (goal.deadline - Date.today).to_i : nil %>
+
+        <div class="bg-bunker-900/50 border <%= achieved ? 'border-emerald-500/50' : 'border-bunker-800/50' %> rounded-2xl p-6 hover:bg-bunker-900/60 transition-all duration-200 flex flex-col"
+             <% if goal.active? %>
+               data-savings-goals-calculator-target="goal"
+               data-goal-id="<%= goal.id %>"
+             <% end %>>
+
+          <!-- Status badge + name -->
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <% badge_class = case goal.status
+                                 when 'active'    then 'bg-emerald-500/20 text-emerald-300'
+                                 when 'paused'    then 'bg-yellow-500/20 text-yellow-300'
+                                 when 'achieved'  then 'bg-blue-500/20 text-blue-300'
+                                 when 'cancelled' then 'bg-red-500/20 text-red-300'
+                                 end %>
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium <%= badge_class %>">
+                  <%= t("activerecord.attributes.saving_goal.status.#{goal.status}", default: goal.status.to_s.humanize) %>
+                </span>
+                <% if achieved && goal.active? %>
+                  <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/30 text-emerald-200">✓ <%= t('.achieved_badge') %></span>
+                <% end %>
+              </div>
+              <h3 class="font-semibold text-white text-lg leading-tight"><%= goal.name %></h3>
+            </div>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="mb-4">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm text-bunker-400"><%= t('.progress_label') %></span>
+              <span class="text-sm font-bold <%= achieved ? 'text-emerald-400' : 'text-white' %>"
+                    <% if goal.active? %>data-percentage<% end %>>
+                <%= progress_percentage %>%
+              </span>
+            </div>
+            <div class="w-full bg-bunker-800 rounded-full h-3 overflow-hidden">
+              <div class="h-3 rounded-full transition-all duration-500 <%= achieved ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-emerald-600 to-emerald-500' %>"
+                   <% if goal.active? %>data-progress-bar<% end %>
+                   style="width: <%= bar_width %>%">
+              </div>
+            </div>
+          </div>
+
+          <!-- Amounts -->
+          <div class="mb-4 space-y-1">
+            <div class="flex justify-between text-sm">
+              <span class="text-bunker-400"><%= t('.assigned_label') %></span>
+              <span class="font-medium text-white"
+                    <% if goal.active? %>data-allocated-amount<% end %>>
+                <%= number_to_currency(allocated) %>
+              </span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-bunker-400"><%= t('.target_label') %></span>
+              <span class="font-medium text-white"><%= number_to_currency(goal.target_amount) %></span>
+            </div>
+          </div>
+
+          <!-- Deadline / days remaining -->
+          <% if goal.deadline %>
+            <div class="flex items-center gap-2 text-sm mb-4 <%= days_remaining && days_remaining < 0 ? 'text-red-400' : 'text-bunker-300' %>">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <% if days_remaining > 0 %>
+                <%= t('.days_remaining', count: days_remaining) %> (<%= goal.deadline.strftime('%d/%m/%Y') %>)
+              <% elsif days_remaining == 0 %>
+                <%= t('.expires_today') %>
+              <% else %>
+                <%= t('.expired_days_ago', count: days_remaining.abs) %>
+              <% end %>
+            </div>
+          <% end %>
+
+          <!-- Actions -->
+          <div class="flex gap-2 pt-4 mt-auto border-t border-bunker-800/50">
+            <% if achieved && goal.active? %>
+              <%= button_to saving_goal_path(goal),
+                    method: :patch,
+                    params: { saving_goal: { status: :achieved } },
+                    data: { turbo_confirm: t('.confirm_complete') },
+                    class: "flex-1 px-3 py-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-xl text-sm font-medium hover:bg-emerald-500/30 transition-all" do %>
+                ✓ <%= t('.complete_button') %>
+              <% end %>
+            <% end %>
+            <%= link_to edit_saving_goal_path(goal),
+                  class: "flex-1 px-3 py-2 bg-bunker-800/60 text-white border border-bunker-700/50 rounded-xl text-sm font-medium hover:bg-bunker-700/60 transition-all text-center" do %>
+              <%= t('.edit_button') %>
+            <% end %>
+            <%= button_to saving_goal_path(goal),
+                  method: :delete,
+                  data: { turbo_confirm: t('.confirm_delete') },
+                  class: "flex-1 px-3 py-2 bg-red-500/20 text-red-300 border border-red-500/30 rounded-xl text-sm font-medium hover:bg-red-500/30 transition-all" do %>
+              <%= t('.delete_button') %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <!-- Empty State -->
+    <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl p-12 text-center">
+      <svg class="w-24 h-24 mx-auto mb-6 text-bunker-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+      </svg>
+      <h3 class="text-2xl font-bold text-white mb-2"><%= t('.empty_title') %></h3>
+      <p class="text-bunker-300 mb-6"><%= t('.empty_subtitle') %></p>
+      <%= link_to new_saving_goal_path,
+            class: "inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        <%= t('.empty_button') %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

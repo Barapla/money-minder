@@ -3,6 +3,15 @@
 # app/models/utils/credit_card/cycle_assignment.rb
 module Utils
   module CreditCard
+    # Decide a que ciclo pertenece cada transaccion.
+    #
+    # Un ciclo con corte D vive dos periodos y ambos pueden estar activos a la vez:
+    #
+    #   (D-1mes, D]        corriendo    — recibe las compras; los pagos de aqui
+    #                                     aligeran el saldo que se va a cortar
+    #   (D, D+due_days]    por pagar    — ya no recibe compras (esas van al ciclo
+    #                                     siguiente, que ya arranco); solo recibe
+    #                                     los pagos del estado de cuenta cortado
     module CycleAssignment
       extend ActiveSupport::Concern
 
@@ -12,147 +21,52 @@ module Utils
       end
 
       def determine_cycle_cutting_date_for_transaction(transaction)
-        date = transaction.transaction_date
-        transaction_type = transaction.transaction_type.code
-        case transaction_type
-        when 'expense'
-          determine_cycle_for_expense(date)
-        when 'income'
-          determine_cycle_for_payment(date)
-        else
-          raise "Unsupported transaction type: #{transaction_type}"
+        date = transaction.transaction_date.to_date
+        case transaction.transaction_type.code
+        when 'expense' then determine_cycle_for_expense(date)
+        when 'income' then determine_cycle_for_payment(date)
+        else raise "Unsupported transaction type: #{transaction.transaction_type.code}"
         end
+      end
+
+      # Una compra pertenece al ciclo que cierra en el proximo corte. El dia del
+      # corte todavia entra en ese corte: el estado de cuenta de Santander abarca
+      # "04-Ago al 03-Sep" e incluye los cargos del mismo 03-Sep.
+      def determine_cycle_for_expense(date)
+        date.day <= cutting_day ? clamped_cutting_date(date) : clamped_cutting_date(date >> 1)
+      end
+
+      # Un pago dentro de la ventana de pago liquida el corte que acaba de cerrar,
+      # pero solo si a ese corte le queda saldo por cubrir. Un corte ya saldado (o
+      # en cero) no recibe abonos: el dinero pasa al ciclo que esta corriendo, que
+      # es tambien donde cae el sobrante de un pago fuera de ventana.
+      def determine_cycle_for_payment(date)
+        last_cut = last_cutting_date_on_or_before(date)
+        return last_cut if within_payment_window?(date, last_cut) && outstanding_statement?(last_cut)
+
+        determine_cycle_for_expense(date)
       end
 
       private
 
-      # ==========================================
-      # MÉTODOS PARA GASTOS/COMPRAS
-      # ==========================================
-
-      def determine_cycle_for_expense(transaction_date)
-        if transaction_before_cutting_day?(transaction_date)
-          cutting_date_for_current_cycle(transaction_date)
-        else
-          cutting_date_for_next_cycle(transaction_date)
-        end
+      def within_payment_window?(date, last_cut)
+        date <= last_cut + payment_due_days.to_i.days
       end
 
-      def transaction_before_cutting_day?(date)
-        date.day < cutting_day
+      def outstanding_statement?(cutting_date)
+        cycle = credit_card_cycles.find_by(cutting_date:)
+        return false unless cycle
+
+        (cycle.statement_balance - cycle.payments_after_cut).positive?
       end
 
-      def cutting_date_for_current_cycle(date)
-        Date.new(date.year, date.month, cutting_day)
+      def last_cutting_date_on_or_before(date)
+        date.day >= cutting_day ? clamped_cutting_date(date) : clamped_cutting_date(date << 1)
       end
 
-      def cutting_date_for_next_cycle(date)
-        next_month = date.beginning_of_month + 1.month
-        Date.new(next_month.year, next_month.month, cutting_day)
-      end
-
-      # ==========================================
-      # MÉTODOS PARA PAGOS/INGRESOS
-      # ==========================================
-
-      def determine_cycle_for_payment(payment_date)
-        if payment_date.day <= cutting_day
-          handle_payment_before_or_on_cutting_day(payment_date)
-        else
-          handle_payment_after_cutting_day(payment_date)
-        end
-      end
-
-      # ==========================================
-      # PAGOS ANTES O EN EL DÍA DE CORTE
-      # ==========================================
-
-      def handle_payment_before_or_on_cutting_day(payment_date)
-        # Calcular la fecha de vencimiento del ciclo actual
-        current_cycle_due_date = Date.new(payment_date.year, payment_date.month, cutting_day) + payment_due_days.days
-
-        if payment_crosses_month_boundary?(current_cycle_due_date, payment_date)
-          handle_cross_month_payment_scenario_1(payment_date, current_cycle_due_date)
-        else
-          # Pago normal dentro del mismo mes
-          Date.new(payment_date.year, payment_date.month, cutting_day)
-        end
-      end
-
-      def handle_cross_month_payment_scenario_1(payment_date, current_cycle_due_date)
-        # Ajustar la fecha de vencimiento al mes anterior
-        prev_month = current_cycle_due_date.beginning_of_month - 1.day
-        adjusted_due_date = Date.new(prev_month.year, prev_month.month, current_cycle_due_date.day)
-
-        if payment_date.day < adjusted_due_date.day
-          # Verificar estado del ciclo anterior
-          prev_cycle_cutting_date = Date.new(prev_month.year, prev_month.month, cutting_day)
-          prev_cycle = find_cycle_by_cutting_date(prev_cycle_cutting_date)
-
-          decide_cycle_for_early_payment(payment_date, prev_cycle, prev_cycle_cutting_date)
-        else
-          # Pago después del vencimiento anterior, va al ciclo actual
-          Date.new(payment_date.year, payment_date.month, cutting_day)
-        end
-      end
-
-      def decide_cycle_for_early_payment(payment_date, prev_cycle, prev_cycle_cutting_date)
-        case prev_cycle&.status&.code
-        when 'closed'
-          Date.new(payment_date.year, payment_date.month, cutting_day)
-        when 'pending_payment', 'overdue'
-          prev_cycle_cutting_date
-        else
-          # Estado desconocido o ciclo inexistente, defaultear al actual
-          Date.new(payment_date.year, payment_date.month, cutting_day)
-        end
-      end
-
-      # ==========================================
-      # PAGOS DESPUÉS DEL DÍA DE CORTE
-      # ==========================================
-
-      def handle_payment_after_cutting_day(payment_date)
-        current_cycle_due_date = Date.new(payment_date.year, payment_date.month, cutting_day) + payment_due_days.days
-
-        if should_check_current_cycle_status?(current_cycle_due_date, payment_date)
-          handle_payment_with_cycle_status_check(payment_date)
-        else
-          # Va al siguiente ciclo
-          next_cycle_month = payment_date.beginning_of_month + 1.month
-          Date.new(next_cycle_month.year, next_cycle_month.month, cutting_day)
-        end
-      end
-
-      def should_check_current_cycle_status?(due_date, payment_date)
-        due_date.month != payment_date.month || payment_date.day < due_date.day
-      end
-
-      def handle_payment_with_cycle_status_check(payment_date)
-        current_cycle_cutting_date = Date.new(payment_date.year, payment_date.month, cutting_day)
-        current_cycle = find_or_create_cycle_by_cutting_date(current_cycle_cutting_date)
-
-        case current_cycle&.status&.code
-        when 'closed'
-          # Ciclo cerrado, va al siguiente
-          next_cycle_month = payment_date.beginning_of_month + 1.month
-          Date.new(next_cycle_month.year, next_cycle_month.month, cutting_day)
-        when 'pending_payment', 'overdue'
-          # Ciclo pendiente de pago, el pago va ahí
-          current_cycle_cutting_date
-        else
-          # Estado desconocido, defaultear al siguiente ciclo
-          next_cycle_month = payment_date.beginning_of_month + 1.month
-          Date.new(next_cycle_month.year, next_cycle_month.month, cutting_day)
-        end
-      end
-
-      # ==========================================
-      # MÉTODOS DE UTILIDAD
-      # ==========================================
-
-      def payment_crosses_month_boundary?(due_date, payment_date)
-        due_date.month != payment_date.month
+      # Limita el dia al ultimo del mes para no construir fechas invalidas (31 de febrero).
+      def clamped_cutting_date(base_date)
+        Date.new(base_date.year, base_date.month, [cutting_day.to_i, base_date.end_of_month.day].min)
       end
     end
   end

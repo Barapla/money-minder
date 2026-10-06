@@ -1,0 +1,78 @@
+<% history = @credit_card_presenter.cycle_history %>
+<div class="bg-bunker-900/50 backdrop-blur-lg border border-bunker-800/50 rounded-2xl p-6">
+  <div class="flex items-baseline justify-between gap-3 flex-wrap mb-4">
+    <h3 class="text-base font-semibold text-white"><%= t('.title') %></h3>
+    <span class="text-bunker-400 text-[11.5px]"><%= t('.formula') %></span>
+  </div>
+
+  <% if history.any? %>
+    <div class="overflow-x-auto">
+      <table class="w-full text-[12.5px] border-collapse">
+        <thead>
+          <tr class="border-b border-bunker-700">
+            <th class="text-left pb-2.5 text-bunker-400 font-medium"><%= t('.cycle') %></th>
+            <th class="text-right pb-2.5 text-bunker-400 font-medium"><%= t('.carried') %></th>
+            <th class="text-right pb-2.5 text-bunker-400 font-medium"><%= t('.purchases') %></th>
+            <th class="text-right pb-2.5 text-bunker-400 font-medium"><%= t('.payments') %></th>
+            <th class="text-right pb-2.5 text-bunker-400 font-medium"><%= t('.closing') %></th>
+            <th class="text-right pb-2.5 text-bunker-400 font-medium"><%= t('.cut_utilization') %></th>
+            <th class="text-right pb-2.5 text-bunker-400 font-medium"><%= t('.stage') %></th>
+            <th class="text-right pb-2.5 text-bunker-400 font-medium"><%= t('.behavior') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% history.each do |entry| %>
+            <%
+              running = entry[:status_code] == 'open'
+              badge_key = running ? "lifecycle.#{entry[:status_code]}" : "cycle_history.behavior_#{entry[:behavior]}"
+              badge_text = t("budgets.shows.credit_card.#{badge_key}")
+              badge_class = if running
+                              'bg-emerald-500/15 text-emerald-300'
+                            else
+                              case entry[:behavior]
+                              when 'full_payment' then 'bg-emerald-500/20 text-emerald-300'
+                              when 'no_activity' then 'bg-bunker-500/25 text-bunker-300'
+                              when 'no_payment' then 'bg-red-500/20 text-red-300'
+                              else 'bg-amber-500/20 text-amber-300'
+                              end
+                            end
+            %>
+            <tr class="border-b border-bunker-800 last:border-0">
+              <td class="py-3 text-white whitespace-nowrap">
+                <%= l(entry[:period_start], format: :very_short) %> – <%= l(entry[:cutting_date], format: :very_short) %>
+              </td>
+              <td class="py-3 text-right font-mono <%= entry[:carried].negative? ? 'text-emerald-400' : 'text-bunker-300' %>"><%= entry[:carried_formatted] %></td>
+              <td class="py-3 text-right font-mono text-white"><%= entry[:purchases_formatted] %></td>
+              <td class="py-3 text-right font-mono <%= entry[:payments].positive? ? 'text-emerald-400' : 'text-bunker-400' %>"><%= entry[:payments_formatted] %></td>
+              <%
+                closing_class = if entry[:closing].negative?
+                                  'text-emerald-400'
+                                elsif entry[:closing].positive?
+                                  'text-amber-400'
+                                else
+                                  'text-white'
+                                end
+              %>
+              <td class="py-3 text-right font-mono <%= closing_class %>"><%= entry[:closing_formatted] %></td>
+              <td class="py-3 text-right font-mono <%= entry[:cut_utilization] > CreditCardPresenter::HEALTHY_UTILIZATION ? 'text-amber-400 font-semibold' : 'text-bunker-300' %>">
+                <% if entry[:status_code] == 'open' %>
+                  <span class="text-bunker-500">—</span>
+                <% else %>
+                  <%= entry[:cut_utilization] %>%
+                <% end %>
+              </td>
+              <td class="py-3 text-right text-bunker-300 whitespace-nowrap">
+                <%= t("budgets.shows.credit_card.lifecycle.#{entry[:status_code]}") %>
+              </td>
+              <td class="py-3 text-right">
+                <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap <%= badge_class %>"><%= badge_text %></span>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="text-bunker-400 text-sm text-center py-6"><%= t('.empty') %></p>
+  <% end %>
+</div>

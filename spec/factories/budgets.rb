@@ -1,9 +1,10 @@
 FactoryBot.define do
   factory :budget do
-    current_amount { "9.99" }
-    limit_amount { "9.99" }
-    budget_type { nil }
-    color { nil }
-    icon { nil }
+    sequence(:name) { |n| "Budget #{n}" }
+    current_amount { '9.99' }
+    association :user
+    association :budget_type, factory: :catalog
+    association :color, factory: :catalog
+    association :icon, factory: :catalog
   end
 end

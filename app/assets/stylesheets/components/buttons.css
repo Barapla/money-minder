@@ -104,9 +104,9 @@
   }
 
   .navbar-link {
-    @apply text-bunker-300 px-3 py-2 rounded-md text-sm font-medium 
+    @apply text-bunker-300 px-3 py-2 rounded-md text-sm font-medium
            transition-all duration-200 focus:ring-purple-500;
-    
+
     &:hover:not(.active),
     &:focus:not(.active) {
       @apply bg-bunker-800 text-white;
@@ -114,11 +114,58 @@
 
     &.active {
       @apply bg-purple-500/20 text-purple-300 border border-purple-500/30;
-      
+
       &:hover,
       &:focus {
         @apply bg-purple-500/30 text-purple-200 border-purple-500/40;
       }
+    }
+  }
+
+  .navbar-dropdown-trigger {
+    @apply flex items-center gap-1 text-bunker-300 px-3 py-2 rounded-md text-sm font-medium
+           transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer;
+
+    &:hover,
+    &:focus {
+      @apply bg-bunker-800 text-white;
+    }
+
+    &.active {
+      @apply bg-purple-500/20 text-purple-300 border border-purple-500/30;
+
+      &:hover,
+      &:focus {
+        @apply bg-purple-500/30 text-purple-200;
+      }
+    }
+  }
+
+  .navbar-dropdown-item {
+    @apply block px-4 py-2 text-sm text-bunker-300 transition-colors duration-150
+           focus:outline-none focus:bg-bunker-700 focus:text-white;
+
+    &:hover {
+      @apply bg-bunker-700 text-white;
+    }
+
+    &.active {
+      @apply text-purple-300 bg-purple-500/10;
+
+      &:hover {
+        @apply bg-purple-500/20 text-purple-200;
+      }
+    }
+  }
+
+  .navbar-user-button {
+    @apply w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center
+           justify-center text-white font-bold text-sm cursor-pointer transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-bunker-950
+           border-2 border-transparent;
+
+    &:hover {
+      @apply border-purple-400 shadow-lg shadow-purple-500/30;
     }
   }
 }

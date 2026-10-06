@@ -10,10 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_12_07_173733) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_24_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-  enable_extension "uuid-ossp"
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -89,8 +88,10 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_07_173733) do
     t.string "name", null: false
     t.boolean "personal", default: false
     t.bigint "user_id", null: false
+    t.string "financial_product_id"
     t.index ["budget_type_id"], name: "index_budgets_on_budget_type_id"
     t.index ["color_id"], name: "index_budgets_on_color_id"
+    t.index ["financial_product_id"], name: "index_budgets_on_financial_product_id"
     t.index ["icon_id"], name: "index_budgets_on_icon_id"
     t.index ["user_id"], name: "index_budgets_on_user_id"
     t.index ["uuid"], name: "index_budgets_on_uuid", unique: true
@@ -124,6 +125,31 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_07_173733) do
     t.index ["icon_id"], name: "index_categories_on_icon_id"
     t.index ["parent_category_id"], name: "index_categories_on_parent_category_id"
     t.index ["uuid"], name: "index_categories_on_uuid", unique: true
+  end
+
+  create_table "conversation_messages", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.bigint "conversation_id", null: false
+    t.integer "role", default: 0, null: false
+    t.text "content", null: false
+    t.jsonb "metadata", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_id", "created_at"], name: "index_conversation_messages_on_conversation_id_and_created_at"
+    t.index ["uuid"], name: "index_conversation_messages_on_uuid", unique: true
+  end
+
+  create_table "conversations", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true
+    t.bigint "user_id", null: false
+    t.string "title", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "messages_count", default: 0, null: false
+    t.index ["user_id", "created_at"], name: "index_conversations_on_user_id_and_created_at"
+    t.index ["uuid"], name: "index_conversations_on_uuid", unique: true
   end
 
   create_table "credit_card_cycle_transactions", force: :cascade do |t|
@@ -226,8 +252,10 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_07_173733) do
     t.decimal "credit_limit", precision: 10, scale: 2
     t.decimal "available_credit", precision: 10, scale: 2
     t.decimal "current_balance", precision: 10, scale: 2, default: "0.0"
+    t.string "financial_product_id"
     t.index ["budget_id"], name: "index_credit_cards_on_budget_id"
     t.index ["credit_card_product_id"], name: "index_credit_cards_on_credit_card_product_id"
+    t.index ["financial_product_id"], name: "index_credit_cards_on_financial_product_id"
     t.index ["uuid"], name: "index_credit_cards_on_uuid", unique: true
   end
 
@@ -265,19 +293,63 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_07_173733) do
     t.index ["uuid"], name: "index_currencies_on_uuid", unique: true
   end
 
-  create_table "financial_institutions", force: :cascade do |t|
+  create_table "debt_allocations", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
-    t.boolean "active", default: true
-    t.string "name", null: false
-    t.string "code", null: false
-    t.string "country", default: "MX", null: false
-    t.string "logo_url"
-    t.bigint "color_id", null: false
+    t.bigint "debt_id", null: false
+    t.bigint "transaction_id", null: false
+    t.decimal "amount", precision: 12, scale: 2, null: false
+    t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["code"], name: "index_financial_institutions_on_code", unique: true
-    t.index ["color_id"], name: "index_financial_institutions_on_color_id"
-    t.index ["uuid"], name: "index_financial_institutions_on_uuid", unique: true
+    t.index ["debt_id", "transaction_id"], name: "index_debt_allocations_on_debt_id_and_transaction_id", unique: true
+    t.index ["debt_id"], name: "index_debt_allocations_on_debt_id"
+    t.index ["transaction_id"], name: "index_debt_allocations_on_transaction_id"
+    t.index ["uuid"], name: "index_debt_allocations_on_uuid", unique: true
+  end
+
+  create_table "debts", force: :cascade do |t|
+    t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.boolean "active", default: true, null: false
+    t.bigint "user_id", null: false
+    t.bigint "obligatory_payment_id"
+    t.bigint "budget_id"
+    t.bigint "currency_id"
+    t.integer "direction", default: 0, null: false
+    t.integer "status", default: 0, null: false
+    t.string "name", null: false
+    t.string "counterparty"
+    t.decimal "principal_amount", precision: 12, scale: 2, null: false
+    t.decimal "installment_amount", precision: 12, scale: 2
+    t.date "started_on"
+    t.date "expected_end_on"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "category_id"
+    t.bigint "color_id"
+    t.bigint "icon_id"
+    t.index ["budget_id"], name: "index_debts_on_budget_id"
+    t.index ["category_id"], name: "index_debts_on_category_id"
+    t.index ["color_id"], name: "index_debts_on_color_id"
+    t.index ["currency_id"], name: "index_debts_on_currency_id"
+    t.index ["icon_id"], name: "index_debts_on_icon_id"
+    t.index ["obligatory_payment_id"], name: "index_debts_on_obligatory_payment_id"
+    t.index ["user_id", "direction", "status"], name: "index_debts_on_user_id_and_direction_and_status"
+    t.index ["user_id"], name: "index_debts_on_user_id"
+    t.index ["uuid"], name: "index_debts_on_uuid", unique: true
+  end
+
+  create_table "employment_informations", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "job_title", null: false
+    t.date "start_date", null: false
+    t.decimal "gross_salary_amount", precision: 15, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "calculation_periodicity", null: false
+    t.string "payment_frequency", null: false
+    t.index ["user_id", "start_date"], name: "index_employment_informations_on_user_id_and_start_date"
+    t.index ["user_id"], name: "index_employment_informations_on_user_id", unique: true
   end
 
   create_table "group_catalogs", force: :cascade do |t|
@@ -303,11 +375,30 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_07_173733) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "done", default: false
+    t.string "reminder_type", default: "payment", null: false
+    t.date "due_date"
     t.index ["category_id"], name: "index_obligatory_payments_on_category_id"
     t.index ["color_id"], name: "index_obligatory_payments_on_color_id"
+    t.index ["due_date"], name: "index_obligatory_payments_on_due_date"
     t.index ["icon_id"], name: "index_obligatory_payments_on_icon_id"
+    t.index ["reminder_type"], name: "index_obligatory_payments_on_reminder_type"
     t.index ["user_id"], name: "index_obligatory_payments_on_user_id"
     t.index ["uuid"], name: "index_obligatory_payments_on_uuid", unique: true
+  end
+
+  create_table "payroll_profiles", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.decimal "monthly_gross_salary", precision: 12, scale: 2, null: false
+    t.date "hire_date", null: false
+    t.decimal "savings_fund_percentage", precision: 5, scale: 2, default: "13.0", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "base_salary", precision: 10, scale: 2, null: false
+    t.jsonb "non_taxable_bonuses", default: {}
+    t.decimal "custom_isr_rate", precision: 5, scale: 2
+    t.decimal "custom_imss_rate", precision: 5, scale: 2
+    t.decimal "savings_fund_rate", precision: 5, scale: 2, default: "4.0"
+    t.index ["user_id"], name: "index_payroll_profiles_on_user_id", unique: true
   end
 
   create_table "recurrences", force: :cascade do |t|
@@ -360,6 +451,20 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_07_173733) do
     t.index ["uuid"], name: "index_roles_on_uuid", unique: true
   end
 
+  create_table "saving_goals", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.decimal "target_amount", precision: 15, scale: 2, null: false
+    t.date "deadline"
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "priority_order", null: false
+    t.index ["user_id", "priority_order"], name: "index_saving_goals_on_user_id_and_priority_order", unique: true
+    t.index ["user_id", "status"], name: "index_saving_goals_on_user_id_and_status"
+    t.index ["user_id"], name: "index_saving_goals_on_user_id"
+  end
+
   create_table "savings_funds", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.boolean "active", default: true
@@ -385,9 +490,11 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_07_173733) do
     t.bigint "budget_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "financial_product_id"
     t.index ["account_type_id"], name: "index_savings_funds_on_account_type_id"
     t.index ["budget_id"], name: "index_savings_funds_on_budget_id"
     t.index ["compound_frequency_id"], name: "index_savings_funds_on_compound_frequency_id"
+    t.index ["financial_product_id"], name: "index_savings_funds_on_financial_product_id"
     t.index ["uuid"], name: "index_savings_funds_on_uuid", unique: true
   end
 
@@ -402,6 +509,23 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_07_173733) do
     t.datetime "updated_at", null: false
     t.index ["group_catalog_id"], name: "index_statuses_on_group_catalog_id"
     t.index ["uuid"], name: "index_statuses_on_uuid", unique: true
+  end
+
+  create_table "term_savings", force: :cascade do |t|
+    t.bigint "budget_id", null: false
+    t.integer "term_days", null: false
+    t.decimal "rate_locked", precision: 5, scale: 4, null: false
+    t.date "started_at", null: false
+    t.date "matures_at", null: false
+    t.decimal "principal_amount", precision: 15, scale: 2, null: false
+    t.string "financial_product_id"
+    t.integer "status", default: 0, null: false
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["budget_id"], name: "index_term_savings_on_budget_id"
+    t.index ["financial_product_id"], name: "index_term_savings_on_financial_product_id"
+    t.index ["status"], name: "index_term_savings_on_status"
   end
 
   create_table "transaction_histories", force: :cascade do |t|
@@ -486,29 +610,42 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_07_173733) do
   add_foreign_key "categories", "catalogs", column: "color_id", name: "fk_categories_color"
   add_foreign_key "categories", "catalogs", column: "icon_id", name: "fk_categories_icon"
   add_foreign_key "categories", "categories", column: "parent_category_id", name: "fk_categories_parent"
+  add_foreign_key "conversation_messages", "conversations", name: "fk_conversation_messages_conversation"
+  add_foreign_key "conversations", "users", name: "fk_conversations_user"
   add_foreign_key "credit_card_cycle_transactions", "credit_card_cycles", name: "fk_ccct_credit_card_cycles"
   add_foreign_key "credit_card_cycle_transactions", "transactions", name: "fk_ccct_transactions"
   add_foreign_key "credit_card_cycles", "credit_cards", name: "fk_credit_card_cycles_credit_card"
   add_foreign_key "credit_card_cycles", "statuses", name: "fk_credit_card_cycles_status"
   add_foreign_key "credit_card_products", "catalogs", column: "cycle_calculation_type_id", name: "fk_credit_card_products_cycle_calculation_type"
   add_foreign_key "credit_card_products", "credit_card_tiers", name: "fk_credit_card_products_credit_card_tier"
-  add_foreign_key "credit_card_products", "financial_institutions", name: "fk_credit_card_products_financial_institution"
   add_foreign_key "credit_cards", "budgets", name: "fk_credit_cards_budget"
   add_foreign_key "credit_cards", "credit_card_products", name: "fk_credit_cards_credit_card_product"
   add_foreign_key "credit_score_events", "credit_card_cycles", name: "fk_credit_score_events_credit_card_cycle"
   add_foreign_key "credit_score_events", "credit_cards", name: "fk_credit_score_events_credit_card"
-  add_foreign_key "financial_institutions", "catalogs", column: "color_id", name: "fk_financial_institutions_color"
-  add_foreign_key "obligatory_payments", "catalogs", column: "category_id", name: "fk_obligatory_payments_category"
+  add_foreign_key "debt_allocations", "debts"
+  add_foreign_key "debt_allocations", "transactions"
+  add_foreign_key "debts", "budgets"
+  add_foreign_key "debts", "catalogs", column: "color_id"
+  add_foreign_key "debts", "catalogs", column: "icon_id"
+  add_foreign_key "debts", "categories"
+  add_foreign_key "debts", "currencies"
+  add_foreign_key "debts", "obligatory_payments"
+  add_foreign_key "debts", "users"
+  add_foreign_key "employment_informations", "users"
   add_foreign_key "obligatory_payments", "catalogs", column: "color_id", name: "fk_obligatory_payments_color"
   add_foreign_key "obligatory_payments", "catalogs", column: "icon_id", name: "fk_obligatory_payments_icon"
+  add_foreign_key "obligatory_payments", "categories", name: "fk_obligatory_payments_category"
   add_foreign_key "obligatory_payments", "users", name: "fk_obligatory_payments_user"
+  add_foreign_key "payroll_profiles", "users"
   add_foreign_key "recurrences", "catalogs", column: "frequency_type_id", name: "fk_recurrences_frequency_type"
   add_foreign_key "recurrences", "catalogs", column: "recurrenceable_type_id", name: "fk_recurrences_recurrenceable_type"
   add_foreign_key "recurring_transactions", "users", name: "fk_recurring_transactions_user"
+  add_foreign_key "saving_goals", "users"
   add_foreign_key "savings_funds", "budgets", name: "fk_savings_funds_budget"
   add_foreign_key "savings_funds", "catalogs", column: "account_type_id", name: "fk_savings_funds_account_type"
   add_foreign_key "savings_funds", "catalogs", column: "compound_frequency_id", name: "fk_savings_funds_compound_frequency"
   add_foreign_key "statuses", "group_catalogs", name: "fk_statuses_group_catalog"
+  add_foreign_key "term_savings", "budgets", name: "fk_term_savings_budget"
   add_foreign_key "transaction_histories", "transactions", name: "fk_transaction_histories_transactions"
   add_foreign_key "transactions", "budgets", column: "related_budget_id", name: "fk_transactions_related_budget"
   add_foreign_key "transactions", "budgets", name: "fk_transactions_budget"
@@ -520,6 +657,6 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_07_173733) do
   add_foreign_key "transactions", "recurring_transactions", name: "fk_recurring_transaction_transactions"
   add_foreign_key "transactions", "transactions", column: "related_transaction_id", name: "fk_transactions_related_transaction"
   add_foreign_key "transactions", "users", name: "fk_transactions_user"
-  add_foreign_key "users", "roles", column: "currency_id", name: "fk_users_currency"
+  add_foreign_key "users", "currencies", name: "fk_users_currency"
   add_foreign_key "users", "roles", name: "fk_users_role"
 end

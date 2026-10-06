@@ -1,0 +1,62 @@
+<%
+  p = @index_presenter
+  tiles = [
+    { label: t('.income'), value: p.format_currency(p.income_total), color: 'text-emerald-400',
+      note: t('.income_note', count: p.income_count) },
+    { label: t('.expenses'), value: p.format_currency(p.expense_total), color: 'text-red-400',
+      note: t('.expenses_note', count: p.expense_count, categories: p.expense_categories_count) },
+    { label: t('.net'), value: p.format_signed(p.net_total),
+      color: p.net_total.negative? ? 'text-red-400' : 'text-emerald-400',
+      note: t('.net_note', percent: p.net_share) },
+    { label: t('.internal'), value: p.format_currency(p.internal_total), color: 'text-purple-400',
+      note: t('.internal_note') }
+  ]
+%>
+<div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl px-6 py-[22px] mb-4">
+  <div class="flex items-center justify-between flex-wrap gap-3 mb-5">
+    <div class="flex items-center gap-2.5">
+      <%= link_to transactions_path(request.query_parameters.merge(month: p.previous_month.strftime('%Y-%m'), page: nil)),
+            class: "text-bunker-400 hover:text-white transition-colors", "aria-label": t('.previous_month') do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      <% end %>
+
+      <h2 class="text-[17px] font-semibold text-white"><%= p.month_label %></h2>
+
+      <% if p.next_month %>
+        <%= link_to transactions_path(request.query_parameters.merge(month: p.next_month.strftime('%Y-%m'), page: nil)),
+              class: "text-bunker-400 hover:text-white transition-colors", "aria-label": t('.next_month') do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        <% end %>
+      <% else %>
+        <span class="text-bunker-800" aria-hidden="true">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </span>
+      <% end %>
+
+      <span class="text-bunker-400 text-xs"><%= p.range_label %></span>
+    </div>
+
+    <% unless p.current_month? %>
+      <%= link_to t('.back_to_current'), transactions_path(request.query_parameters.merge(month: nil, page: nil)),
+            class: "text-purple-300 text-[12.5px] font-medium hover:text-purple-200" %>
+    <% end %>
+  </div>
+
+  <div class="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))]">
+    <% tiles.each do |tile| %>
+      <div class="bg-bunker-950/45 border border-bunker-700/50 rounded-xl p-4">
+        <div class="text-bunker-400 text-[10.5px] uppercase tracking-[0.07em] mb-2"><%= tile[:label] %></div>
+        <div class="font-mono text-[21px] font-bold mb-[3px] <%= tile[:color] %>"><%= tile[:value] %></div>
+        <div class="text-bunker-400 text-[11px]"><%= tile[:note] %></div>
+      </div>
+    <% end %>
+  </div>
+
+  <p class="mt-4 pt-4 border-t border-bunker-700 text-bunker-400 text-[12.5px]"><%= t('.internal_explainer') %></p>
+</div>

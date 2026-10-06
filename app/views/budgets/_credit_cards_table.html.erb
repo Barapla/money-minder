@@ -1,0 +1,134 @@
+<%
+  p = @index_presenter
+  with_debt = p.cards_with_debt
+  zeros = p.cards_without_debt
+  # Mismo reparto de columnas del diseño en el encabezado, cada fila y el resumen.
+  cols = "grid gap-3.5 px-[22px] [grid-template-columns:minmax(180px,2fr)_repeat(3,minmax(110px,1fr))_minmax(140px,1.4fr)]"
+%>
+<section data-budget-filters-target="group" data-controller="reveal">
+  <div class="flex items-baseline justify-between flex-wrap gap-3 mb-3.5">
+    <div class="flex items-baseline gap-3">
+      <h2 class="text-[17px] font-semibold text-white"><%= t('budgets.index.cards.title') %></h2>
+      <span class="text-bunker-400 text-[12.5px]"><%= t('budgets.index.cards.summary', count: p.cards.size, total: p.format_currency(p.debt_total)) %></span>
+    </div>
+    <span class="text-bunker-400 text-[12.5px]"><%= t('budgets.index.cards.sorted_by_due') %></span>
+  </div>
+
+  <div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl overflow-hidden mb-4">
+    <div class="<%= cols %> py-3 bg-bunker-950/40 border-b border-bunker-700 text-[10.5px] text-bunker-400 uppercase tracking-[0.06em]">
+      <span><%= t('budgets.index.cards.card') %></span>
+      <span class="text-right"><%= t('budgets.index.cards.debt') %></span>
+      <span class="text-right"><%= t('budgets.index.cards.limit') %></span>
+      <span class="text-right"><%= t('budgets.index.cards.utilization') %></span>
+      <span class="text-right"><%= t('budgets.index.cards.next_payment') %></span>
+    </div>
+
+    <% (with_debt + zeros).each do |card| %>
+      <%
+        zero = card[:debt].zero?
+        over = card[:utilization] > BudgetsIndexPresenter::HEALTHY_UTILIZATION
+        urgent = !zero && card[:days] && card[:days] <= 3
+      %>
+      <%= link_to budget_path(card[:budget]),
+            class: "#{cols} py-[15px] items-center border-b border-bunker-800/60 hover:bg-bunker-800/30 transition-colors #{'bg-red-500/[0.06]' if urgent} #{'hidden' if zero}",
+            data: { budget_filters_target: "account", name: card[:name].downcase,
+                    zero: zero.to_s, type: "credit_card", balance: card[:debt],
+                    reveal_target: zero ? "hidden" : "always" } do %>
+        <div class="flex items-center gap-[11px] min-w-0">
+          <span class="w-[34px] h-[34px] shrink-0 rounded-[10px] flex items-center justify-center text-[15px] <%= zero ? 'bg-bunker-500/15 opacity-70' : 'bg-amber-500/15' %>">
+            <%= card[:icon] %>
+          </span>
+          <span class="min-w-0">
+            <span class="block text-[13.5px] font-semibold line-clamp-1 <%= zero ? 'text-bunker-200' : 'text-white' %>"><%= card[:name] %></span>
+            <% if card[:cutting_day] %>
+              <span class="block text-bunker-400 text-[11px]"><%= t('budgets.index.cards.cuts_on', day: card[:cutting_day]) %></span>
+            <% end %>
+          </span>
+        </div>
+
+        <span class="text-right font-mono text-[14px] font-bold <%= zero ? 'text-bunker-500' : 'text-white' %>"><%= card[:debt_formatted] %></span>
+        <span class="text-right font-mono text-[13px] <%= zero ? 'text-bunker-400' : 'text-bunker-300' %>"><%= card[:limit_formatted] %></span>
+
+        <div class="text-right">
+          <div class="font-mono text-[13px] font-semibold <%= zero ? 'text-bunker-500' : (over ? 'text-amber-400' : 'text-emerald-400') %>"><%= card[:utilization] %>%</div>
+          <% if card[:utilization].positive? %>
+            <div class="mt-[5px] h-1 rounded-full bg-bunker-950/70 overflow-hidden">
+              <div class="h-full rounded-full <%= over ? 'bg-amber-400' : 'bg-emerald-500' %>" style="width: <%= [card[:utilization], 100].min %>%"></div>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="text-right">
+          <% if zero || card[:payment_date].nil? %>
+            <div class="text-bunker-400 text-[12.5px]"><%= t('budgets.index.cards.nothing_due') %></div>
+          <% else %>
+            <div class="text-[12.5px] font-semibold <%= urgency_text_class(card[:days]) %>">
+              <%= l(card[:payment_date], format: :very_short) %> · <%= relative_days(card[:days]) %>
+            </div>
+            <div class="text-bunker-400 text-[11px]"><%= t('budgets.index.cards.minimum', amount: card[:minimum_formatted]) %></div>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+
+    <% if zeros.any? %>
+      <div class="<%= cols %> py-[15px] items-center border-b border-bunker-800/60 bg-bunker-950/25" data-budget-filters-target="zerosCard">
+        <div class="flex items-center gap-[11px] min-w-0">
+          <span class="w-[34px] h-[34px] shrink-0 rounded-[10px] bg-bunker-500/20 flex items-center justify-center text-[15px] text-bunker-300">✓</span>
+          <span class="min-w-0">
+            <span class="block text-bunker-200 text-[13.5px] font-semibold"><%= t('budgets.index.cards.zeros', count: zeros.size) %></span>
+            <span class="block text-bunker-400 text-[11px]"><%= t('budgets.index.cards.zeros_note', amount: p.format_currency(p.unused_credit_line)) %></span>
+          </span>
+        </div>
+        <span class="text-right font-mono text-[14px] font-bold text-bunker-400"><%= p.format_currency(0) %></span>
+        <span class="text-right font-mono text-[13px] text-bunker-400"><%= p.format_currency(p.unused_credit_line) %></span>
+        <span class="text-right font-mono text-[13px] font-semibold text-bunker-400">0.0%</span>
+        <div class="text-right">
+          <button type="button" data-action="reveal#toggle" data-reveal-target="button"
+                  data-show="<%= t('budgets.index.cards.show_all', count: p.cards.size) %>"
+                  data-hide="<%= t('budgets.index.cards.show_with_debt', count: with_debt.size) %>"
+                  class="text-purple-300 text-[12.5px] font-semibold hover:text-purple-200">
+            <%= t('budgets.index.cards.show_all', count: p.cards.size) %>
+          </button>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="flex items-center justify-between flex-wrap gap-3 px-[22px] py-[15px] bg-bunker-950/40">
+      <span class="text-bunker-400 text-[12.5px]">
+        <%= t('budgets.index.cards.footer', count: with_debt.size, total: p.cards.size) %>
+      </span>
+      <%= link_to t('budgets.index.cards.new_card'), new_budget_path,
+            class: "border border-bunker-700/60 text-bunker-200 text-[12.5px] font-medium px-3.5 py-[7px] rounded-[9px] hover:border-purple-500/50 hover:text-purple-300 transition-colors" %>
+    </div>
+  </div>
+
+  <% alerted = p.cards_over_limit %>
+  <% if alerted.any? %>
+    <% worst = alerted.min_by { |c| c[:payment_date] || Date.new(9999) } %>
+    <div class="flex items-center justify-between flex-wrap gap-4 bg-amber-500/10 border border-amber-500/25 rounded-2xl px-[22px] py-[18px]">
+      <div>
+        <div class="text-amber-300 text-[13.5px] font-semibold mb-[3px]">
+          <%= t('budgets.index.cards.alert_title', count: alerted.size, name: worst[:name]) %>
+        </div>
+        <% if worst[:payment_date] %>
+          <div class="text-amber-200/70 text-[12.5px]">
+            <%= t('budgets.index.cards.alert_note', date: l(worst[:payment_date], format: :only_month),
+                                                    percent: p.utilization_without(worst).round(1)) %>
+          </div>
+        <% end %>
+      </div>
+      <%= link_to t('budgets.index.cards.alert_cta'), pay_card_path(worst[:budget], worst[:debt]),
+            class: "bg-amber-500/20 border border-amber-500/30 text-amber-300 px-4 py-2.5 rounded-[10px] text-[13px] font-semibold whitespace-nowrap hover:bg-amber-500/30 transition-colors" %>
+    </div>
+  <% else %>
+    <div class="flex items-center justify-between flex-wrap gap-4 bg-emerald-500/[0.08] border border-emerald-500/20 rounded-2xl px-[22px] py-[18px]">
+      <div>
+        <div class="text-emerald-300 text-[13.5px] font-semibold mb-[3px]">
+          <%= t('budgets.index.cards.alert_healthy', percent: BudgetsIndexPresenter::HEALTHY_UTILIZATION.to_i) %>
+        </div>
+        <div class="text-emerald-200/80 text-[12.5px]"><%= t('budgets.index.cards.alert_healthy_note') %></div>
+      </div>
+    </div>
+  <% end %>
+</section>

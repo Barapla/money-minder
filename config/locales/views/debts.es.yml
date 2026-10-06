@@ -1,0 +1,146 @@
+es:
+  activerecord:
+    attributes:
+      debt:
+        direction: "Dirección"
+        name: "Nombre de la deuda"
+        counterparty: "¿Con quién?"
+        principal_amount: "Monto original"
+        installment_amount: "Pago acordado"
+        started_on: "Fecha de inicio"
+        expected_end_on: "Fecha estimada de término"
+        notes: "Notas"
+        budget_id: "Cuenta donde cae el dinero"
+        category_id: "Categoría"
+  debts:
+    errors:
+      reminder_failed: "No se pudo crear el recordatorio en el calendario: %{message}"
+    direction:
+      receivable: "Me deben"
+      payable: "Debo"
+    status:
+      active: "Activa"
+      settled: "Liquidada"
+      cancelled: "Cancelada"
+    frequency:
+      daily: "Diario"
+      weekly: "Semanal"
+      monthly: "Mensual"
+      yearly: "Anual"
+    index:
+      title: "Deudas"
+      subtitle: "Lo que te deben y lo que debes, con lo que ya se pagó"
+      new_receivable: "＋ Me deben"
+      new_payable: "＋ Debo"
+      owed_to_me: "Te deben"
+      owed_to_me_note:
+        zero: "sin deudas por cobrar"
+        one: "1 deuda por cobrar"
+        other: "%{count} deudas por cobrar"
+      owed_by_me: "Debes"
+      owed_by_me_note:
+        zero: "sin deudas por pagar"
+        one: "1 deuda por pagar"
+        other: "%{count} deudas por pagar"
+      net: "Posición neta"
+      net_note: "lo que te deben menos lo que debes"
+      collected: "Ya cobrado"
+      collected_note: "suma de los abonos recibidos"
+      next_due_html: "Lo próximo: %{name} el %{date} por %{amount}"
+      group_receivable: "Me deben"
+      group_payable: "Debo"
+      group_summary: "%{count} · queda %{total}"
+      no_counterparty: "Sin contraparte anotada"
+      of_principal: "%{paid} de %{principal}"
+      progress: "Avance"
+      remaining_installments: "Faltan"
+      installments_count:
+        one: "1 pago de %{amount}"
+        other: "%{count} pagos de %{amount}"
+      next_due: "Próximo"
+      empty:
+        title: "Todavía no registras deudas"
+        subtitle: "Anota un préstamo que hiciste o uno que debes, y la app lleva el saldo sola."
+        cta: "Registrar una deuda"
+    show:
+      since: "desde el %{date}"
+      remaining_receivable: "te falta cobrar"
+      remaining_payable: "te falta pagar"
+      paid: "Pagado %{amount} · %{percent}%"
+      principal: "Original %{amount}"
+      overpaid: "Se pagó %{amount} de más respecto al original."
+      edit: "Editar"
+      register_payment: "Registrar un abono"
+      settle: "Marcar liquidada"
+      settle_confirm: "¿Marcar esta deuda como liquidada?"
+      delete: "Eliminar"
+      delete_confirm: "¿Eliminar la deuda? Los abonos quedan como transacciones sueltas."
+      payments_title: "Abonos registrados"
+      payments_count:
+        zero: "Sin abonos todavía"
+        one: "1 abono ligado a esta deuda"
+        other: "%{count} abonos ligados a esta deuda"
+      no_payments: "Liga una transacción a esta deuda para que el saldo empiece a bajar."
+      applied_partial: "de un movimiento de %{amount}"
+      applied_symbolic: "aunque el movimiento fue de %{amount}"
+      applied_amount: "Monto que abona"
+      apply: "Guardar"
+      unlink: "Desligar"
+      unlink_confirm: "¿Desligar este movimiento de la deuda? La transacción no se borra."
+      link_title: "Ligar un movimiento"
+      link_help: "Elige una transacción y cuánto de ella abona a esta deuda. No tiene que ser el monto completo."
+      link_prompt: "Elige un movimiento…"
+      link_amount: "Cuánto abona"
+      link_submit: "Ligar"
+      no_candidates: "No hay movimientos de tipo \"%{type}\" sin ligar a esta deuda."
+      plan_title: "Plan de pagos"
+      plan_principal: "Monto original"
+      plan_paid: "Pagado"
+      plan_remaining: "Resta"
+      plan_installment: "Pago acordado"
+      plan_remaining_installments: "Pagos restantes"
+      plan_next_due: "Próximo pago"
+      plan_expected_end: "Término estimado"
+      plan_budget: "Cae en"
+      no_plan: "Sin plan de pagos: solo se lleva el saldo, sin recordatorio en el calendario."
+      reminder_linked_html: "Recordatorio en el calendario: %{link}"
+    form:
+      errors:
+        one: "Hay 1 error que corregir"
+        other: "Hay %{count} errores que corregir"
+      direction_help: "\"Me deben\" para un préstamo que hiciste; \"Debo\" para uno que tienes."
+      counterparty_help: "El nombre de la persona o institución."
+      installment_help: "Déjalo vacío si no hay un plan fijo de pagos."
+      end_help: "Cuándo terminaría de pagarse al ritmo acordado."
+      frequency: "Cada cuánto se paga"
+      frequency_help: "Con esto se crea el recordatorio en el calendario."
+      no_budget: "Ninguna en particular"
+      no_category: "Sin categoría"
+      submit: "Guardar deuda"
+      cancel: "Cancelar"
+    new:
+      title: "Nueva deuda"
+      subtitle: "Anota el monto original y, si hay, el plan de pagos."
+    edit:
+      title: "Editar deuda"
+    create:
+      success: "Deuda registrada."
+    update:
+      success: "Deuda actualizada."
+    destroy:
+      success: "Deuda eliminada."
+    settle:
+      success: "Deuda marcada como liquidada."
+  debt_allocations:
+    create:
+      success: "Movimiento ligado a la deuda."
+    update:
+      success: "Se actualizó cuánto abona ese movimiento."
+    destroy:
+      success: "Movimiento desligado. La transacción sigue ahí."
+  transactions:
+    form:
+      no_debt: "No es pago de una deuda"
+      debt_help: "Si este movimiento abona a una deuda, elígela para que el saldo baje solo."
+      debt_amount_placeholder: "El monto completo"
+      debt_amount_help: "Cuánto de este movimiento abona a la deuda. Déjalo vacío si abona todo; ponlo si solo una parte es de esa deuda, o si vale más porque se neteó algo."

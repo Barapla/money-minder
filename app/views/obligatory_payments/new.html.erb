@@ -9,9 +9,9 @@
             ', href: obligatory_payments_path, options: { class: "btn-icon" }) %>
             <div>
                 <h1 class="text-4xl font-bold text-white">
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-300">💳 Nuevo Pago Obligatorio</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-300">💳 <%= t('.title') %></span>
                 </h1>
-                <p class="text-bunker-300">Crea un nuevo pago recurrente para mantener control de tus obligaciones financieras</p>
+                <p class="text-bunker-300"><%= t('.subtitle') %></p>
             </div>
         </div>
     </div>
@@ -24,7 +24,7 @@
                 <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
-                Información del Pago Obligatorio
+                <%= t('.form_section') %>
             </h2>
         </div>
         <%= render "form", obligatory_payment: @obligatory_payment %>

@@ -13,6 +13,7 @@
                 <div data-budgets--preview-target="previewName" class="text-xs text-bunker-400"><%= budget.name.present? ? budget.name : "Nuevo Presupuesto" %></div>
             </div>
         </div>
+        <%= render "budgets/forms/shared/financial_product_summary", financial_product_id: budget.credit_card&.financial_product_id %>
         <div class="space-y-2 text-xs">
             <div class="flex justify-between">
                 <span class="text-bunker-300">Gastado</span>

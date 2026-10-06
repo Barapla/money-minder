@@ -2,6 +2,9 @@
 
 # CreditCardCycle model
 class CreditCardCycle < ApplicationRecord
+  MINIMUM_PAYMENT_RATE = 0.05
+  MINIMUM_PAYMENT_FLOOR = 25.0
+
   belongs_to :credit_card
   belongs_to :status
   has_many :credit_card_cycle_transactions, dependent: :destroy
@@ -86,10 +89,53 @@ class CreditCardCycle < ApplicationRecord
     save!
   end
 
-  def utilization_at_closing
-    return 0 if credit_card.limit_amount.zero?
+  # Deuda que quedo al momento del corte: lo arrastrado mas las compras del periodo,
+  # menos los pagos hechos antes de cortar (esos aligeran el corte, no lo liquidan).
+  # Para un ciclo que aun no corta equivale al saldo corriente.
+  def statement_balance
+    historical_balance.to_f + purchases.to_f - payments_before_cut
+  end
 
-    (closing_balance / credit_card.limit_amount * 100).round(2)
+  def payments_before_cut
+    sum_cycle_payments { |date| date <= cutting_date }
+  end
+
+  # Pagos aplicados al estado de cuenta ya cortado.
+  def payments_after_cut
+    sum_cycle_payments { |date| date > cutting_date }
+  end
+
+  def fully_paid?
+    payments_after_cut >= statement_balance
+  end
+
+  # El minimo solo se persiste al cerrar el ciclo, asi que se estima con la misma
+  # tasa sobre la deuda cortada.
+  def estimated_minimum_payment
+    return minimum_payment if minimum_payment.to_f.positive?
+    return 0.0 if statement_balance <= 0
+
+    [(statement_balance * MINIMUM_PAYMENT_RATE).round(2), MINIMUM_PAYMENT_FLOOR].max
+  end
+
+  # Etapa del ciclo segun el calendario: corriendo hasta el corte, por pagar
+  # durante la ventana de pago, y despues cerrado o vencido segun se haya pagado.
+  def lifecycle_status_code
+    today = Date.current
+    return 'open' if today <= cutting_date
+    return 'pending_payment' if today <= payment_due_date
+
+    fully_paid? ? 'closed' : 'overdue'
+  end
+
+  # Porcentaje del limite que la tarjeta traia el dia del corte: el saldo cortado
+  # antes de los pagos de la ventana. Es el numero que se reporta al buro, y no
+  # baja aunque pagues despues (para eso hay que pagar ANTES del corte).
+  def utilization_at_cut
+    limit = credit_card.limit_amount.to_f
+    return 0.0 if limit <= 0
+
+    (statement_balance / limit * 100).round(1)
   end
 
   # Para reportes y análisis
@@ -97,13 +143,17 @@ class CreditCardCycle < ApplicationRecord
     purchases - payments
   end
 
+  # Que tanto se cubrio del estado de cuenta cortado, comparando solo los pagos
+  # hechos dentro de la ventana de pago contra la deuda del corte.
   def payment_behavior
-    return 'no_activity' if cycle_balance.zero?
-    return 'full_payment' if payments >= closing_balance
-    return 'minimum_payment' if payments >= minimum_payment
-    return 'partial_payment' if payments.positive?
+    return 'no_activity' if purchases.to_f.zero? && payments.to_f.zero?
 
-    'no_payment'
+    paid = payments_after_cut
+    return 'full_payment' if paid >= statement_balance
+    return 'no_payment' unless paid.positive?
+    return 'minimum_payment' if paid >= estimated_minimum_payment
+
+    'below_minimum'
   end
 
   def next_cycle
@@ -115,6 +165,16 @@ class CreditCardCycle < ApplicationRecord
   end
 
   private
+
+  def sum_cycle_payments
+    credit_card_cycle_transactions.filter_map do |link|
+      record = link.transaction_record
+      next unless record && record.transaction_type.code == 'income'
+      next unless yield(record.transaction_date.to_date)
+
+      record.amount.to_f
+    end.sum
+  end
 
   def handle_balance_updates
     if balance_changed_or_new_record?
@@ -136,14 +196,7 @@ class CreditCardCycle < ApplicationRecord
   end
 
   def calculate_minimum_payment
-    base_percentage = 0.05
-    self.minimum_payment = (closing_balance * base_percentage).round(2)
-
-    if credit_card.interest_rate.present?
-      interest = closing_balance * (credit_card.interest_rate / 100)
-      self.minimum_payment += interest
-    end
-
-    self.minimum_payment = [minimum_payment, 25.0].max if closing_balance.positive?
+    self.minimum_payment = (closing_balance * MINIMUM_PAYMENT_RATE).round(2)
+    self.minimum_payment = [minimum_payment, MINIMUM_PAYMENT_FLOOR].max if closing_balance.positive?
   end
 end

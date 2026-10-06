@@ -10,9 +10,9 @@
                 name: :name,
                 form:,
                 type: :text,
-                options: { 
+                options: {
                     placeholder: "Nuevo Presupuesto",
-                    help_text: "Nombre descriptivo del presupuesto",
+                    help_text: "Nombre descriptivo del presupuesto (se sobreescribe si eliges un producto del catálogo)",
                     required: true,
                     data: {
                         "budgets--preview-target": "name",
@@ -21,6 +21,7 @@
                     }
                 }
             ) %>
+
             <%= turbo_frame_tag "budget_type_frame" do  %>
                 <% if budget.new_record? || budget.budget_type != nil %>
                     <%= render partial: "budgets/forms/#{budget.budget_type&.code || 'cash'}/form", locals: { budget: } %>

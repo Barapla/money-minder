@@ -45,12 +45,9 @@ class AiReport < ApplicationRecord
   # Métodos de clase
   def self.latest_for_user_and_type(user_id, report_type_code, subtype = nil)
     report_type_catalog = Catalog.by_group_and_code('report_types', report_type_code)
-    report_subtype_catalog = Catalog.by_group_and_code('report_subtypes', subtype) if subtype.present?
     return nil unless report_type_catalog
 
-    query = active.successful.where(user_id:, report_type: report_type_catalog)
-    query = query.where(report_subtype: report_subtype_catalog) if subtype.present?
-    latest_report = query.recent.first
+    latest_report = latest_stored(user_id, report_type_code, subtype)
 
     # Si no existe reporte o está expirado, generar uno nuevo
     if latest_report.nil? || latest_report.expired?
@@ -58,6 +55,16 @@ class AiReport < ApplicationRecord
     end
 
     latest_report
+  end
+
+  # Ultimo reporte exitoso guardado (aunque este expirado), sin generar uno nuevo.
+  def self.latest_stored(user_id, report_type_code, subtype = nil)
+    report_type_catalog = Catalog.by_group_and_code('report_types', report_type_code)
+    return nil unless report_type_catalog
+
+    query = active.successful.where(user_id:, report_type: report_type_catalog)
+    query = query.where(report_subtype: Catalog.by_group_and_code('report_subtypes', subtype)) if subtype.present?
+    query.recent.first
   end
 
   def self.latest_or_generate(user_id, report_type, subtype = nil)

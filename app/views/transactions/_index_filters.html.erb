@@ -1,0 +1,80 @@
+<% p = @index_presenter %>
+<div class="bg-bunker-900/50 border border-bunker-800/50 rounded-2xl px-6 py-[18px] mb-4">
+  <%= form_with url: transactions_path, method: :get, data: { controller: "form-auto-submit", turbo_action: "advance" },
+                class: "flex flex-wrap items-center gap-3 mb-3.5" do %>
+    <%# El mes y el tipo viajan escondidos: los cambian la navegacion de arriba y los chips, no este formulario. %>
+    <%= hidden_field_tag :month, p.month.strftime('%Y-%m') %>
+    <%= hidden_field_tag :type, p.selected_type if p.selected_type %>
+
+    <div class="relative flex-1 min-w-[240px]">
+      <button type="submit" class="absolute left-3 top-1/2 -translate-y-1/2 text-bunker-400 hover:text-white transition-colors z-10"
+              aria-label="<%= t('.search_submit') %>">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"></path>
+        </svg>
+      </button>
+      <%= search_field_tag :q, p.search_term, placeholder: t('.search_placeholder'),
+            "aria-label": t('.search_placeholder'), class: "form-control form-control-sm has-icon-left" %>
+    </div>
+
+    <div class="relative w-48">
+      <%= select_tag :budget_id,
+            options_from_collection_for_select(p.budgets, :id, :name, p.selected_budget_id),
+            include_blank: t('.all_accounts'), "aria-label": t('.account'),
+            data: { action: "change->form-auto-submit#submit" },
+            class: "form-control form-control-sm" %>
+      <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+        <svg class="w-5 h-5 text-bunker-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+    </div>
+
+    <div class="relative w-48">
+      <%= select_tag :category_id,
+            options_from_collection_for_select(p.categories, :id, :name, p.selected_category_id),
+            include_blank: t('.all_categories'), "aria-label": t('.category'),
+            data: { action: "change->form-auto-submit#submit" },
+            class: "form-control form-control-sm" %>
+      <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+        <svg class="w-5 h-5 text-bunker-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <span class="text-sm text-bunker-300 whitespace-nowrap"><%= t('.sort_by') %></span>
+      <div class="relative w-32">
+        <%= select_tag :sort,
+              options_for_select([[t('.sort_date'), 'date'], [t('.sort_amount'), 'amount']], p.sort),
+              "aria-label": t('.sort_by'),
+              data: { action: "change->form-auto-submit#submit" },
+              class: "form-control form-control-sm" %>
+        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <svg class="w-5 h-5 text-bunker-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Los chips son enlaces: cambiar de tipo es navegar, y asi funcionan con
+      clic medio, "abrir en pestaña nueva" y el boton de atras. %>
+  <div class="flex flex-wrap items-center gap-2">
+    <% chips = [[nil, t('.all_types'), p.total_count]] + p.type_counts.map { |code, count| [code, t("transactions.types.#{code}"), count] } %>
+    <% chips.each do |code, label, count| %>
+      <% active = p.selected_type == code %>
+      <%= link_to transactions_path(request.query_parameters.merge(type: code, page: nil)),
+            class: "px-3 py-1.5 rounded-full border text-xs whitespace-nowrap transition-colors #{active ? 'bg-purple-500/20 text-purple-300 border-purple-500/35 font-semibold' : 'bg-bunker-950/45 text-bunker-300 border-bunker-700/50 font-medium hover:border-bunker-600'}" do %>
+        <%= label %> · <%= count %>
+      <% end %>
+    <% end %>
+
+    <% if p.filtered? %>
+      <%= link_to t('.clear_filters'), transactions_path(month: p.month.strftime('%Y-%m')),
+            class: "text-purple-300 text-xs font-medium ml-auto hover:text-purple-200" %>
+    <% end %>
+  </div>
+</div>
