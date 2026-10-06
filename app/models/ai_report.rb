@@ -231,11 +231,7 @@ class AiReport < ApplicationRecord
 
         # Si viene texto crudo: en 'insights' (fallback de FinancialInsightsService
         # cuando Claude no devolvió JSON parseable) o en 'content' (formato original)
-        raw_content = if ai_response_data['insights'].is_a?(String)
-                        ai_response_data['insights']
-                      else
-                        ai_response_data['content']
-                      end
+        raw_content = ai_response_data['insights'].is_a?(String) ? ai_response_data['insights'] : ai_response_data['content']
 
         if raw_content.present?
           content = raw_content

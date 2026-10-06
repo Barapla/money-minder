@@ -14,23 +14,23 @@ RSpec.describe AiReport, type: :model do
 
     it 'extrae insights aunque ai_response_data traiga symbol keys (formato de FinancialInsightsService)' do
       report = create(:ai_report, user:, report_type:, processing_success: true,
-                                  ai_response_data: {
-                                    success: true,
-                                    insights: { 'critical_credit_actions' => [{ 'title' => 'Paga antes del corte' }] },
-                                    format: 'json'
-                                  })
+                                   ai_response_data: {
+                                     success: true,
+                                     insights: { 'critical_credit_actions' => [{ 'title' => 'Paga antes del corte' }] },
+                                     format: 'json'
+                                   })
 
       expect(report.insights).to eq([{ 'title' => 'Paga antes del corte' }])
     end
 
     it 'no explota si Claude devolvio texto crudo en insights (JSON no parseable)' do
       report = create(:ai_report, user:, report_type:, processing_success: true,
-                                  ai_response_data: {
-                                    success: true,
-                                    insights: 'Respuesta con critical_credit_actions pero sin JSON valido',
-                                    format: 'text',
-                                    parsing_error: true
-                                  })
+                                   ai_response_data: {
+                                     success: true,
+                                     insights: 'Respuesta con critical_credit_actions pero sin JSON valido',
+                                     format: 'text',
+                                     parsing_error: true
+                                   })
 
       expect(report.insights).to eq([])
     end
