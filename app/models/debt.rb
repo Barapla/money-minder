@@ -33,6 +33,7 @@ class Debt < ApplicationRecord
             comparison: { greater_than_or_equal_to: :started_on },
             allow_nil: true,
             if: -> { started_on.present? }
+  validate :budget_belongs_to_user, if: :budget_id?
 
   # NULLS LAST para que las deudas sin fecha no se monten arriba de las recientes.
   scope :recent_first, -> { order(Arel.sql('started_on DESC NULLS LAST, created_at DESC')) }
@@ -105,5 +106,13 @@ class Debt < ApplicationRecord
         .where.not(id: debt_allocations.select(:transaction_id))
         .order(transaction_date: :desc)
         .limit(limit)
+  end
+
+  private
+
+  def budget_belongs_to_user
+    return if budget&.user_id == user_id
+
+    errors.add(:budget_id, 'debe pertenecer al mismo usuario')
   end
 end

@@ -81,7 +81,7 @@
                 <%= render Forms::MultiSelectComponent.new(
                     name: :budgets,
                     form:,
-                    options_collection: Budget.all.collect { |b| [b.name, b.id] },
+                    options_collection: current_user.budgets.pluck(:name, :id),
                     options: {
                         placeholder: "Selecciona presupuestos...",
                         size: :small,

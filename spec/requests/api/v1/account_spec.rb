@@ -43,7 +43,9 @@ RSpec.describe 'API v1 cuenta (registro, recuperacion, perfil)', type: :request 
 
   describe 'POST /api/v1/auth/password' do
     it 'envia instrucciones al correo existente' do
-      expect { post api_v1_auth_password_path, params: { email: user.email } }
+      email = user.email # se crea antes: al registrarse ya manda su correo de confirmacion
+
+      expect { post api_v1_auth_password_path, params: { email: } }
         .to change { ActionMailer::Base.deliveries.size }.by(1)
 
       expect(response).to have_http_status(:ok)

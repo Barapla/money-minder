@@ -7,6 +7,9 @@ module Users
     # del chatbot en una pagina a la que se llega sin sesion.
     layout 'auth_application', only: %i[new edit]
 
+    rate_limit to: 5, within: 1.hour, only: :create,
+               with: -> { redirect_to new_user_password_path, alert: t('rate_limit.too_many_attempts') }
+
     # GET /resource/password/new
     # def new
     #   super

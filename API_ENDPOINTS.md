@@ -158,6 +158,16 @@ Autentica un usuario con email y password, y retorna un token JWT valido por 30 
 { "errors": ["Credenciales inválidas"] }
 ```
 
+Tambien 401 si la cuenta esta bloqueada (10 intentos fallidos la bloquean 1 hora) o si pasaron 2 dias sin confirmar el correo. Un token ya emitido deja de servir en cualquier endpoint en ese mismo momento.
+
+#### Response Body (429)
+
+Mas de 10 intentos de login en 3 minutos desde la misma IP (`register` y `password`: 5 por hora).
+
+```json
+{ "error": { "code": "rate_limited", "message": "Demasiados intentos. Espera unos minutos y vuelve a intentarlo." } }
+```
+
 ---
 
 ### GET /api/v1/auth/me
@@ -355,7 +365,7 @@ Todos los campos son requeridos. Los ids salen de `GET /api/v1/catalogs`; `budge
 **Auth:** Ninguna
 
 Request: `{ "name": "Luis Pérez", "email": "luis@example.com", "password": "secret123", "password_confirmation": "secret123" }`.
-Response (201): `{ "record": { "token": "...", "expires_at": "..." } }` — el usuario queda autenticado.
+Response (201): `{ "record": { "token": "...", "expires_at": "..." } }` — el usuario queda autenticado y recibe un correo de confirmacion; tiene 2 dias para confirmar antes de que el token deje de servir. Contraseña minima: 8 caracteres.
 Response (422): `{ "error": { "code": "validation_error", "message": "...", "details": { "email": ["ya está en uso"] } } }`.
 
 ---

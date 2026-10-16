@@ -7,6 +7,9 @@ module Users
     # before_action :configure_account_update_params, only: [:update]
     layout 'auth_application', only: %i[new]
 
+    rate_limit to: 5, within: 1.hour, only: :create,
+               with: -> { redirect_to new_user_registration_path, alert: t('rate_limit.too_many_attempts') }
+
     # GET /resource/sign_up
     # def new
     #   super

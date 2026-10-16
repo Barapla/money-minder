@@ -206,6 +206,17 @@ ReportFilter.new(report_filter_params.merge(user: current_user))
 
 Sin `user:`, el filtro consulta todos los budgets/transacciones de la DB (comportamiento legacy para tests sin autenticacion).
 
+### Relaciones entre registros de usuarios distintos
+
+Ademas del scoping en controladores, los modelos validan que las FKs que llegan del formulario apunten a registros del mismo usuario: `Transaction` (`budget_id`, `related_budget_id`, `debt_id`), `Debt` (`budget_id`), `DebtAllocation` (deuda y transaccion del mismo usuario) y `RecurringTransaction` (`transaction_options['budget_id']`). Los selects de presupuestos en vistas usan `current_user.budgets`, nunca `Budget.all`. `spec/requests/user_isolation_spec.rb` cubre estos casos.
+
+### Endurecimiento para multiples usuarios
+
+- **Rate limits** con `rate_limit` nativo de Rails 7.2 (sin gema): login web/API 10 en 3 min por IP; registro y recuperacion 5/hora; chatbot 40 mensajes/hora y `financial_insights#generate` 10/dia por usuario. Usan `Rails.cache`: en produccion es Redis si existe `REDIS_URL`. En test el cache es `null_store`, asi que los limites nunca disparan en specs.
+- **Devise**: `:confirmable` (2 dias de gracia, la app movil sigue recibiendo token al registrarse) y `:lockable` (10 intentos, desbloqueo por correo o en 1 hora). La API usa `valid_for_authentication?` para contar intentos y `active_for_authentication?` para invalidar tokens de cuentas bloqueadas. Contraseña minima 8, `paranoid` activo.
+- **`/sidekiq`** solo para `user.admin?`.
+- **Produccion** necesita `APP_HOST`, `MAILER_FROM`, `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`. `force_ssl` + `assume_ssl` porque Caddy termina TLS.
+
 ### Factories de test
 
 Para crear transacciones en specs, usar las factories:

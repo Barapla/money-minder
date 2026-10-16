@@ -9,3 +9,4 @@ Naming/FileName:
 Metrics/BlockLength:
   Exclude:
     - 'spec/**/*'
+    - 'config/environments/*'

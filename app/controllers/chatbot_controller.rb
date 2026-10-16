@@ -7,6 +7,11 @@ class ChatbotController < ApplicationController
   before_action :set_conversations, only: %i[index show]
   before_action :set_conversation, only: %i[show create_message]
 
+  # Cada mensaje es una llamada pagada a la API de Anthropic.
+  # ponytail: tope fijo por usuario; planes por usuario si algun dia se cobra.
+  rate_limit to: 40, within: 1.hour, by: -> { current_user.id }, only: :create_message,
+             with: -> { redirect_to conversation_path(params[:id]), alert: t('rate_limit.ai_quota') }
+
   def index
     @conversation = @conversations.first
     @messages = @conversation&.messages || ConversationMessage.none

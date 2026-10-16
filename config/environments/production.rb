@@ -46,7 +46,10 @@ Rails.application.configure do
   # config.action_cable.allowed_request_origins = [ "http://example.com", /http:\/\/example.*/ ]
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  # Caddy termina TLS y le pasa la peticion a Puma por HTTP: assume_ssl hace que
+  # Rails la trate como HTTPS (cookies seguras, HSTS) sin redirigir en bucle.
+  config.assume_ssl = true
+  config.force_ssl = true
 
   # Include generic and useful information about system operation, but avoid logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII).
@@ -56,7 +59,9 @@ Rails.application.configure do
   config.log_tags = [ :request_id ]
 
   # Use a different cache store in production.
-  # config.cache_store = :mem_cache_store
+  # En Redis y no en disco para que los rate_limit (login, registro, IA) se
+  # compartan entre procesos y sobrevivan a un reinicio del contenedor.
+  config.cache_store = :redis_cache_store, { url: ENV['REDIS_URL'] } if ENV['REDIS_URL'].present?
 
   # Use a real queuing backend for Active Job (and separate queues per environment).
   # config.active_job.queue_adapter     = :resque
@@ -65,7 +70,19 @@ Rails.application.configure do
   config.action_mailer.perform_caching = false
 
   # Host de los enlaces en correos (recuperacion de contraseña de Devise).
-  config.action_mailer.default_url_options = { host: ENV.fetch('APP_HOST', nil) }
+  config.action_mailer.default_url_options = { host: ENV.fetch('APP_HOST', nil), protocol: 'https' }
+
+  # Cualquier proveedor SMTP (Amazon SES, Resend, Brevo...). Sin esto no llegan
+  # la confirmacion de cuenta, el desbloqueo ni la recuperacion de contraseña.
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address: ENV.fetch('SMTP_ADDRESS', nil),
+    port: ENV.fetch('SMTP_PORT', 587).to_i,
+    user_name: ENV.fetch('SMTP_USERNAME', nil),
+    password: ENV.fetch('SMTP_PASSWORD', nil),
+    authentication: :plain,
+    enable_starttls_auto: true
+  }
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.

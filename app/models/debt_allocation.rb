@@ -15,6 +15,7 @@ class DebtAllocation < ApplicationRecord
 
   validates :amount, numericality: { greater_than: 0 }
   validates :debt_id, uniqueness: { scope: :transaction_id }
+  validate :same_user
 
   delegate :transaction_date, :description, to: :transaction_record, allow_nil: true
 
@@ -30,5 +31,13 @@ class DebtAllocation < ApplicationRecord
 
   def symbolic?
     unallocated_amount.negative?
+  end
+
+  private
+
+  def same_user
+    return if debt.nil? || transaction_record.nil? || debt.user_id == transaction_record.user_id
+
+    errors.add(:transaction_id, 'debe pertenecer al mismo usuario que la deuda')
   end
 end

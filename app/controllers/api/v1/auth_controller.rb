@@ -15,10 +15,16 @@ module Api
       include Api::JwtAuthenticatable
       skip_before_action :authenticate_api_user!, only: %i[login register reset_password]
 
+      rate_limit to: 10, within: 3.minutes, only: :login, with: -> { render_rate_limited }
+      rate_limit to: 5, within: 1.hour, only: %i[register reset_password], with: -> { render_rate_limited }
+
       def login
         user = User.find_by(email: params[:email])
 
-        if user&.valid_password?(params[:password])
+        # valid_for_authentication? cuenta los intentos fallidos de :lockable;
+        # valid_password? a secas no, y el bloqueo solo protegeria la web.
+        if user&.valid_for_authentication? { user.valid_password?(params[:password]) } &&
+           user.active_for_authentication?
           render json: { record: user.generate_jwt_token }, status: :ok
         else
           render json: { errors: ['Credenciales inválidas'] }, status: :unauthorized
