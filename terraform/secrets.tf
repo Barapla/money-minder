@@ -25,6 +25,20 @@ resource "aws_ssm_parameter" "database_url" {
   value       = "postgres://${aws_db_instance.main.username}:${random_password.db.result}@${aws_db_instance.main.endpoint}/${aws_db_instance.main.db_name}"
 }
 
+resource "aws_ssm_parameter" "smtp_username" {
+  name        = "/${var.project}/SMTP_USERNAME"
+  description = "Usuario del servidor SMTP"
+  type        = "SecureString"
+  value       = var.smtp_username
+}
+
+resource "aws_ssm_parameter" "smtp_password" {
+  name        = "/${var.project}/SMTP_PASSWORD"
+  description = "Contraseña del servidor SMTP"
+  type        = "SecureString"
+  value       = var.smtp_password
+}
+
 resource "aws_ssm_parameter" "anthropic_api_key" {
   name        = "/${var.project}/ANTHROPIC_API_KEY"
   description = "Chatbot y reportes de IA"

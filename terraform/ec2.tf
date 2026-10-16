@@ -91,7 +91,12 @@ resource "aws_instance" "app" {
     image_tag  = var.image_tag
     domain     = var.domain
     acme_email = var.acme_email
-    log_group  = aws_cloudwatch_log_group.app.name
+    # Lo que no es secreto viaja en el user_data; usuario y contraseña SMTP van
+    # por Parameter Store (secrets.tf).
+    smtp_address = var.smtp_address
+    smtp_port    = var.smtp_port
+    mailer_from  = var.mailer_from
+    log_group    = aws_cloudwatch_log_group.app.name
     # Caddy filtra tambien por su cuenta: si alguien deja el grupo de seguridad
     # abierto por error, la app sigue sin servirse a cualquiera.
     allowed_cidrs = join(" ", var.allowed_cidrs)

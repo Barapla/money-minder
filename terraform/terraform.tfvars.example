@@ -6,6 +6,16 @@ acme_email = "tu@correo.com"
 # La misma que tienes en .env local
 anthropic_api_key = "sk-ant-..."
 
+# Correo saliente: confirmacion de cuenta, desbloqueo y recuperacion de contraseña.
+# Con Amazon SES: verifica el dominio o el remitente en la consola de SES y crea
+# credenciales SMTP (SES > SMTP settings). Una cuenta nueva de SES esta en
+# sandbox y solo envia a correos verificados hasta que pidas salir de ahi.
+smtp_address  = "email-smtp.us-east-1.amazonaws.com"
+smtp_username = "AKIA..."
+smtp_password = "..."
+mailer_from   = "no-reply@money.tudominio.com"
+# smtp_port   = 587
+
 # Quien puede entrar a la app. Vacio o ausente = abierto a todos.
 # Una IP suelta lleva /32. Consulta la tuya con: curl -s ifconfig.me
 #

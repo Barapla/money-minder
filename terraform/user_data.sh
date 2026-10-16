@@ -34,6 +34,10 @@ RAILS_ENV=production
 RAILS_SERVE_STATIC_FILES=true
 RAILS_LOG_TO_STDOUT=true
 REDIS_URL=redis://redis:6379/0
+APP_HOST=${domain}
+MAILER_FROM=${mailer_from}
+SMTP_ADDRESS=${smtp_address}
+SMTP_PORT=${smtp_port}
 ENVEOF
 
 # Segunda capa de filtrado, dentro de Caddy. El grupo de seguridad ya bloquea el

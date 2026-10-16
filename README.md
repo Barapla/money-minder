@@ -1037,8 +1037,15 @@ Redis y Caddy) y Postgres administrado en RDS. **Unos 29 USD al mes** en us-east
    ```bash
    cd terraform
    cp terraform.tfvars.example terraform.tfvars
-   # rellena domain, acme_email y anthropic_api_key
+   # rellena domain, acme_email, anthropic_api_key y las variables smtp_* / mailer_from
    ```
+
+   El correo es obligatorio: sin él no llegan la confirmación de cuenta, el desbloqueo
+   ni la recuperación de contraseña. Con Amazon SES, verifica el dominio o el remitente
+   y crea credenciales SMTP en *SES > SMTP settings*. Una cuenta nueva de SES está en
+   *sandbox* y solo envía a correos verificados hasta que pidas salir de ahí. El usuario
+   y la contraseña SMTP van a Parameter Store; servidor, puerto y remitente, al `.env`
+   del servidor.
 
 2. Crea la infraestructura:
 

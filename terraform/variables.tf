@@ -83,6 +83,36 @@ variable "anthropic_api_key" {
   sensitive   = true
 }
 
+# Correo saliente (confirmacion de cuenta, desbloqueo, recuperacion de contraseña).
+# Sirve cualquier proveedor SMTP: Amazon SES, Resend, Brevo, etc.
+variable "smtp_address" {
+  description = "Servidor SMTP, por ejemplo email-smtp.us-east-1.amazonaws.com"
+  type        = string
+}
+
+variable "smtp_port" {
+  description = "Puerto SMTP con STARTTLS"
+  type        = number
+  default     = 587
+}
+
+variable "smtp_username" {
+  description = "Usuario SMTP"
+  type        = string
+  sensitive   = true
+}
+
+variable "smtp_password" {
+  description = "Contraseña SMTP"
+  type        = string
+  sensitive   = true
+}
+
+variable "mailer_from" {
+  description = "Remitente de los correos; el proveedor SMTP debe tenerlo verificado"
+  type        = string
+}
+
 variable "image_tag" {
   description = "Tag de la imagen en ECR que corre el servidor"
   type        = string
