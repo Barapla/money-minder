@@ -97,6 +97,14 @@ RSpec.describe 'Aislamiento entre usuarios', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
+    it 'rechaza el login de una cuenta sin confirmar pasado el plazo de gracia' do
+      api_user.update_columns(confirmed_at: nil, confirmation_sent_at: 3.days.ago, created_at: 3.days.ago)
+
+      post api_v1_auth_login_path, params: { email: api_user.email, password: 'password123' }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
     it 'bloquea la cuenta tras demasiados intentos fallidos por la API' do
       Devise.maximum_attempts.times do
         post api_v1_auth_login_path, params: { email: api_user.email, password: 'incorrecta' }

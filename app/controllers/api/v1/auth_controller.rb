@@ -21,10 +21,13 @@ module Api
       def login
         user = User.find_by(email: params[:email])
 
-        # valid_for_authentication? cuenta los intentos fallidos de :lockable;
-        # valid_password? a secas no, y el bloqueo solo protegeria la web.
-        if user&.valid_for_authentication? { user.valid_password?(params[:password]) } &&
-           user.active_for_authentication?
+        # valid_for_authentication? devuelve false si la contraseña es incorrecta o la
+        # cuenta esta bloqueada, y en ambos casos suma el intento fallido de :lockable
+        # (valid_password? a secas no lo suma). No revisa :confirmable: eso lo hace
+        # active_for_authentication?, que rechaza la cuenta sin confirmar pasado el plazo.
+        password_ok = user&.valid_for_authentication? { user.valid_password?(params[:password]) }
+
+        if password_ok && user.active_for_authentication?
           render json: { record: user.generate_jwt_token }, status: :ok
         else
           render json: { errors: ['Credenciales inválidas'] }, status: :unauthorized
