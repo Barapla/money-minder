@@ -17,6 +17,10 @@ es:
       privacy: "Tus datos se guardan en tu cuenta, no se comparten con tu banco."
   continue: "Continuar"
 
+  rate_limit:
+    too_many_attempts: "Demasiados intentos. Espera unos minutos y vuelve a intentarlo."
+    ai_quota: "Llegaste al límite de consultas de IA por ahora. Intenta más tarde."
+
   date:
     formats:
       default: "%d/%m/%Y"

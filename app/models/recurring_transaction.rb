@@ -16,6 +16,7 @@ class RecurringTransaction < ApplicationRecord
   validates :start_date, presence: true
   validates :end_date, comparison: { greater_than: :start_date }, allow_blank: true
   validates :frequency, presence: true
+  validate :options_budget_belongs_to_user, if: -> { transaction_options&.dig('budget_id').present? }
 
   # Scopes
   scope :active, -> { where(status: :active) }
@@ -40,7 +41,7 @@ class RecurringTransaction < ApplicationRecord
   end
 
   def define_first_transaction
-    transaction = ::Transaction.find(transaction_options['id'])
+    transaction = user.transactions.find(transaction_options['id'])
 
     transaction.update(recurring_transaction: self)
     self.execution_count = 1
@@ -55,7 +56,7 @@ class RecurringTransaction < ApplicationRecord
   end
 
   def budget
-    Budget.find(transaction_options['budget_id']) if transaction_options['budget_id'].present?
+    user.budgets.find_by(id: transaction_options['budget_id']) if transaction_options['budget_id'].present?
   end
 
   def remaining_executions
@@ -85,6 +86,12 @@ class RecurringTransaction < ApplicationRecord
   end
 
   private
+
+  # El job crea la transaccion con estos datos: un presupuesto ajeno fallaria
+  # en cada ejecucion en vez de rechazarse al guardar.
+  def options_budget_belongs_to_user
+    errors.add(:base, 'El presupuesto debe pertenecer al mismo usuario') if budget.nil?
+  end
 
   def calculate_next_date(from_date)
     case frequency

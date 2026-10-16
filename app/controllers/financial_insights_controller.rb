@@ -1,6 +1,10 @@
 class FinancialInsightsController < ApplicationController
   before_action :authenticate_user! # Asume que tienes autenticación
 
+  # Cada generacion es una llamada pagada a la API de Anthropic.
+  rate_limit to: 10, within: 1.day, by: -> { current_user.id }, only: :generate,
+             with: -> { render json: { success: false, error: t('rate_limit.ai_quota') }, status: :too_many_requests }
+
   def generate
     service = FinancialInsightsService.new(current_user.id)
     result = service.generate_insights

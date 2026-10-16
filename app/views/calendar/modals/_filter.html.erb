@@ -39,7 +39,7 @@
         </h3>
         
         <div class="grid grid-cols-4 gap-3">
-            <% budgets = Budget.all.order(:id).includes(:icon) %>
+            <% budgets = current_user.budgets.order(:id).includes(:icon) %>
             <% exists_budgets = @filter.present? && @filter[:budgets].present? %>
             <% budgets.each do |budget| %>
                 <%= render Forms::Checkbox::IconComponent.new(name: "budget_#{budget.id}", options:

@@ -6,6 +6,7 @@ class TransactionsController < ApplicationController
   include TransactionsHelper
   before_action :authenticate_user!
   before_action :set_transaction, only: %i[show edit update destroy]
+  before_action :set_budgets, only: %i[new edit create update change_categories]
 
   # GET /transactions or /transactions.json
   def index
@@ -50,11 +51,9 @@ class TransactionsController < ApplicationController
   def new
     @transaction = Transaction.new
     apply_new_transaction_prefill
-    @budgets = current_user.budgets.includes(:budget_type).order(:name)
   end
 
   def change_categories
-    @budgets = current_user.budgets.includes(:budget_type).order(:name)
     transaction_type = Catalog.find(params[:transaction][:transaction_type_id])
     stream = get_turbo_stream_for_transaction_type(transaction_type)
     respond_to do |format|
@@ -65,9 +64,7 @@ class TransactionsController < ApplicationController
   end
 
   # GET /transactions/1/edit
-  def edit
-    @budgets = current_user.budgets.includes(:budget_type).order(:name)
-  end
+  def edit; end
 
   # POST /transactions or /transactions.json
   def create
@@ -119,6 +116,12 @@ class TransactionsController < ApplicationController
     @transaction.debt_id = params[:debt_id].presence
     type_code = params[:transaction_type].presence
     @transaction.transaction_type = Catalog.by_group_and_code('transaction_types', type_code) if type_code
+  end
+
+  # Tambien en create/update: si falla la validacion se vuelve a pintar el
+  # formulario y sin esto los selects de presupuesto quedan vacios.
+  def set_budgets
+    @budgets = current_user.budgets.includes(:budget_type).order(:name)
   end
 
   def set_transaction

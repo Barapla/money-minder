@@ -33,4 +33,26 @@ RSpec.describe Transaction, type: :model do
       end
     end
   end
+  describe 'pertenencia del presupuesto destino y la deuda' do
+    it 'rechaza un traspaso hacia el presupuesto de otro usuario' do
+      transaction = build(:transaction, user:, budget: own_budget, related_budget: other_budget)
+
+      expect(transaction).not_to be_valid
+      expect(transaction.errors[:related_budget_id]).to include('debe pertenecer al mismo usuario')
+    end
+
+    it 'acepta un presupuesto destino propio' do
+      transaction = build(:transaction, user:, budget: own_budget, related_budget: create(:budget, user:))
+
+      expect(transaction).to be_valid
+    end
+
+    it 'rechaza abonar a la deuda de otro usuario' do
+      transaction = build(:transaction, user:, budget: own_budget)
+      transaction.debt_id = create(:debt, user: other_user).id
+
+      expect(transaction).not_to be_valid
+      expect(transaction.errors[:debt_id]).to include('debe pertenecer al mismo usuario')
+    end
+  end
 end

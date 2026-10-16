@@ -52,7 +52,7 @@ RSpec.describe 'Recuperación de contraseña', type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include('Crea tu nueva contraseña')
       expect(response.body.scan('data-controller="password-visibility"').size).to eq(2)
-      expect(response.body).to include('Mínimo 6 caracteres.')
+      expect(response.body).to include('Mínimo 8 caracteres.')
     end
   end
 

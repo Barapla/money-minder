@@ -32,6 +32,8 @@ class Transaction < ApplicationRecord
   before_validation :set_default_values
 
   validate :budget_belongs_to_user, if: :budget_id?
+  validate :related_budget_belongs_to_user, if: :related_budget_id?
+  validate :debt_belongs_to_user, if: -> { @debt_id.present? }
   validate :transfer_origin_must_hold_own_money, if: :transfer?
 
   scope :by_category, lambda { |category|
@@ -84,6 +86,20 @@ class Transaction < ApplicationRecord
     return if budget&.user_id == user_id
 
     errors.add(:budget_id, 'debe pertenecer al mismo usuario')
+  end
+
+  # Sin esto un traspaso podria mandar dinero al presupuesto de otro usuario
+  # con solo cambiar el id en el formulario.
+  def related_budget_belongs_to_user
+    return if related_budget&.user_id == user_id
+
+    errors.add(:related_budget_id, 'debe pertenecer al mismo usuario')
+  end
+
+  def debt_belongs_to_user
+    return if Debt.exists?(id: @debt_id, user_id:)
+
+    errors.add(:debt_id, 'debe pertenecer al mismo usuario')
   end
 
   # Un traspaso mueve dinero que ya es tuyo. Desde una tarjeta de credito seria una

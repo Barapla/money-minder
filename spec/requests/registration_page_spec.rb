@@ -31,7 +31,7 @@ RSpec.describe 'Pantalla de registro', type: :request do
 
       expect(response.body).to include('user[name]', 'user[email]')
       expect(response.body).to include('user[password]', 'user[password_confirmation]')
-      expect(response.body).to include('Mínimo 6 caracteres.')
+      expect(response.body).to include('Mínimo 8 caracteres.')
     end
 
     it 'usa el mismo campo de contraseña del login, uno por cada campo' do

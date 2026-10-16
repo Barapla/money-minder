@@ -7,6 +7,9 @@ module Users
     # before_action :configure_sign_in_params, only: [:create]
     layout 'auth_application', only: %i[new]
 
+    rate_limit to: 10, within: 3.minutes, only: :create,
+               with: -> { redirect_to new_user_session_path, alert: t('rate_limit.too_many_attempts') }
+
     # GET /resource/sign_in
     # def new
     #   super

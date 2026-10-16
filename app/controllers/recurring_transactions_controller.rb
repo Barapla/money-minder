@@ -3,13 +3,13 @@
 # RecurringTransactionsController handles the display and management of transactions.
 class RecurringTransactionsController < ApplicationController
   def new_modal
-    @transaction = Transaction.find(params[:transaction_id]) if params[:transaction_id].present?
+    @transaction = current_user.transactions.find(params[:transaction_id]) if params[:transaction_id].present?
     render layout: false if turbo_frame_request?
   end
 
   def create
     recurring_transaction = RecurringTransaction.new(all_params)
-    transaction = Transaction.find(recurring_transaction.transaction_options['id'])
+    transaction = current_user.transactions.find(recurring_transaction.transaction_options['id'])
 
     if recurring_transaction.save
       redirect_to transaction, notice: t('recurring_transactions.create.success')

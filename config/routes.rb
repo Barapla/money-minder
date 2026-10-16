@@ -130,7 +130,9 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
 
   # sidekiq routes
   require 'sidekiq/web'
-  mount Sidekiq::Web => '/sidekiq'
+  authenticate :user, lambda(&:admin?) do
+    mount Sidekiq::Web => '/sidekiq'
+  end
 
   root 'dashboard#index'
 end
