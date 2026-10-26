@@ -377,3 +377,10 @@ Standards live in the `.claude/` folder:
 | `ENGINEERING_STANDARDS.md` | Git, commits, PR, API communication, error format |
 | `RAILS_STANDARDS.md` | Result pattern, service objects, serializers, DB, RuboCop, RSpec |
 | `REACT_STANDARDS.md` | React-specific rules |
+
+## Logo y favicons (FEAT-039)
+
+- Símbolo en `app/assets/images/logo.svg` (+ `logo.png`/`@2x`/`@3x`); el texto "MoneyMinder" va en HTML junto a él, no dentro del SVG.
+- Favicons y manifest declarados solo en `app/views/shared/_favicons.html.erb` (ambos layouts lo renderizan); archivos en `public/`.
+- Correos: `config.parent_mailer = 'ApplicationMailer'` en Devise, para que sus correos usen el layout `mailer` (antes salían sin encabezado). `action_mailer.asset_host` resuelve la URL absoluta del logo.
+- Guía de uso: `docs/BRAND_GUIDELINES.md`. Maestro para la app móvil: `docs/brand/app-icon-1024.png`.

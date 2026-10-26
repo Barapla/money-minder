@@ -71,6 +71,7 @@ Rails.application.configure do
 
   # Host de los enlaces en correos (recuperacion de contraseña de Devise).
   config.action_mailer.default_url_options = { host: ENV.fetch('APP_HOST', nil), protocol: 'https' }
+  config.action_mailer.asset_host = "https://#{ENV.fetch('APP_HOST', nil)}"
 
   # Cualquier proveedor SMTP (Amazon SES, Resend, Brevo...). Sin esto no llegan
   # la confirmacion de cuenta, el desbloqueo ni la recuperacion de contraseña.
